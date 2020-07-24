@@ -208,6 +208,8 @@ COPD trial
 %other references: Barnes et al. (2011) and Donohue et al. (2010); 
 \cite{cuffe_when_2014}
 
+Assurance: \cite{stallard_optimal_2009}
+
 \section{Adaptive Seamless Designs}
 % TODO: Tim
 Intro 3- 4 Sätze
@@ -350,26 +352,6 @@ Also our search space is hierarchical because \emph{Epsilon} and \emph{Threshold
 
 
 
-Challenges
-  \begin{itemize}
-    \item Power is determined stochastically through simulation
-    \item Number of treatments in stage 2 depends on \emph{selection strategy} ($k_2$): \\
-    $n_{\text{treat}} = (k_1+1) \cdot n_{\text{stage1}} + (k_2+1) \cdot n_{\text{stage2}}$ \\
-    Remember: $n_{\text{treat}}$, $k_1$ fixed.
-    \begin{itemize}
-      \item $k_2 = 1,2,3$ fixed if we \emph{select} 1/2/3 best arms.
-      \item $k_2$ only as expected value through \underline{simulation} for \emph{epsilon} and \emph{threshold} strategy.
-    \end{itemize}
-    Optimize \emph{ratio} $r$ instead of $n_{\text{stage1}}$ and $n_{\text{stage2}}$.
-    \begin{align}
-      c &= \frac{n_{\text{treat}}}{(k_1 + 1) \cdot r + (k_2+1) \cdot (1-r)} \\
-      \Rightarrow n_{\text{stage1}} &= r \cdot c \ \land\\
-       n_{\text{stage2}} &= (1-r) \cdot c 
-    \end{align}
-    \item Problem: \underline{Simulation} depends on $n_{\text{stage1}}$ \\
-      Solution: Adapt $n_{\text{stage1}}$ so that $\hat{n}_{\text{treat}}$ is close to given $n_{\text{treat}}$ and $r$.
-  \end{itemize}
-
 
 
 \begin{itemize}
@@ -493,7 +475,7 @@ This work was partly supported by Deutsche Forschungsgemeinschaft (DFG) within t
 
 
 \bibliographystyle{biometrical}
-\bibliography{literature.bib}
+\bibliography{literature,literature_zotero}
 
 \newpage
 \phantom{aaaa}
