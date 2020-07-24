@@ -1,3 +1,5 @@
+set.seed(1) #actually nothing stochastic happens here
+
 ## ----setup, include=FALSE----------------------------------------------------- 
 library(data.table)
 library(ggplot2)
@@ -18,6 +20,7 @@ plot_wrapper = function(name, fig.height, fig.width, expr) {
 }
 
 kable_to_text = function(text, name) {
+  text = stri_replace_all_fixed(text, pattern = "\\label{tab:}", sprintf("\\label{tab:%s}", name))
   writeLines(text, con = paste0("../generated/tables/", name, ".tex"))
 }
 
