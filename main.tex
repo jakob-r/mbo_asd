@@ -111,51 +111,6 @@
 
 \begin{document}
 
-<<setup, include=FALSE>>=
-library(data.table)
-library(ggplot2)
-library(scales)
-library(stringi)
-library(knitr)
-library(kableExtra)
-library(dplyr)
-library(mlr3misc)
-
-own_theme = function(...) {
-  theme_light(...) + 
-  theme(legend.margin=margin(0,0,0,0))
-}
-theme_set(own_theme())
-
-knit_hooks$set(
-  crop = hook_pdfcrop, 
-  #document = function(x) {sub('\\usepackage[]{color}', '\\usepackage[table]{xcolor}', x, fixed = TRUE)}, # color warnings https://github.com/yihui/knitr/issues/1068
-  knitr.kable.NA = '', 
-  knitr.kable.NaN = ''
-)
-
-FIG_WIDTH = 8
-FIG_HEIGHT = 6
-FNT_SMALL = 6
-
-opts_chunk$set(
-  echo = FALSE,
-  fig.width = FIG_WIDTH,
-  fig.height = FIG_HEIGHT,
-  fig.path = "knitr/figures/",
-  cache.path = "knitr/cache/",  
-  warning = FALSE,
-  message = FALSE,
-  out.width = "\\linewidth",
-  cache = TRUE,
-  autodep = TRUE,
-  dev = "pdf")
-
-options(
-  knitr.table.format = "latex"
-)
-@
-
 %\DOIsuffix{bimj.DOIsuffix}
 \DOIsuffix{bimj.200100000}
 \Volume{52}
@@ -310,7 +265,7 @@ If a value is inactive it is set to a value two times as high as the maximum in 
 
 The goal of this simulation study is to show that Model-based optimization can effectively find the trail design that yields the highest statistical power for the given \emph{number of total treatments} $n_{\text{treat}}$, \emph{effect sizes} for all arms and both stages and the \emph{correlation between early and final outcomes}.
 The effect sizes we consider in this study are given in Table~\ref{tab:table_effect_names}.
-
+\input{generated/tables/table_effect_names.tex}
 As this table shows, we restrict ourselves to studys with five arms.
 The space of possible trial design setups we consider is given in Table~\ref{tab:search_space}.
 \begin{table}[h]
@@ -431,20 +386,9 @@ To obtain an unbiased result, we do not simply report the best observed power of
 Instead we use the best found parameters to run the simulation again independently, repeated times, similar to a cross-validation in machine learning applications.
 This eliminates the risk of only reporting outcomes that are optimal by chance.
 
-
-
-
-
-
-
-
-
-
-
-
 \begin{figure}[htb]
 \begin{center}
-
+\includegraphics[width=\linewidth]{generated/figures/plot_allbest.pdf}
 \caption{Power of the different selection rules. For the epsilon and threshold rule only the curve for the epsilon and threshold value that reached the best power is dispayed.}
 \end{center}
 \end{figure}
@@ -452,7 +396,7 @@ This eliminates the risk of only reporting outcomes that are optimal by chance.
 
 \begin{figure}[htb]
 \begin{center}
-
+\includegraphics[width=\linewidth]{generated/figures/plot_best_x.pdf}
 \caption{Best found $x$-values from MBO runs.}
 \end{center}
 \end{figure}
@@ -460,7 +404,7 @@ This eliminates the risk of only reporting outcomes that are optimal by chance.
 
 \begin{figure}[htb]
 \begin{center}
-
+\includegraphics[width=\linewidth]{generated/figures/plot_opt_path.pdf}
 \caption{%
   Optimization curves of each optimization run and the mean of all runs drawn as a black line.
   }
@@ -469,21 +413,16 @@ This eliminates the risk of only reporting outcomes that are optimal by chance.
 
 \begin{figure}[htb]
 \begin{center}
-
+\includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y.pdf}
 \caption{%
   Validated performance of both approaches.
   }
 \end{center}
 \end{figure}
 
+\input{generated/tables/table_best.tex}
 
-
-
-
-
-
-
-
+\input{generated/tables/table_time.tex}
 
 \subsection{Second level heading}
 
