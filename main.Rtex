@@ -1,0 +1,564 @@
+\documentclass[bimj,fleqn]{w-art}
+\usepackage{times}
+\usepackage{w-thm}
+\usepackage[authoryear]{natbib}
+\setlength{\bibsep}{2pt}
+\setlength{\bibhang}{2em}
+\newcommand{\J}{J\"{o}reskog}
+\newcommand{\So}{S\"{o}rbom}
+\newcommand{\bcx}{{\bf X}}
+\newcommand{\bcy}{{\bf Y}}
+\newcommand{\bcz}{{\bf Z}}
+\newcommand{\bcu}{{\bf U}}
+\newcommand{\bcv}{{\bf V}}
+\newcommand{\bcw}{{\bf W}}
+\newcommand{\bci}{{\bf I}}
+\newcommand{\bch}{{\bf H}}
+\newcommand{\bcb}{{\bf B}}
+\newcommand{\bcr}{{\bf R}}
+\newcommand{\bcm}{{\bf M}}
+\newcommand{\bcf}{{\bf F}}
+\newcommand{\bcg}{{\bf G}}
+\newcommand{\bcs}{{\bf S}}
+\newcommand{\bca}{{\bf A}}
+\newcommand{\bcd}{{\bf D}}
+\newcommand{\bcc}{{\bf C}}
+\newcommand{\bce}{{\bf E}}
+\newcommand{\ba}{{\bf a}}
+\newcommand{\bb}{{\bf b}}
+\newcommand{\bc}{{\bf c}}
+\newcommand{\bd}{{\bf d}}
+\newcommand{\bx}{{\bf x}}
+\newcommand{\by}{{\bf y}}
+\newcommand{\bz}{{\bf z}}
+\newcommand{\bu}{{\bf u}}
+\newcommand{\bv}{{\bf v}}
+\newcommand{\bh}{{\bf h}}
+\newcommand{\bl}{{\bf l}}
+\newcommand{\be}{{\bf e}}
+\newcommand{\br}{{\bf r}}
+\newcommand{\bw}{{\bf w}}
+\newcommand{\de}{\stackrel{D}{=}}
+\newcommand{\bt}{\bigtriangleup}
+\newcommand{\bfequiv}{\mbox{\boldmath $\equiv$}}
+\newcommand{\bmu}{\mbox{\boldmath $\mu$}}
+\newcommand{\bnu}{\mbox{\boldmath $\nu$}}
+\newcommand{\bxi}{\mbox{\boldmath $\xi$}}
+\newcommand{\btau}{\mbox{\boldmath $\tau$}}
+\newcommand{\bgamma}{\mbox{\boldmath $\Gamma$}}
+\newcommand{\bphi}{\mbox{\boldmath $\Phi$}}
+\newcommand{\bfphi}{\mbox{\boldmath $\varphi$}}
+\newcommand{\bfeta}{\mbox{\boldmath $\eta$}}
+\newcommand{\bpi}{\mbox{\boldmath $\Pi$}}
+\newcommand{\bequiv}{\mbox{\boldmath $\equiv$}}
+\newcommand{\bvarepsilon}{\mbox{\boldmath $\varepsilon$}}
+\newcommand{\btriangle}{\mbox{\boldmath $\triangle$}}
+\newcommand{\bdelta}{\mbox{\boldmath $\Delta$}}
+\newcommand{\beps}{\mbox{\boldmath $\epsilon$}}
+\newcommand{\btheta}{\mbox{\boldmath $\theta$}}
+\newcommand{\balpha}{\mbox{\boldmath $\alpha$}}
+\newcommand{\bsphi}{\mbox{\boldmath $\varphi$}}
+\newcommand{\bsig}{\mbox{\boldmath $\sigma$}}
+\newcommand{\bfpsi}{\mbox{\boldmath $\psi$}}
+\newcommand{\bfdelta}{\mbox{\boldmath $\delta$}}
+\newcommand{\bsigma}{{\bf \Sigma}}
+\newcommand{\bzero}{{\bf 0}}
+\newcommand{\bpsi}{\mbox{\boldmath $\Psi$}}
+\newcommand{\bep}{\mbox{\boldmath $\epsilon$}}
+\newcommand{\bomega}{\mbox{\boldmath $\Omega$}}
+\newcommand{\bfomega}{\mbox{\boldmath $\omega$}}
+\newcommand{\blambda}{\mbox{\boldmath $\Lambda$}}
+\newcommand{\bflambda}{\mbox{\boldmath $\lambda$}}
+\newcommand{\bfsigma}{\mbox{\boldmath $\sigma$}}
+\newcommand{\bfpi}{{\mbox{\boldmath $\pi$}}}
+\newcommand{\bupsilon}{\mbox{\boldmath $\upsilon$}}
+\newcommand{\obs}{{\rm obs}}
+\newcommand{\mis}{{\rm mis}}
+\theoremstyle{plain}
+\newtheorem{criterion}{Criterion}
+\theoremstyle{definition}
+\newtheorem{condition}[theorem]{Condition}
+\usepackage[]{graphicx}
+\chardef\bslash=`\\ % p. 424, TeXbook
+\newcommand{\ntt}{\normalfont\ttfamily}
+\newcommand{\cn}[1]{{\protect\ntt\bslash#1}}
+\newcommand{\pkg}[1]{{\protect\ntt#1}}
+\let\fn\pkg
+\let\env\pkg
+\let\opt\pkg
+\hfuzz1pc % Don't bother to report overfull boxes if overage is < 1pc
+\newcommand{\envert}[1]{\left\lvert#1\right\rvert}
+\let\abs=\envert
+
+
+% own packages
+
+% kableExtra
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+\begin{document}
+
+<<setup, include=FALSE>>=
+library(data.table)
+library(ggplot2)
+library(scales)
+library(stringi)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(mlr3misc)
+
+own_theme = function(...) {
+  theme_light(...) + 
+  theme(legend.margin=margin(0,0,0,0))
+}
+theme_set(own_theme())
+
+knit_hooks$set(
+  crop = hook_pdfcrop, 
+  #document = function(x) {sub('\\usepackage[]{color}', '\\usepackage[table]{xcolor}', x, fixed = TRUE)}, # color warnings https://github.com/yihui/knitr/issues/1068
+  knitr.kable.NA = '', 
+  knitr.kable.NaN = ''
+)
+
+FIG_WIDTH = 8
+FIG_HEIGHT = 6
+FNT_SMALL = 6
+
+opts_chunk$set(
+  echo = FALSE,
+  fig.width = FIG_WIDTH,
+  fig.height = FIG_HEIGHT,
+  fig.path = "knitr/figures/",
+  cache.path = "knitr/cache/",  
+  warning = FALSE,
+  message = FALSE,
+  out.width = "\\linewidth",
+  cache = TRUE,
+  autodep = TRUE,
+  dev = "pdf")
+
+options(
+  knitr.table.format = "latex"
+)
+@
+
+%\DOIsuffix{bimj.DOIsuffix}
+\DOIsuffix{bimj.200100000}
+\Volume{52}
+\Issue{61}
+\Year{2020}
+\pagespan{1}{}
+\keywords{Model-Based Optimization; Design of Experiments;\\ %FIXME: name 5 %Up to five keywords are allowed and should be given in alphabetical order. Please capitalize the key
+\noindent \hspace*{-4pc}\\
+\hspace*{-4pc} {\small\it words)}\\[1pc]
+\noindent\hspace*{-4.2pc} Supporting Information for this article is available from the author or on the WWW under\break \hspace*{-4pc} \underline{http://dx.doi.org/10.1022/bimj.XXXXXXX} (please delete if not
+applicable)
+}  %%% semicolon and fullpoint added here for keyword style
+
+\title[Model-based Optimization of Adaptive Seamless Designs]{Optimizing the power of adaptive seamless designs using Bayesian Optimization} %(please use sentence case, e.g. Score tests for exploring complex models)
+%% Information for the first author.
+\author[Jakob Richter {\it{et al.}}]{Jakob Richter\footnote{Corresponding author: {\sf{e-mail: richter@statistik.tu-dortmund.de}}}\inst{,1}} 
+\address[\inst{1}]{Fakultät Statistik, Technische Universität Dortmund, 44221 Dortmund}
+%%%%    Information for the second author
+\author[dd]{Tim Friede\inst{2}}
+\address[\inst{2}]{Second address} %please include the department and the postal address
+%%%%    Information for the third author
+\author[]{Jörg Rahnenführer\inst{1}} %please provide full author names. Middle names should be indicated by initials only, i.e. Henry J. James
+%%%%    \dedicatory{This is a dedicatory.}
+\Receiveddate{zzz} \Reviseddate{zzz} \Accepteddate{zzz} 
+
+% max 250 words
+\begin{abstract}
+Planning the patient group sizes and test methids for clinical trials in such a way that the test power is as high as possible for given effect sizes under the null hypothesis and for a fixed number of treatments is a crucial task.
+From a wide set of possible set ups we want to chose the most promising plan in short time to drive fast decisions.
+While it is possible to simulate the power for all various set ups, the space of possible set ups soon becomes too big.
+Either you need big computational resources or you have to wait for an exhausive exploration of the possible set ups.
+In this paper we show that you can successfully apply Model-based Optimization to find a clinical trial set-up that yields an high power from a wide set of possible set-ups.
+We optimize the power of adaptive seamless designs for different sets of treatment effect sizes and compare the result to an exhausitve search to show that our optimization approach finds a promising set-up in a fraction of the time.
+\end{abstract}
+
+
+
+%% maketitle must follow the abstract.
+\maketitle                   % Produces the title.
+
+%% If there is not enough space inside the running head
+%% for all authors including the title you may provide
+%% the leftmark in one of the following three forms:
+
+%% \renewcommand{\leftmark}
+%% {First Author: A Short Title}
+
+%% \renewcommand{\leftmark}
+%% {First Author and Second Author: A Short Title}
+
+%% \renewcommand{\leftmark}
+%% {First Author et al.: A Short Title}
+
+%% \tableofcontents  % Produces the table of contents.
+
+
+\section{Introduction}
+
+Clinical research and in particular drug development is typically structured into phases, e.g. phases I to IV in drug development; similar approaches for e.g. complex interventions (MRC framework). 
+The delepment phases include elements of learning and comfirmation. 
+For instance, Sheiner (1997) described the drug development process as two learning and confirming cycles. 
+First learning / confirming cycle (Phase I-IIa): Learning about tolerated dose (Phase I). 
+Then confirming of efficacy of selected dose in selected group of patients (Phase IIa). 
+Second learning / confirming cycle (Phase IIb-III): Learning about optimal use in respresentative patients (Phase IIb); Then confirming of acceptable benefit / risk ratio (Phase III). 
+Traditionally, separate studies for learning and confirming.  
+
+Changing landscape in clinical research: Dissolving boundaries between development phases; Master protocols: Broader developments focusing not only on one single treatment or one single indication / disease; Adaptive designs: Study designs become more flexible; More principled approach to decision making using statistical modelling and integrated analyses across studies
+
+More complex designs and analyses of clinical trials. 
+Examples: adaptive design; evidence synthesis.
+
+With increasing complexity of both designs and analyses of  clinical trials the planning of such studies often relies on computer simulations, since no closed form solutions even for usually fairly straightforward tasks as sample size calculations are available. 
+Frameworks and guidance have been developed over the past years on how to planning, execution and interpretation of such simulation studies. 
+Method comparison studies (references), references on simulation studies, in particular Clinical Scenario Evaluation (CSE) \\
+
+Depending on the setting and the purpose of the simulation study suitable metrics are chosen to compare alternative design or analysis strategies. 
+While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
+Here we propose to use a formal approach to optimization. As the opitimization will typically be on multiple dimensions which makes the exercise computationally demanding, we demonstrate here the used of the so-called Model-based Optimization (MBO) approach (reference).
+
+The remainder of the manuscript is structured as follows. \dots 
+
+%\subsection{Related work}
+%subsub Clinical 
+% TODO: Tim
+
+%subsub MBO
+% TODO: Jakob
+
+\section{Motivating Example}
+% TODO: Jacob 
+COPD trial
+% Friede et al (2020) Biom J, Section 5.1 Clinical trial in COPD with treatment selection; other references: Barnes et al. (2011) and Donohue et al. (2010); Cuffe, Lawrence, Stone,&Vandemeulebroecke, 2014.
+
+\section{Adaptive Seamless Designs}
+% TODO: Tim
+Intro 3- 4 Sätze
+
+\subsection{Two-stage design with treatment selection}
+Multi-arm trial; two-stages; treatment selection in interim analysis; final analysis based on combination test approach with closed test principle
+
+% first stage = interrim analysis
+% second stage = final analysys
+% stick to first second stage througout text but mention interrim here?
+
+\subsection{Selection rules}
+\paragraph{Epsilion Rule}
+
+\paragraph{Threshold Rule}
+
+\subsection{Clinical scenario evaluation for ASD}
+Friede et al (2010) DIJ, Figure 2
+
+\subsection{Simulating ASD}
+R package asd by Nick Parsons
+Test statistics are simulated, not individual participant data
+
+\section{Model-based Optimization}
+
+Sequential \textbf{Model-based Optimization (MBO)}~\citep{jones_taxonomy_2001} (also known as Bayesian optimization) is a state-of-the-art~\citep{shahriari_taking_2016} technique for expensive black-box optimization problems.
+In comparison to other black-box optimization methods, like Genetic Algorithms or Simulated Annealing, MBO is especially suitable when evaluating a configuration (e.g.\ running a simmulation with certain parameters, here denoted by $\theta$) is very time consuming, as it becomes infeasible to evaluate the black-box for thousands of configurations.
+MBO solves the optimization problem within a bounded search space $\Theta$:
+\[
+\theta^\ast := \operatorname{argmin}_{\theta \in \Theta} f(\theta),
+\]
+where $f(\theta)$ denotes the evaluation of the black-box with the input configuration $\theta$.
+To reduce the number of evaluations on $f$ the key idea of MBO is to only evaluate values of $\theta$ that are expected to lead to a small value of $f(\theta)$.
+The estimate $\hat{f}(\theta)$ is generated by a so called \emph{surrogate model}.
+Typically, this is a regression model that predicts the outcome of $f$ based on previous evaluations of $f$.
+First, an initial design of already evaluated configurations is needed.
+Then, iteratively, the MBO algorithm fits the surrogate on the previous evaluations, proposes a new configuration $\theta$ and evaluates it on $f$.
+The steps are repeated until a budget is exhausted.
+
+A so called infill criterion guides the proposal of new configurations $\theta$ based on $\hat{f}$.
+It balances between exploration of not yet evaluated regions in $\Theta$ and exploitation, i.e.\ the search in regions that promise best outcomes.
+We use the augmented expected improvement~\citep{huang_global_2006} which is well suited for noisy functions.
+For non-noisy optimization we would choose the configuration $\theta^\ast$ that has led to the best outcome of $f$ to be returned as the optimization result.
+If the function outcome is noisy the best observed outcome is likely overly optimistic and not located at the true posterior mean.
+Therefore, we employ the surrogate to estimate the posterior mean for each evaluated configuration to cancel out the noise.
+The configuration for which the surrogate estimates the best outcome is then returned as the optimization result $\theta^\ast$.
+%To obtain a final outcome $\nu^\ast = f(\theta^\ast)$ that is independent of the optimization process, $f(\theta^\ast)$ is calculated again.
+Using the stochastic outcome $\nu^\ast = f(\theta^\ast)$ observed during the optimization process would still potentially lead to an overly optimistic result
+Therefore an independent calculation of $f(\theta^\ast)$ should be conducted to obtain a fair estimation of the reached best outcome.
+
+We apply Kriging (also called Gaussian process regression) to fit the surrogate model that predicts the outcome of $f$ for unknown values of $\theta$.
+We use the implementation in the R-package \emph{DiceKriging}~\citep{roustant_dicekriging_2012} and configure it to apply the Mattern$\frac{5}{2}$ kernel with an estimated \emph{nugget effect} to account for the noisy response of $f$ and without scaling the input variables to $[0,1]$.
+We use one-hot encoding to handle categorical parameters.
+The hierarchical structure of the search space introduces inactive values.
+If a value is inactive it is set to a value two times as high as the maximum in its active range.
+
+\section{Simulation Study}
+% TODO : Jakob
+
+The goal of this simulation study is to show that Model-based optimization can effectively find the trail design that yields the highest statistical power for the given \emph{number of total treatments} $n_{\text{treat}}$, \emph{effect sizes} for all arms and both stages and the \emph{correlation between early and final outcomes}.
+The effect sizes we consider in this study are given in Table~\ref{tab:table_effect_names}.
+
+As this table shows, we restrict ourselves to studys with five arms.
+The space of possible trial design setups we consider is given in Table~\ref{tab:search_space}.
+\begin{table}[h]
+  \caption{Search Space of possible trial design setups.}
+  \label{tab:search_space}
+  \centering
+  \begin{tabular}{ll}
+  \hline
+  Parameter          & Range \\
+  \hline
+  Selection strategy & $\{\text{all}, 1, 2, 3, \text{eps}, \text{thr} \}$ \\
+  Ratio ($r$)        & $(0,1)$ \\
+  Epsilion           & $[0,4]$ \\
+  Threshold          & $[0,10]$ \\
+  \hline
+  \end{tabular}
+\end{table}
+The different selection strategies are explained in Table~\ref{tab:selection_strategies}.
+\begin{table}[h]
+  \caption{How are the arms for the second stage selected?}
+  \label{tab:selection_strategies}
+  \centering
+  \begin{tabular}{ll}
+  \hline
+  Selection strategy &  \\
+  \hline
+  $all$              & Select all arms  \\
+  $\{1,2,3\}$        & Select 1, 2 or 3 arms with the maximal test statistic \\
+  eps                & Select all arms that are within \emph{Epsilon} of the maximal test statistic \\
+  thr                & Select all arms which have a test statistic above the \emph{Threshold} \\
+  \hline
+  \end{tabular}
+\end{table}
+This table also explains the meaning of the \emph{Epsilon} and the \emph{Threshold} parameter which are only active for the respective selection strategy.
+The \emph{Ratio} ($r$) parameter defines how many treatments are conducted in the first and in the second stage respectively.
+
+As mentioned before, one restriction is that the \emph{number of total treatments} ($n_{\text{treat}}$) should be constant.
+The number depends on the number of arms including the control group in stage 1 ($k_1$) and stage 2 ($k_2$) is calculated as follows:
+\begin{equation}
+  \label{eq:ntreat}
+  n_{\text{treat}} = (k_1) \cdot n_{\text{stage1}} + (k_2) \cdot n_{\text{stage2}},
+\end{equation}
+whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ denote the number of treatments per arm in the first and second stage.
+In our scenario $k_1 = 5$ and $k_2 \in \{2, \ldots, 5\}$.
+Within one stage, all arms obtain the same number of treatments.
+
+To keep the number of total treatments constant we optimize the ratio ($r \in (0,1)$) of $n_{\text{stage1}}$ and $n_{\text{stage2}}$ instead of optimizing these values directly.
+Therefore we define
+\begin{align}
+  \label{eq:stagec}
+  \begin{split}
+  n_{\text{stage1}} &= r \cdot c \\
+  n_{\text{stage2}} &= (1-r) \cdot c \ ,
+  \end{split}
+\end{align}
+whereas $c$ is a constant that depends on $n_{\text{treat}}$, $k_1$ and $k_2$.
+For $k_1 = k_2 = 5$, $c$ would be $n_{\text{treat}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
+For a general solution, we can insert the variables from (\ref{eq:stagec}) into (\ref{eq:ntreat}) and obtain
+\begin{align}
+  \label{eq:ntreatc}
+  n_{\text{treat}} &= k_1 \cdot r \cdot c + k_2 \cdot (1-r) \cdot c \Leftrightarrow \\
+  c &= \frac{n_{\text{treat}}}{k_1 \cdot r + k_2 \cdot (1-r)}.
+\end{align}
+Placing $c$ into (\ref{eq:stagec}) lets us calculate $n_{\text{stage1}}$ and $n_{\text{stage2}}$ for the given constraints and a given ratio $r$.
+
+This formula gives us the treatments per arm and per stage if $k_2$ is known. 
+Unfortunately, this is only the case for \emph{selection strategy} $\in \{\text{all},1,2,3\}$.
+Hence, it is necessary to run a calibration step for the selection strategies \emph{thr} and \emph{eps} to adjust the number of $n_{\text{stage1}}$ so that it matches the desired ratio $r$.
+Therefore, another simulation is run that returns the expected number of arms at stage 2 $k_2$ for given values of $n_{\text{stage1}}$ and  \emph{thr} or \emph{eps} respectively.
+TODO: Explain in more detail.
+
+
+%FIXME Frage: Warum reicht es nicht wenn der Suchraum select=0,1,2,3,4,5 ist?
+
+
+The outcome of the simulation and therefore our optimization objective is stochastic.
+Also our search space is hierarchical because \emph{Epsilon} and \emph{Threshold} are only active for the respective selection strategy.
+
+
+
+Challenges
+  \begin{itemize}
+    \item Power is determined stochastically through simulation
+    \item Number of treatments in stage 2 depends on \emph{selection strategy} ($k_2$): \\
+    $n_{\text{treat}} = (k_1+1) \cdot n_{\text{stage1}} + (k_2+1) \cdot n_{\text{stage2}}$ \\
+    Remember: $n_{\text{treat}}$, $k_1$ fixed.
+    \begin{itemize}
+      \item $k_2 = 1,2,3$ fixed if we \emph{select} 1/2/3 best arms.
+      \item $k_2$ only as expected value through \underline{simulation} for \emph{epsilon} and \emph{threshold} strategy.
+    \end{itemize}
+    Optimize \emph{ratio} $r$ instead of $n_{\text{stage1}}$ and $n_{\text{stage2}}$.
+    \begin{align}
+      c &= \frac{n_{\text{treat}}}{(k_1 + 1) \cdot r + (k_2+1) \cdot (1-r)} \\
+      \Rightarrow n_{\text{stage1}} &= r \cdot c \ \land\\
+       n_{\text{stage2}} &= (1-r) \cdot c 
+    \end{align}
+    \item Problem: \underline{Simulation} depends on $n_{\text{stage1}}$ \\
+      Solution: Adapt $n_{\text{stage1}}$ so that $\hat{n}_{\text{treat}}$ is close to given $n_{\text{treat}}$ and $r$.
+  \end{itemize}
+
+
+
+\begin{itemize}
+  \item Discretize search space and evaluate grid (possible with enough computational resources)
+  \item Apply MBO and compare results
+\end{itemize}
+
+
+
+\subsection{Design}
+
+The underlying algorithms in this study are implemented in R, for the model-based optimization the R-package mlrMBO~\citep{bischl_mlrmbo_2017} is used, and the simulation of the clinical trials is performed using the R-package asd~\citep{parsons_software_2011}.
+
+
+\subsection{Results}
+
+To obtain an unbiased result, we do not simply report the best observed power of both optimization approaches.
+Instead we use the best found parameters to run the simulation again independently, repeated times, similar to a cross-validation in machine learning applications.
+This eliminates the risk of only reporting outcomes that are optimal by chance.
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{figure}[htb]
+\begin{center}
+
+\caption{Power of the different selection rules. For the epsilon and threshold rule only the curve for the epsilon and threshold value that reached the best power is dispayed.}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htb]
+\begin{center}
+
+\caption{Best found $x$-values from MBO runs.}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htb]
+\begin{center}
+
+\caption{%
+  Optimization curves of each optimization run and the mean of all runs drawn as a black line.
+  }
+\end{center}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{center}
+
+\caption{%
+  Validated performance of both approaches.
+  }
+\end{center}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+\subsection{Second level heading}
+
+This is the body text. Please note that cross-references in the body text should be shown as follows:
+(Miller, 1900), (Miller and Baker, 1900) or if three or more authors (Miller {\it{et al}}., 1900)
+\vspace*{12pt}
+
+\noindent Bullet lists are not allowed. Always use (i), (ii), etc.
+\vspace*{12pt}
+
+\noindent Sentences should never start with a symbol.
+\vspace*{12pt}
+
+\noindent Names of software packages and website addresses should be written in {\tt{Courier new, i.e. Stata, the R package
+MASS, http://www.biometrical-journal.com.}}
+
+\section{Discussion}
+
+% subsection Summary
+
+% subsection Outlook
+
+
+% \begin{table}[htb]
+% \begin{center}
+% \caption{The caption of a table.}
+% \begin{tabular}{lll}
+% \hline
+% Description 1 & Description 2 & Description 3\\
+% \hline
+% Row 1, Col 1 & Row 1, Col 2 & Row 1, Col 3\\
+% Row 2, Col 1 & Row 2, Col 2 & Row 2, Col 3\\
+% \hline
+% \end{tabular}
+% \end{center}
+% \end{table}
+% \begin{equation}
+% \left({\theta^{0}_{i}}\atop{\theta^{1}_{i}}\right) \sim N(\theta,\Sigma),\quad {\mathrm{with}}\ 
+% {{\theta}} = \left({\theta_{0}}\atop{\theta_{1}}\right)\ {\mathrm{and}}\ \Sigma =
+% \left(\begin{array}{cc}
+% \sigma^{2}_{0} & \rho\sigma_{0}\sigma_{1}\\
+% \rho\sigma_{0}\sigma_{2} & \sigma^{2}_{1}
+% \end{array}\right).
+% \end{equation}
+
+\noindent This is the body text. Only number equations which are referred to in the text body. If equations
+are numbered, these should be numbered continuously throughout the text. Not section wise! Please
+carefully follow the rules for mathematical expressions in the ``Instructions to Authors''.
+
+\begin{acknowledgement}
+This work was partly supported by Deutsche Forschungsgemeinschaft (DFG) within the Collaborative Research Center SFB 876, A3.
+\end{acknowledgement}
+\vspace*{1pc}
+
+\noindent {\bf{Conflict of Interest}}
+
+\noindent {\it{The authors have declared no conflict of interest.}} %(or please state any conflicts of interest)
+
+%\section*{Appendix {\it(please insert here, if applicable)}}
+
+%\subsection*{A.1.\enspace Second level heading}
+
+%Please insert appendices before the references.
+
+
+% \begin{thebibliography}{10}
+% \bibitem[Bauer and Bauer(1994)Bauer, P. and Bauer, M.M.]{bib1}Bauer, P. and  Bauer, M. M. (1994). Testing equivalence simultaneously for location and  dispersion of two normally distributed populations.  \textit{Biometrical  Journal} \textbf{36}, 643--660.
+% \bibitem[Farrington, C. P. and Andrews, N. (2003)]{bib2}Farrington, C.P. and Andrews, N. (2003). Outbreak detection:
+% Application to infectious disease surveillance. In: Monitoring the Health of Populations (eds. R. Brookmeyer and D. F. Stroup), Oxford University Press, Oxford,\break 203--231.
+% \bibitem[Rencher(1998)Rencher, A.C.]{bib3}Rencher, A. C. (1998).  \textit{Multivariate Statistical Inference and Applications}. Wiley, New  York. 
+% \end{thebibliography}
+
+\bibliographystyle{biometrical}
+\bibliography{../literature.bib}
+
+\newpage
+\phantom{aaaa}
+\end{document}
