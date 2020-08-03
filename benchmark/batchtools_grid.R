@@ -212,6 +212,10 @@ addAlgorithm("mbo", fun = function(job, data, instance, corr, nsim, n_cases, mbo
 })
 
 const_design = expand.grid(n_cases = NCASES, nsim = NSIM, corr = 0.4, effect = names(EFFECTS), stringsAsFactors = FALSE)
+# add 5times sim steps for one experiment
+new_line = subset(const_design, n_cases == 2000 & effect == "paper")
+new_line$nsim = 5 * new_line$nsim
+const_design = rbind(const_design, new_line)
 eval_design = generateGridDesign(getParamSet(fun), GRIDRES)
 eval_design = subset(eval_design, stage_ratio != 1 & stage_ratio != 0)
 eval_design = merge.data.frame(eval_design, const_design)
