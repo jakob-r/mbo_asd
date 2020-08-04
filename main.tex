@@ -142,8 +142,8 @@ Planning the patient group sizes and test methods for clinical trials in such a 
 From a wide set of possible set ups we want to chose the most promising plan in short time to drive fast decisions.
 While it is possible to simulate the power for all various set ups, the space of possible set ups soon becomes too big.
 Either you need big computational resources or you have to wait for an exhaustive exploration of the possible set ups.
-In this paper we show that you can successfully apply Model-based Optimization to find a clinical trial set-up that yields an high power from a wide set of possible set-ups.
-We optimize the power of adaptive seamless designs for different sets of treatment effect sizes and compare the result to an exhaustive search to show that our optimization approach finds a promising set-up in a fraction of the time.
+In this paper we show that you can successfully apply Model-based Optimization to find a clinical trial set-up that yields a high power from a wide set of possible set-ups.
+We demonstrate the effectiveness of our approach by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes and compare the result to an exhaustive search to show that our optimization approach finds a promising set up in a fraction of the time.
 \end{abstract}
 
 
@@ -170,37 +170,45 @@ We optimize the power of adaptive seamless designs for different sets of treatme
 \section{Introduction}
 
 Clinical research and in particular drug development is typically structured into phases, e.g. phases I to IV in drug development; similar approaches for e.g. complex interventions (MRC framework). 
-The delepment phases include elements of learning and confirmation. 
+The development phases include elements of learning and confirmation. 
 For instance, \cite{sheiner_learning_1997} described the drug development process as two learning and confirming cycles. 
 First learning / confirming cycle (Phase I-IIa): Learning about tolerated dose (Phase I). 
 Then confirming of efficacy of selected dose in selected group of patients (Phase IIa). 
-Second learning / confirming cycle (Phase IIb-III): Learning about optimal use in respresentative patients (Phase IIb); Then confirming of acceptable benefit / risk ratio (Phase III). 
+Second learning / confirming cycle (Phase IIb-III): Learning about optimal use in representative patients (Phase IIb); Then confirming of acceptable benefit / risk ratio (Phase III). 
 Traditionally, separate studies for learning and confirming.  
 
-Changing landscape in clinical research: Dissolving boundaries between development phases; Master protocols: Broader developments focusing not only on one single treatment or one single indication / disease; Adaptive designs: Study designs become more flexible; More principled approach to decision making using statistical modelling and integrated analyses across studies
+Changing landscape in clinical research: Dissolving boundaries between development phases; Master protocols: Broader developments focusing not only on one single treatment or one single indication / disease; Adaptive designs: Study designs become more flexible; More principled approach to decision making using statistical modeling and integrated analyses across studies
 
 More complex designs and analyses of clinical trials. 
 Examples: adaptive design; evidence synthesis.
 
-With increasing complexity of both designs and analyses of  clinical trials the planning of such studies often relies on computer simulations, since no closed form solutions even for usually fairly straightforward tasks as sample size calculations are available. 
+With increasing complexity of both designs and analyses of clinical trials the planning of such studies often relies on computer simulations, since no closed form solutions even for usually fairly straightforward tasks as sample size calculations are available. 
 Frameworks and guidance have been developed over the past years on how to planning, execution and interpretation of such simulation studies. 
-Method comparison studies (references), references on simulation studies, in particular Clinical Scenario Evaluation (CSE) \\
+Method comparison studies (references), references on simulation studies, in particular Clinical Scenario Evaluation (CSE).
 
 Depending on the setting and the purpose of the simulation study suitable metrics are chosen to compare alternative design or analysis strategies. 
 While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
-Here we propose to use a formal approach to optimization. As the opitimization will typically be on multiple dimensions which makes the exercise computationally demanding, we demonstrate here the used of the so-called Model-based Optimization (MBO) approach (reference).
+Here we propose to use a formal approach to optimization. 
+The set of possible scenarios can be described as a multi dimensional search space, including real-valued and categorical parameters.
+This vast space of possible set ups makes the optimization computationally demanding.
+We demonstrate here, that the use of the so-called Model-based Optimization (MBO) approach~\cite{jones_taxonomy_2001} can be applied successfully to maximize the statistical power of a clinical trial design for given effect sizes and number of treatments.
 
-The remainder of the manuscript is structured as follows. \dots 
+The remainder of the manuscript is structured as follows:
+
 
 %\subsection{Related work}
 %subsub Clinical 
 % TODO: Tim
 
-%subsub MBO
-% TODO: Jakob
+Model-based optimization, or often used interchangeably Bayesian optimization has been successfully applied to optimize expensive black-boxes in many scenarios.
+Popular applications include hyper-parameter tuning of machine learning methods~\cite{snoek_practical_2012}, general algorithm configuration~\cite{hutter_sequential_2011}, and many more.
+Various implementations of Model-based optimization methods are used widely, such as SMAC~\cite{hutter_sequential_2011}, Spearmint~\cite{snoek_practical_2012} and BoTorch~\cite{balandat_botorch_2020}.
+For this work we use the implementation in the R-package mlrMBO~\cite{bischl_mlrmbo_2017}.
+This implementations has been successfully applied to optimize hyper-parameters of machine learning methods on various tasks~\cite{bischl_mlrmbo_2017, wozniak_candle_2018}, and to optimize model-weights~\cite{richter_modelbased_2019,browaeys_nichenet_2020}.
+
 
 \section{Motivating Example}
-% TODO: Jacob 
+% TODO: Jakob 
 COPD trial
 % Friede et al (2020) Biom J, Section 5.1 Clinical trial in COPD with treatment selection;
 \cite{friede_adaptive_2020}
@@ -340,9 +348,16 @@ Placing $c$ into (\ref{eq:stagec}) lets us calculate $n_{\text{stage1}}$ and $n_
 
 This formula gives us the treatments per arm and per stage if $k_2$ is known. 
 Unfortunately, this is only the case for \emph{selection strategy} $\in \{\text{all},1,2,3\}$.
-Hence, it is necessary to run a calibration step for the selection strategies \emph{thr} and \emph{eps} to adjust the number of $n_{\text{stage1}}$ so that it matches the desired ratio $r$.
-Therefore, another simulation is run that returns the expected number of arms at stage 2 $k_2$ for given values of $n_{\text{stage1}}$ and  \emph{thr} or \emph{eps} respectively.
-TODO: Explain in more detail.
+For the selection strategies \emph{thr} and \emph{eps}, the number of arms in the second stage $k_2$ depends on the choice of the \emph{Threshold} or \emph{Epsilon} parameter.
+However, for given values of $n_{\text{stage1}}$ and \emph{Threshold} or \emph{Epsilon} respectively we can estimate the expected number of arms at stage 2 $\hat{k}_2$, by running a simulation of the first stage.
+This simulation is run multiple times for different values of $n_{\text{stage1}}$ in a calibration step until the desired number of $n_{\text{treat}}$ is reached approximately.
+In fact, this calibration step formulates an independent optimization problem:
+We minimize 
+\begin{align}
+  \label{eq:targettreat}
+  n_{\text{stage1}}^\ast &= \operatorname{argmin}_{n_{\text{stage1}} \in [l,u]} h(n_{\text{stage1}}) \,  \text{, with} \\
+  h(n_{\text{stage1}}) &:= \left( (k_1 \cdot n_{\text{stage1}} + \hat{k}_2 \cdot \underbrace{\frac{1-r}{r} \cdot n_{\text{stage1}}}_{=n_{\text{stage2}}}) - n_{\text{treat}} \right)^2 
+\end{align}
 
 
 %FIXME Frage: Warum reicht es nicht wenn der Suchraum select=0,1,2,3,4,5 ist?
