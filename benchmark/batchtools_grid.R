@@ -119,7 +119,7 @@ fn = function(
         mean_select = getOptPathEl(res$opt.path, getOptPathBestIndex(res$opt.path))$extra$mean_select)
       return(n)
     }
-    calib_res = calibrate_n(x)
+      = calibrate_n(x)
     select2 = calib_res$mean_select
   }
   n = calculate_n(select2)

@@ -63,7 +63,7 @@ effect_names = setNames(names(EFFECTS), names(EFFECTS)) #to be populated with be
 tmp = lapply(EFFECTS, do.call, what = rbind)
 tmp = lapply(tmp, function(x) cbind.data.frame(stage = rownames(x), x))
 tmp = rbindlist(tmp, idcol = TRUE)
-setnames(tmp, ".id", "setup")
+setnames(tmp, ".id", "effect set")
 kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation") %>% 
   collapse_rows(columns = 1:2, latex_hline = "major") %>% 
   pack_rows("Set 1", 2, ncol(tmp), indent = FALSE) %>% 
@@ -160,7 +160,7 @@ res_mbo[, time.running := time.running - as.difftime(sum(.SD$opt.path[[1]][dob =
 ## ----plot_allbest, fig.height = 1.5 * FIG_HEIGHT------------------------------
 # find best performing solution for each select methods and across all epsilon and threshold choices
 plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
-  res_ave = res_eval[, list(mean_y = mean(y)), by = c(algo.par.names)]
+  res_ave = res_eval[nsim == 1000, list(mean_y = mean(y)), by = c(algo.par.names)]
   res_best = res_ave[, .SD[order(-mean_y)[1], ], by = c("select", algo.par.names.meta)]
   res_best = res_best[, !c("mean_y", "stage_ratio")]
   # merge so the plot only contains the best curves (applies for epsilon and threshold rule)
@@ -169,7 +169,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = ggplot(df, aes(x = (stage_1_arms * stage_1_n), y = y, color = select, group = paste(select, epsilon, thresh)))
   g = g + geom_line(data = dfmean)
   g = g + geom_point(alpha = 0.1)
-  g = g + geom_point(data = res_mbo, size = 3)
+  g = g + geom_point(data = res_mbo[nsim == 1000,], size = 3)
   g = g + scale_color_manual(values = select_labels_colors)
   g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_both)
   g = g + theme(legend.position = "bottom")
@@ -181,11 +181,11 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
 # find best from grid 
 #g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
 plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
-  tmp = rbind(res_grid, res_mbo[, colnames(res_grid ), with = FALSE])
+  tmp = rbind(res_grid[nsim == 1000,], res_mbo[nsim == 1000, colnames(res_grid ), with = FALSE])
   g = ggplot(data = tmp, aes(x = stage_ratio, y = y, color = select, shape = algorithm, alpha = algorithm))
   g = g + geom_point(size = 3)
-  g = g + geom_text(data = res_mbo[select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
-  g = g + geom_text(data = res_mbo[select == "threshold rule", ], aes(label = round(thresh,2)), hjust = 0, vjust = 1, show.legend = FALSE)
+  g = g + geom_text(data = res_mbo[nsim == 1000 & select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
+  g = g + geom_text(data = res_mbo[nsim == 1000 & select == "threshold rule", ], aes(label = round(thresh,2)), hjust = 0, vjust = 1, show.legend = FALSE)
   g = g + facet_wrap(effect~n_cases, scales = "free", labeller = label_both, ncol = 3)
   g = g + scale_x_continuous(expand = expansion(mult = 0.2))
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
@@ -201,7 +201,7 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
 
 # calculate y perf of mbo runs
 plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
-  df = copy(res_mbo)
+  df = res_mbo[nsim == 1000,]
   common_names = intersect(colnames(df), colnames(df$opt.path[[1]]))
   data.table::setnames(df, common_names, paste0("opt.", common_names))
   df = tidyr::unnest(df, "opt.path")
@@ -209,7 +209,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   df = df[, cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
   
   # calculate theoretical best y from grid
-  res_ave = res_eval[, list(mean_y = mean(y)), by = algo.par.names]
+  res_ave = res_eval[nsim == 1000, list(mean_y = mean(y)), by = algo.par.names]
   df_best = res_ave[,.SD[order(-mean_y)[1]], by = c("effect", "n_cases", "algorithm")][,.(effect, n_cases, algorithm, best_y = mean_y)]
   df_best[algorithm == "eval", algorithm := "grid"]
   df = merge(df_best[, -"algorithm"], df, by = c("effect", "n_cases"))
@@ -230,7 +230,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
 
 ## ----plot_boxplot_valid_y-----------------------------------------------------
 plot_wrapper(name = "plot_boxplot_valid_y", fig.height = 1.6 * FIG_HEIGHT, expr = {
-  tmp = rbind(res_grid, res_mbo[, colnames(res_grid), with = FALSE])
+  tmp = rbind(res_grid, res_mbo[nsim == 1000, colnames(res_grid), with = FALSE])
   g = ggplot(tmp, aes(x = algorithm, y = y, color = algorithm, fill = algorithm))
   # mylabels = function(labels) {
   #   do.call(map, args = c(list(paste), labels))
@@ -248,10 +248,10 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = 1.6 * FIG_HEIGHT, expr 
 ## ----table_best---------------------------------------------------------------
 #best of grid
 #FIXME: calculate time of complete grid, devide through 10
-res_ave = res_eval[, list(mean_y = mean(y), mean_time = sum(time.running)), by = algo.par.names]
+res_ave = res_eval[nsim == 1000, list(mean_y = mean(y), mean_time = sum(time.running)), by = algo.par.names]
 df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, n_cases, select, stage_ratio, epsilon, thresh, mean_y, mean_time)]
 #mbo average
-res_ave_mbo = res_mbo[, list(mean_y = mean(y), mean_time = mean(time.running)), by = algo.par.names.meta]
+res_ave_mbo = res_mbo[nsim == 1000, list(mean_y = mean(y), mean_time = mean(time.running)), by = algo.par.names.meta]
 df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, mean_time, select = algorithm)], fill = TRUE)
 setkey(df, effect, n_cases, mean_y)
 knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = TRUE, linesep = c(rep("",4), "\\addlinespace")) %>% 
@@ -262,7 +262,7 @@ knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and 
 
 ## ----table_time---------------------------------------------------------------
 #table(res_eval$n_cases, res_eval$effect)
-tmp = rbind(res_grid, res_mbo[, colnames(res_grid), with = FALSE])
+tmp = rbind(res_grid, res_mbo[nsim == 1000, colnames(res_grid), with = FALSE])
 tmp = tmp[, list(time.running = mean(as.numeric(time.running, unit = "hours"))), by = c("algorithm", "effect", "n_cases")]
 setkeyv(tmp, c("algorithm", "effect", "n_cases"))
 tmp[, time.running := round(time.running, 1)]
