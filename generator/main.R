@@ -244,6 +244,18 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = 1.6 * FIG_HEIGHT, expr 
   g + geom_boxplot()
 })
 
+## ----plot_boxplot_valid_y_5000-----------------------------------------------------
+plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT, expr = {
+  tmp = rbind(res_grid, res_mbo[, colnames(res_grid), with = FALSE])
+  tmp = tmp[n_cases == 2000 & effect == "paper",]
+  g = ggplot(tmp, aes(x = algorithm, y = y, color = algorithm, fill = algorithm))
+  g = g + facet_grid(.~nsim, scales = "free", labeller = label_both)
+  darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
+  names(darker_colors) = names(algorithm_labels_color)
+  g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
+  g + geom_boxplot()
+})
+
 
 ## ----table_best---------------------------------------------------------------
 #best of grid
