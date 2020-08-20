@@ -92,6 +92,7 @@
 
 
 % own packages
+\usepackage{siunitx}
 
 % kableExtra
 \usepackage{booktabs}
@@ -191,7 +192,7 @@ While method comparison studies aim to make statements when one approach might d
 Here we propose to use a formal approach to optimization. 
 The set of possible scenarios can be described as a multi dimensional search space, including real-valued and categorical parameters.
 This vast space of possible setups makes the optimization computationally demanding.
-We demonstrate here, that the use of the so-called Model-based Optimization (MBO) approach~\citep{jones_taxonomy_2001} can be applied successfully to maximize the statistical power of a clinical trial design for given effect sizes and number of treatments.
+We demonstrate here, that the use of the so-called Model-based optimization (MBO) approach~\citep{jones_taxonomy_2001} can be applied successfully to maximize the statistical power of a clinical trial design for given effect sizes and number of treatments.
 
 The remainder of the manuscript is structured as follows:
 
@@ -203,32 +204,76 @@ The remainder of the manuscript is structured as follows:
 Model-based optimization, or often used interchangeably Bayesian optimization has been successfully applied to optimize expensive black-boxes in many scenarios.
 Popular applications include hyper-parameter tuning of machine learning methods~\citep{snoek_practical_2012}, general algorithm configuration~\citep{hutter_sequential_2011}, and many more.
 Various implementations of Model-based optimization methods are used widely, such as SMAC~\citep{hutter_sequential_2011}, Spearmint~\citep{snoek_practical_2012} and BoTorch~\citep{balandat_botorch_2020}.
-For this work we use the implementation in the R-package mlrMBO~\citep{bischl_mlrmbo_2017}.
+For this work we use the implementation in the R-package \texttt{mlrMBO}~\citep{bischl_mlrmbo_2017}.
 This implementations has been successfully applied to optimize hyper-parameters of machine learning methods on various tasks~\citep{bischl_mlrmbo_2017, wozniak_candle_2018}, and in the biomedical context it has been applied to optimize model-weights~\citep{richter_modelbased_2019,browaeys_nichenet_2020}.
+Also, MBO is well suited for multi-criteria optimization.
+Different adaptions of MBO exist~\citep{horn_modelbased_2015} that return a set of non-dominated points.
+Many of them are implemented in \texttt{mlrMBO} as well.
+However, in this work we restrict ourself to single-criteria optimization. 
 
 \section{Motivating Example}
+
+This paper introduces the idea of model-based optimization (MBO) for finding a trail design that is optimal in respect to a certain criterion.
+To show the efficiency of this approach, we apply MBO to optimize the statistical power of a trail design.
+We compare the computation time as well as the best obtained power between MBO and an exhaustive grid search.
+The presented optimization approach can be applied to optimize any trail design if the criterion is numeric and the parameters of the trail design are numeric and include none or just few categorical choices.
+
+One trail design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} (What is THE asd paper?) as implemented in the \texttt{asd}~\cite{parsons_software_2011} package.
+In~\citet{friede_adaptive_2020} the authors present an application of \emph{adaptive seamless designs} for chronic obstructive pulmonary disease (COPD).
+We use the COPD study to apply MBO for finding a trail design with the maximal statistical power within the scenarios restrictions.
+
+% taken from Friede et al (2020) Biom J, Section 5.1 Clinical trial in COPD with treatment selection;
+\citet{barnes_integrating_2010} and \citet{donohue_oncedaily_2010} report a seamless adaptive design with dose selection, which was also discussed elsewhere \citep{cuffe_when_2014}. %COPIED!
+Patients were randomized to four doses of indacaterol (\SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram} and \SI{600}{\micro\gram}), active controls, and placebo control. %COPIED!
+For the purpose of illustration, we ignore the active controls in the following and use the observed results to illustrate the design process. %COPIED!
+The primary outcome was the percentage of days of poor control over 26 weeks. %COPIED!
+As recruitment for the entire study took only 6 months, the interim treatment selection could not be based on the primary endpoint. %COPIED!
+Trough forced expiratory volume in 1 s (FEV1) at 15 days was identified as a suitable early outcome to inform the interim analysis. %COPIED!
+From Figure 1 of Barnes et al. (2011), difference in trough FEV1 compared to placebo at 15 days is 150 ml, 180 ml, 210 ml, and 200 ml for the indacaterol doses \SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram}, and \SI{600}{\micro\gram}, respectively.%COPIED!
+Reported 95\% confidence intervals suggest two standard errors of treatment difference is approximately 60 ml, so assuming equal stage 1 sample sizes n1 = 110, then the standard deviation of the measurements is approximately 220 ml. %COPIED!
+Standardized effect sizes are thus approximately 0.68, 0.82, 0.95, and 0.91 for the indacaterol doses \SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram}, and \SI{600}{\micro\gram}, respectively. %COPIED!
+Regarding the final outcome days of poor control (\%) over 26 weeks, we gather from the report of stage 2 results at \texttt{http://clinicaltrials.gov/show/NCT00463567} that the placebo rate was 35\%. %COPIED!
+Let us assume rates of 31\%, 30\%, 28\%, and 29\% for the four doses of indacaterol (\SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram} and \SI{600}{\micro\gram}). %COPIED!
+Based on reported standard errors, we estimate the standard deviation to be approximately 30\%. Hence, the standardized effect sizes are approximately 0.13 (\SI{75}{\micro\gram}), 0.17 (\SI{150}{\micro\gram}), 0.23 (\SI{300}{\micro\gram}), and 0.20 (\SI{600}{\micro\gram}). %COPIED!
+The approximate sample sizes per arm were 100 patients in stage 1 and 300 patients in stage 2.%COPIED!
+Since the aim was to select two doses of indacaterol at the interim analysis to take into stage 2, we consider an overall sample size for the two stage of 5 × 100 + 3 × 300 = 1,400 patients. Furthermore, a moderate positive correlation between early and final outcomes of 0.4 is assumed.%COPIED!
+In the following, we will consider three settings: %COPIED!
+(i) continuous early and final outcomes and selecting always two doses for the second stage, as in the original study; %COPIED!
+(ii) continuous early and final outcomes, as in the original study, but for the purpose of illustration, we vary the selection rule using the threshold rule to allow varying numbers of doses being taken forward for confirmatory testing in the second stage; %COPIED!
+(iii) as final outcomes are non-normal and early and final outcomes are on different scales, we assume in another setting that the final is binary and not continuous.%COPIED!
+
+
+
+% FIXME Question: 
+% What does exactly specifies 'corr'?
+
+
 % TODO: Jakob 
 % phase 1 idea something fast
 % phase 2
 % Describe the study we look at. / The Data
-COPD trial
-% Friede et al (2020) Biom J, Section 5.1 Clinical trial in COPD with treatment selection;
-\cite{friede_adaptive_2020}
+%COPD trial
+
 
 % What about these three papers?
-\cite{barnes_integrating_2010}
-\cite{donohue_oncedaily_2010}
-\cite{cuffe_when_2014}
+%\cite{barnes_integrating_2010}
+%\cite{donohue_oncedaily_2010}
+%\cite{cuffe_when_2014}
 
 % Do we really take in this Assurance?
 Assurance: \cite{stallard_optimal_2009}
 
 \section{Adaptive Seamless Designs}
+\label{sec:adaptive_seamless_designs}
+
 % TODO: Jakob copy contents from paper
+% Is there a condensed version? In Friede et al (2020) it is only explained in detail?
 % TODO: Tim
 Intro 3- 4 Sätze
 
 \subsection{Two-stage design with treatment selection}
+\label{ssec:two_stage_design_with_treatment_selection}
+
 Multi-arm trial; two-stages; treatment selection in interim analysis; final analysis based on combination test approach with closed test principle
 
 % first stage = interrim analysis
@@ -236,18 +281,30 @@ Multi-arm trial; two-stages; treatment selection in interim analysis; final anal
 % stick to first second stage througout text but mention interrim here?
 
 \subsection{Selection rules}
+\label{ssec:selection_rules}
+
 \paragraph{Epsilion Rule}
 
 \paragraph{Threshold Rule}
 
 \subsection{Clinical scenario evaluation for ASD}
-Friede et al (2010) DIJ, Figure 2
+\label{ssec:clinical_scenario_evaluation_for_asd}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{assets/friede_refinement_2010_fig2.png}
+\caption{Application of the refined clinical scenario evalua- tion framework to adap- tive seamless designs in progressive multiple scle- rosis. REPLACE WITH TikZ}
+\label{fig:friede_refinement_2010_fig2}
+\end{figure}
+Friede et al (2010) DIJ, Figure 2 % FIXME: Which paper? https://link.springer.com/content/pdf/10.1177/009286151004400507.pdf? https://link.springer.com/content/pdf/10.1177/009286151004400607.pdf
 
 \subsection{Simulating ASD}
+\label{ssec:simulating_asd}
 R package asd by Nick Parsons
 Test statistics are simulated, not individual participant data
 
 \section{Model-based Optimization}
+\label{sec:model_based_optimization}
 
 Sequential \textbf{Model-based Optimization (MBO)}~\citep{jones_taxonomy_2001} (also known as Bayesian optimization) is a state-of-the-art~\citep{shahriari_taking_2016} technique for expensive black-box optimization problems.
 In comparison to other black-box optimization methods, like Genetic Algorithms or Simulated Annealing, MBO is especially suitable when evaluating a configuration (e.g.\ running a simulation with certain parameters, here denoted by $\theta$) is very time consuming, and it becomes infeasible to evaluate the black-box for thousands of configurations.
@@ -310,6 +367,8 @@ Using the stochastic outcome $\hat{\nu}^\ast = f(\hat{\theta}^\ast) $ observed d
 Therefore an independent calculation of $f(\hat{\theta}^\ast)$ should be conducted to obtain a fair estimation of the reached best outcome.
 
 \section{Simulation Study}
+\label{sec:simulation_study}
+
 % TODO : Jakob
 
 The goal of this simulation study is to show that Model-based optimization can effectively find the trial design setup that yields the highest statistical power for the given \emph{number of total treatments} ($n_{\text{treat}}$), \emph{effect sizes} for all arms and both stages.
@@ -439,7 +498,7 @@ Each numeric parameter ($r$, \emph{Epsilon}, \emph{Threshold}) is discretized ov
 
 \paragraph{Application of MBO}
 We apply Kriging (also called Gaussian process regression) to fit the surrogate model that predicts the outcome of $f$ for unknown values of $\theta$.
-We use the implementation in the R-package \emph{DiceKriging}~\citep{roustant_dicekriging_2012} and configure it to apply the Mattern$\frac{5}{2}$ kernel with an estimated \emph{nugget effect} to account for the noisy response of $f$ and without scaling the input variables to $[0,1]$.
+We use the implementation in the R-package \texttt{DiceKriging}~\citep{roustant_dicekriging_2012} and configure it to apply the Mattern$\frac{5}{2}$ kernel with an estimated \emph{nugget effect} to account for the noisy response of $f$ and without scaling the input variables to $[0,1]$.
 We use one-hot encoding to handle categorical parameters.
 Also our search space is hierarchical because \emph{Epsilon} and \emph{Threshold} are only active for the respective \emph{selection strategy}.
 The hierarchical structure of introduces inactive values for the configurations ($\theta$), i.e.\ if the \emph{selection strategy} is set to \emph{eps} the parameter of \emph{thr} inactive.
@@ -471,57 +530,90 @@ Instead we use the best found parameters to run the simulation again independent
 This eliminates the risk of only reporting outcomes that are optimal by chance.
 
 \begin{figure}[htb]
-\begin{center}
+\centering
 \includegraphics[width=\linewidth]{generated/figures/plot_allbest.pdf}
 \caption{Power of the different selection rules. For the epsilon and threshold rule only the curve for the epsilon and threshold value that reached the best power is dispayed.}
-\end{center}
+\label{fig:plot_allbest}
 \end{figure}
 
 
 \begin{figure}[htb]
-\begin{center}
+\centering
 \includegraphics[width=\linewidth]{generated/figures/plot_best_x.pdf}
 \caption{Best found $x$-values from MBO runs.}
-\end{center}
+\label{fig:plot_best_x}
 \end{figure}
 
 
 \begin{figure}[htb]
-\begin{center}
+\centering
 \includegraphics[width=\linewidth]{generated/figures/plot_opt_path.pdf}
 \caption{%
   Optimization curves of each optimization run and the mean of all runs drawn as a black line.
   }
-\end{center}
+\label{fig:plot_opt_path} 
 \end{figure}
 
 \begin{figure}[htb]
-\begin{center}
+\centering
 \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y.pdf}
 \caption{%
   Validated performance of both approaches.
   }
-\end{center}
+\label{fig:plot_boxplot_valid_y}
 \end{figure}
 
 \input{generated/tables/table_best.tex}
 
 \input{generated/tables/table_time.tex}
 
-\subsection{Second level heading}
+\subsection{More simulation rounds}
 
-This is the body text. Please note that cross-references in the body text should be shown as follows:
-(Miller, 1900), (Miller and Baker, 1900) or if three or more authors (Miller {\it{et al}}., 1900)
-\vspace*{12pt}
+To investigate the effect of the function noise variance ($\sigma^2_n$) on the optimization result we increased the simulation iterations from $n_\text{sim} = 1000$ to $n_\text{sim} = 5000$ for the scenario with the \emph{paper} effect set and  $n_{\text{treat}} = 2000$.
+This is expected to increase the runtime by a factor of 5.
+Also we expect that due to the decreased noise variance the grid search might be less prone to select over optimistic configurations.
+Furthermore, MBO might need less iterations because the signal to noise ratio is higher.
 
-\noindent Bullet lists are not allowed. Always use (i), (ii), etc.
-\vspace*{12pt}
+Figure~\ref{fig:plot_opt_path_5000} shows that the lower noise level leads to more stable simulation runs, meaning that a single optimization run leads to a results closer to the mean result.
+Also the outcome of the best found point by MBO is closer to the best outcome found by the exhaustive grid search.
+We have to remember that this plot reports the best observed outcome so far. 
+However, as explained in Section~\ref{sec:model_based_optimization} the final point is not determined by the best found outcome but by the surrogates mean prediction of all evaluated point.
+This "bias correction" seems to be effective, as the validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for MBO in both cases.
+Interestingly the validation error of the grid search is lower for $n_\text{sim} = 5000$ then for $n_\text{sim} = 1000$.
+We would have expected the opposite, since more noise during optimization leads to overly optimistic choices that result in a bad validation error.
+This does not seem to be the case here but also the results are not drastically different and the illustrated IQR for the grid search becomes smaller for $n_\text{sim} = 5000$.
 
-\noindent Sentences should never start with a symbol.
-\vspace*{12pt}
+\begin{figure}[htb]
+\centering
+  \begin{minipage}{0.642\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{generated/figures/plot_opt_path_5000.pdf}%
+    \captionof{figure}{Opt Path}
+    \label{fig:plot_opt_path_5000}
+  \end{minipage}%
+  \begin{minipage}{0.1\textwidth}
+  \end{minipage}%
+  \begin{minipage}{0.357\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y_5000.pdf}%
+    \captionof{figure}{Boxplot}
+    \label{fig:plot_boxplot_valid_y_5000}
+  \end{minipage}
+\end{figure}
 
-\noindent Names of software packages and website addresses should be written in {\tt{Courier new, i.e. Stata, the R package
-MASS, http://www.biometrical-journal.com.}}
+
+% This is the body text. Please note that cross-references in the body text should be shown as follows:
+% (Miller, 1900), (Miller and Baker, 1900) or if three or more authors (Miller {\it{et al}}., 1900)
+% \vspace*{12pt}
+
+% \noindent Bullet lists are not allowed. Always use (i), (ii), etc.
+% \vspace*{12pt}
+
+% \noindent Sentences should never start with a symbol.
+% \vspace*{12pt}
+
+% \noindent Names of software packages and website addresses should be written in {\texttt{Courier new, i.e. Stata, the R package
+% MASS, http://www.biometrical-journal.com.}}
 
 \section{Discussion}
 
@@ -529,6 +621,13 @@ MASS, http://www.biometrical-journal.com.}}
 
 % subsection Outlook
 
+Instead of keeping the number of total trials constant, we could apply multi-criteria optimization and include this number as an additional outcome.
+This multi-criteria approach would result in a set of points (Pareto front) that minimize the number of trails as well as maximize the statistical power of the trail design.
+The user could then see for which number of trails the power is above a certain threshold (e.g. $95\%$).
+
+Another way of speeding up the optimization would be to adaptively increase the iterations of the design simulation. 
+If few simulations already indicate a bad outcome it might not be promising to evaluate more simulation runs.
+Such procedure can be guided through statistical testing and is already common in machine learning under the terms racing or multi-fidelity optimization.
 
 % \begin{table}[htb]
 % \begin{center}

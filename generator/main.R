@@ -245,7 +245,7 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = 1.6 * FIG_HEIGHT, expr 
 })
 
 ## ----plot_boxplot_valid_y_5000-----------------------------------------------------
-plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT, expr = {
+plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.357 * FIG_WIDTH, expr = {
   tmp = rbind(res_grid, res_mbo[, colnames(res_grid), with = FALSE])
   tmp = tmp[n_cases == 2000 & effect == "paper",]
   g = ggplot(tmp, aes(x = algorithm, y = y, color = algorithm, fill = algorithm))
@@ -253,7 +253,41 @@ plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT, 
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
+  g = g + theme(legend.position = "bottom")
   g + geom_boxplot()
+})
+
+## ----plot_opt_path_5000-----------------------------
+
+# calculate y perf of mbo runs
+plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.642 * FIG_WIDTH, expr = {
+  df = res_mbo[n_cases == 2000 & effect == "paper",]
+  common_names = intersect(colnames(df), colnames(df$opt.path[[1]]))
+  data.table::setnames(df, common_names, paste0("opt.", common_names))
+  df = tidyr::unnest(df, "opt.path")
+  setDT(df)
+  df = df[, cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
+  
+  # calculate theoretical best y from grid
+  res_ave = res_eval[n_cases == 2000 & effect == "paper", list(mean_y = mean(y)), by = algo.par.names]
+  df_best = res_ave[,.SD[order(-mean_y)[1]], by = algo.par.names.meta][, c(algo.par.names.meta, "mean_y"), with = FALSE]
+  data.table::setnames(df_best, old = "mean_y", new = "best_y")
+  df_best[algorithm == "eval", algorithm := "grid"]
+  df = merge(df_best[, -"algorithm"], df, by = setdiff(algo.par.names.meta, "algorithm"))
+  
+  dfmean = df[, list(cummax_y_mean = mean(cummax_y), y_mean = median(y), y_sd = sd(y)), by = c(algo.par.names.meta, "dob", "best_y")]
+  
+  g = ggplot(df[dob > 0 & dob < max_dob, ], aes(x = dob, y = cummax_y-best_y, color = algorithm))
+  g = g + geom_line(alpha = 0.3, aes(group = paste0(repl)))
+  g = g + geom_line(data = dfmean, aes(y = cummax_y_mean-best_y))
+  g = g + facet_grid(.~nsim, scales = "free")
+  g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.6))
+  g = g + geom_text(data = df_best, aes(label = best_y), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
+  darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
+  names(darker_colors) = names(algorithm_labels_color)
+  g = g + scale_color_manual(values = darker_colors)
+  g = g + theme(legend.position = "bottom")
+  g
 })
 
 
