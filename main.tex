@@ -118,9 +118,10 @@
 \Issue{61}
 \Year{2020}
 \pagespan{1}{}
-\keywords{Model-Based Optimization; Design of Experiments;\\ %FIXME: name 5 %Up to five keywords are allowed and should be given in alphabetical order. Please capitalize the key
-\noindent \hspace*{-4pc}\\
-\hspace*{-4pc} {\small\it words)}\\[1pc]
+\keywords{Adaptive Seamless Designs; Clinical Trials; Model-Based Optimization; Treatment Selection\\\\ %FIXME: name 5 %Up to five keywords are allowed and should be given in alphabetical order. Please capitalize the key
+%\noindent \hspace*{-4pc}\\
+%\hspace*{-4pc} 
+%{\small\it words)}\\[1pc]
 \noindent\hspace*{-4.2pc} Supporting Information for this article is available from the author or on the WWW under\break \hspace*{-4pc} \underline{http://dx.doi.org/10.1022/bimj.XXXXXXX} (please delete if not
 applicable)
 }  %%% semicolon and fullpoint added here for keyword style
@@ -139,12 +140,15 @@ applicable)
 
 % max 250 words
 \begin{abstract}
-Planning the patient group sizes and test methods for clinical trials in such a way that the test power is as high as possible for given effect sizes under the null hypothesis and for a fixed number of treatments is a crucial task.
-From a wide set of possible setups we want to chose the most promising plan in short time to drive fast decisions.
-While it is possible to simulate the power for all various setups, the space of possible setups soon becomes too big.
-Either you need big computational resources or you have to wait for an exhaustive exploration of the possible setups.
-In this paper we show that you can successfully apply Model-based Optimization to find a clinical trial set-up that yields a high power from a wide set of possible set-ups.
-We demonstrate the effectiveness of our approach by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes and compare the result to an exhaustive search to show that our optimization approach finds a promising setup in a fraction of the time.
+In clinical trials, planning patient group sizes and test methods is a crucial task.
+A common goal is to maximize the test power, given a set of treatment and effect sizes under the null hypothesis.
+From a wide range of possible alternatives we want to select the best plan in a short period of time, to enable quick decisions.
+The standard approach to simulate the power for each single setup can become too time-consuming, when the number of possible setups becomes very large.
+Then, either large computational resources are required or an exhaustive exploration of all possible setups takes a very long time.
+Here, propose a new optimization approach. We show how Model-based Optimization can be used to quickly select a clinical trial setup with high power from a large number of setups options.
+We demonstrate the effectiveness of our approach by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
+We compare the MBO approach with an exhaustive evaluation of all candidate designs.
+The optimization approach finds competitive setups in a fraction of the time.
 \end{abstract}
 
 
@@ -170,82 +174,98 @@ We demonstrate the effectiveness of our approach by optimizing the power of adap
 
 \section{Introduction}
 
-Clinical research and in particular drug development is typically structured into phases, e.g. phases I to IV in drug development; similar approaches for e.g. complex interventions (MRC framework). 
-The development phases include elements of learning and confirmation. 
-For instance, \citet{sheiner_learning_1997} described the drug development process as two learning and confirming cycles. 
-First learning / confirming cycle (Phase I-IIa): Learning about tolerated dose (Phase I). 
-Then confirming of efficacy of selected dose in selected group of patients (Phase IIa). 
-Second learning / confirming cycle (Phase IIb-III): Learning about optimal use in representative patients (Phase IIb); Then confirming of acceptable benefit / risk ratio (Phase III). 
-Traditionally, separate studies for learning and confirming.  
+Clinical research and in particular drug development is typically structured into phases, e.g. phases I to IV in drug development. Similar approaches exist for complex interventions, such as the MRC framework for non-pharmacological interventions (ref)\cite{}. 
+The development phases include elements of learning and confirmation.
+For instance, \citet{sheiner_learning_1997} describe the drug development process as two learning and confirming cycles:
+The first cycle includes learning about the tolerated dose (Phase I) and confirming the efficacy of the selected dose in a selected group of patients (Phase IIa), whereas the second cycle consists of learning about the optimal use in representative patients (Phase IIb) and confirming of an acceptable benefit or risk ratio (Phase III).
 
-Changing landscape in clinical research: Dissolving boundaries between development phases; Master protocols: Broader developments focusing not only on one single treatment or one single indication / disease; Adaptive designs: Study designs become more flexible; More principled approach to decision making using statistical modeling and integrated analyses across studies
+Traditionally, separate studies are performed for learning and confirming.
+However, the landscape in clinical research is changing.
+Boundaries between the development phases are increasingly dissolving in multiple aspects.
+Master protocols are a new concept where multiple subgroups and substudies are integrated (ref).
+Here, simultaneously, more than one treatment and more than one disease type are investigated within the same overall trial structure.
+Adaptive designs are established, but are being further developed.
+In general, study designs become more flexible, and more principled approaches to decision making using statistical modeling and integrated analyses across studies become popular. 
+A related principle on the analysis side is evidence synthesis, which is a way of combining information from several studies that have examined the same question to come to an overall understanding.
 
-More complex designs and analyses of clinical trials. 
-Examples: adaptive design; evidence synthesis.
+The increasing complexity of both the designs and the analyses of clinical trials has the consequence that the planning of such studies often relies also on computer simulations, especially if no closed form solutions for calculations are available.
+This applies even to usually fairly straightforward tasks as sample size calculations. 
+Various frameworks and guidance proposals have been developed over the past years on how to plan, execute and interpret the results of such simulation studies.
+Method comparison studies are used to give clinicians and biostatisticians guidance when an approach improves currently used methods.  
+Depending on the setting and the purpose of the simulation study, suitable metrics must be chosen to compare alternative designs or analysis strategies. 
+Especially relevant are neutral comparison studies, which are characterized as follows: The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way (ref).
+%While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
+A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation). ref
+CSE was particularly developed to support the overall process of performing simulations of clinical trials, especially for complex designs and analysis strategies.
+The problem is decomposed into data models, analysis models, and evaluation models that specify the evaluation metrics.
 
-With increasing complexity of both designs and analyses of clinical trials the planning of such studies often relies on computer simulations, since no closed form solutions even for usually fairly straightforward tasks as sample size calculations are available. 
-Frameworks and guidance have been developed over the past years on how to planning, execution and interpretation of such simulation studies. 
-Method comparison studies (references), references on simulation studies, in particular Clinical Scenario Evaluation (CSE).
-
-Depending on the setting and the purpose of the simulation study suitable metrics are chosen to compare alternative design or analysis strategies. 
-While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
-Here we propose to use a formal approach to optimization. 
-The set of possible scenarios can be described as a multi dimensional search space, including real-valued and categorical parameters.
-This vast space of possible setups makes the optimization computationally demanding.
-We demonstrate here, that the use of the so-called Model-based optimization (MBO) approach~\citep{jones_taxonomy_2001} can be applied successfully to maximize the statistical power of a clinical trial design for given effect sizes and number of treatments.
-
-The remainder of the manuscript is structured as follows:
-
-
+Here, we propose to use a formal approach to optimization of the clinical trial design, in the situation of a very large number of available options for the parameters specifying the design. 
+This set of candidate designs can be regarded as a multi-dimensional search space, including potentially many real-valued and categorical parameters.
+The vast space of possible designs makes the optimization computationally demanding.
+In the following, we demonstrate that the so-called Model-based optimization (MBO) framework~\citep{jones_taxonomy_2001} can be successfully applied to select a clinical trial design.
+As evaluation metric We consider the specific case that the statistical power of the clinical trial design should be maximized, for given effect sizes and number of treatments.
+Further, it is crucial that such a design is found in a short time.
 %\subsection{Related work}
 %subsub Clinical 
 % TODO: Tim
 
-Model-based optimization, or often used interchangeably Bayesian optimization has been successfully applied to optimize expensive black-boxes in many scenarios.
+MBO, often also called Bayesian optimization, has been successfully applied to optimize expensive black-boxes in many different scenarios.
 Popular applications include hyper-parameter tuning of machine learning methods~\citep{snoek_practical_2012}, general algorithm configuration~\citep{hutter_sequential_2011}, and many more.
-Various implementations of Model-based optimization methods are used widely, such as SMAC~\citep{hutter_sequential_2011}, Spearmint~\citep{snoek_practical_2012} and BoTorch~\citep{balandat_botorch_2020}.
+Various implementations of MBO methods are used widely, such as SMAC~\citep{hutter_sequential_2011}, Spearmint~\citep{snoek_practical_2012}, and BoTorch~\citep{balandat_botorch_2020}.
 For this work we use the implementation in the R-package \texttt{mlrMBO}~\citep{bischl_mlrmbo_2017}.
-This implementations has been successfully applied to optimize hyper-parameters of machine learning methods on various tasks~\citep{bischl_mlrmbo_2017, wozniak_candle_2018}, and in the biomedical context it has been applied to optimize model-weights~\citep{richter_modelbased_2019,browaeys_nichenet_2020}.
+This implementation has been successfully used to optimize hyper-parameters of machine learning methods on various tasks~\citep{bischl_mlrmbo_2017, wozniak_candle_2018}, and in the biomedical context it has been applied to optimize model-weights~\citep{richter_modelbased_2019,browaeys_nichenet_2020}.
 Also, MBO is well suited for multi-criteria optimization.
 Different adaptions of MBO exist~\citep{horn_modelbased_2015} that return a set of non-dominated points.
 Many of them are implemented in \texttt{mlrMBO} as well.
-However, in this work we restrict ourself to single-criteria optimization. 
+However, in this work we restrict ourselves to single-criteria optimization. 
+
+The remainder of the manuscript is structured as follows.
+In the next section we present as motivating example an application of adaptive seamless designs for chronic obstructive pulmonary disease (COPD).
+In the sections 3 and 4, we explain the background on adaptive seamless designs (asd) and model-based optimization (MBO), respectively.
+In section 5, we present a simulation study that is closely related to the motivating example and in which the suitability of MBO for optimizing trial designs is demonstrated.
+In the last Section 6, we discuss promising extensions as well as limitations of the approach.
 
 \section{Motivating Example}
+\label{sect.motivation}
 
-This paper introduces the idea of model-based optimization (MBO) for finding a trail design that is optimal in respect to a certain criterion.
-To show the efficiency of this approach, we apply MBO to optimize the statistical power of a trail design.
-We compare the computation time as well as the best obtained power between MBO and an exhaustive grid search.
-The presented optimization approach can be applied to optimize any trail design if the criterion is numeric and the parameters of the trail design are numeric and include none or just few categorical choices.
+The general idea of this paper is to apply MBO for finding a trial design that is optimal with respect to a certain metric.
+As an example, we consider the maximization of the statistical power of a trail design, given a set of parameters to be chosen for the trial design.
+We compare the computation time as well as the maximal obtained power between the results obtained with MBO and with an exhaustive grid search on the space of adjustable parameters.
+The presented optimization approach can also be applied for optimizing other metrics than the power, as long as the metric itself is numeric and the parameters of the trial design are numeric and include none or just few categorical choices.
 
-One trail design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} (What is THE asd paper?) as implemented in the \texttt{asd}~\cite{parsons_software_2011} package.
+One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd}~\cite{parsons_software_2011} package and described in Section~\ref{sec:adaptive_seamless_designs}.
+%(What is THE asd paper? peter bauer, meinter kieser, 1999 statistics in medicine, % https://doi.org/10.1002/(SICI)1097-0258(19990730)18:14%3C1833::AID-SIM221%3E3.0.CO;2-3, ) 
+% https://doi.org/10.1002/bimj.200510232
+% seamless trials (assoziert)
+%  https://doi.org/10.1002/bimj.200510231
 In~\citet{friede_adaptive_2020} the authors present an application of \emph{adaptive seamless designs} for chronic obstructive pulmonary disease (COPD).
-We use the COPD study to apply MBO for finding a trail design with the maximal statistical power within the scenarios restrictions.
+We will use this COPD study to apply MBO for finding a trial design with maximal statistical power, given the parameters of the respective design options.
+%within the given scenarios restrictions.
 
-% taken from Friede et al (2020) Biom J, Section 5.1 Clinical trial in COPD with treatment selection;
-\citet{barnes_integrating_2010} and \citet{donohue_oncedaily_2010} report a seamless adaptive design with dose selection, which was also discussed elsewhere \citep{cuffe_when_2014}. %COPIED!
-Patients were randomized to four doses of indacaterol (\SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram} and \SI{600}{\micro\gram}), active controls, and placebo control. %COPIED!
-For the purpose of illustration, we ignore the active controls in the following and use the observed results to illustrate the design process. %COPIED!
-The primary outcome was the percentage of days of poor control over 26 weeks. %COPIED!
-As recruitment for the entire study took only 6 months, the interim treatment selection could not be based on the primary endpoint. %COPIED!
-Trough forced expiratory volume in 1 s (FEV1) at 15 days was identified as a suitable early outcome to inform the interim analysis. %COPIED!
-From Figure 1 of Barnes et al. (2011), difference in trough FEV1 compared to placebo at 15 days is 150 ml, 180 ml, 210 ml, and 200 ml for the indacaterol doses \SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram}, and \SI{600}{\micro\gram}, respectively.%COPIED!
-Reported 95\% confidence intervals suggest two standard errors of treatment difference is approximately 60 ml, so assuming equal stage 1 sample sizes n1 = 110, then the standard deviation of the measurements is approximately 220 ml. %COPIED!
-Standardized effect sizes are thus approximately 0.68, 0.82, 0.95, and 0.91 for the indacaterol doses \SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram}, and \SI{600}{\micro\gram}, respectively. %COPIED!
-Regarding the final outcome days of poor control (\%) over 26 weeks, we gather from the report of stage 2 results at \texttt{http://clinicaltrials.gov/show/NCT00463567} that the placebo rate was 35\%. %COPIED!
-Let us assume rates of 31\%, 30\%, 28\%, and 29\% for the four doses of indacaterol (\SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram} and \SI{600}{\micro\gram}). %COPIED!
-Based on reported standard errors, we estimate the standard deviation to be approximately 30\%. Hence, the standardized effect sizes are approximately 0.13 (\SI{75}{\micro\gram}), 0.17 (\SI{150}{\micro\gram}), 0.23 (\SI{300}{\micro\gram}), and 0.20 (\SI{600}{\micro\gram}). %COPIED!
-The approximate sample sizes per arm were 100 patients in stage 1 and 300 patients in stage 2.%COPIED!
-Since the aim was to select two doses of indacaterol at the interim analysis to take into stage 2, we consider an overall sample size for the two stage of 5 × 100 + 3 × 300 = 1,400 patients. Furthermore, a moderate positive correlation between early and final outcomes of 0.4 is assumed.%COPIED!
-In the following, we will consider three settings: %COPIED!
-(i) continuous early and final outcomes and selecting always two doses for the second stage, as in the original study; %COPIED!
-(ii) continuous early and final outcomes, as in the original study, but for the purpose of illustration, we vary the selection rule using the threshold rule to allow varying numbers of doses being taken forward for confirmatory testing in the second stage; %COPIED!
-(iii) as final outcomes are non-normal and early and final outcomes are on different scales, we assume in another setting that the final is binary and not continuous.%COPIED!
+%phase II III klinische studien je in Phase
+% nicht 100% II = stage 1, 
+%stage 1 lung function test
+%stage 2 
 
+For the COPD trial, an interim treatment selection was performed. 
+Indacaterol is a drug administered to COPD patients.
+The patients were randomized to four doses of indacaterol (\SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram} and \SI{600}{\micro\gram}), active controls, and placebo control.
+As in \citet{friede_adaptive_2020}, here we ignore the active controls.
+The primary outcome of the trial was the percentage of days of poor control over 26 weeks of the COPD patients.
+Since the recruitment took only a short time, another outcome was required for treatment selection, in this case forced expiratory volume in 1 s (FEV1) at 15 days.
+In the original study, the difference in FEV1 compared to placebo at 15 days for the different doses and corresponding confidence intervals were estimated.
+From these, standardized effect sizes were estimated as approximately 0.68, 0.82, 0.95, and 0.91 for the four  indacaterol doses \SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram}, and \SI{600}{\micro\gram}, respectively.
+For the final outcome days of poor control, also, from real data the standardized effect sizes were estimated.
+These were approximately 0.13, 0.17, 0.23, and 0.20, for the four doses.
+The approximate sample sizes per arm were 100 patients in stage 1 and 300 patients in stage 2.
+
+In the analysis of \citet{friede_adaptive_2020}, the aim was to select two doses of indacaterol at the interim analysis that are passed to stage 2, resulting in a total sample size $5 \cdot 100 + 3 \cdot 300 = 1,400$ patients. In the simulations, a positive correlation between early and final outcomes of 0.4 was assumed.
+Further, different settings with continuous early and continuous or binary final outcomes and different treatment selection strategies were compared.
 
 
 % FIXME Question: 
 % What does exactly specifies 'corr'?
+% auf der individuen ebene
 
 
 % TODO: Jakob 
@@ -260,8 +280,8 @@ In the following, we will consider three settings: %COPIED!
 %\cite{donohue_oncedaily_2010}
 %\cite{cuffe_when_2014}
 
-% Do we really take in this Assurance?
-Assurance: \cite{stallard_optimal_2009}
+% FIXME: Do we really take in this Assurance?
+Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
 
 \section{Adaptive Seamless Designs}
 \label{sec:adaptive_seamless_designs}
@@ -293,22 +313,28 @@ Multi-arm trial; two-stages; treatment selection in interim analysis; final anal
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\linewidth]{assets/friede_refinement_2010_fig2.png}
-\caption{Application of the refined clinical scenario evalua- tion framework to adap- tive seamless designs in progressive multiple scle- rosis. REPLACE WITH TikZ}
+\caption{Application of the refined clinical scenario evaluation framework to adaptive seamless designs in progressive multiple sclerosis. REPLACE WITH TikZ}
 \label{fig:friede_refinement_2010_fig2}
 \end{figure}
-Friede et al (2010) DIJ, Figure 2 % FIXME: Which paper? https://link.springer.com/content/pdf/10.1177/009286151004400507.pdf? https://link.springer.com/content/pdf/10.1177/009286151004400607.pdf
+%FIXME Is this the right paper? Convert to tikz! Tim schickt mir das Original!
+%Friede et al (2010) DIJ, Figure 2 https://link.springer.com/content/pdf/10.1177/009286151004400507.pdf? https://link.springer.com/content/pdf/10.1177/009286151004400607.pdf
 
 \subsection{Simulating ASD}
 \label{ssec:simulating_asd}
 R package asd by Nick Parsons
 Test statistics are simulated, not individual participant data
 
+\clearpage
+
 \section{Model-based Optimization}
 \label{sec:model_based_optimization}
 
 Sequential \textbf{Model-based Optimization (MBO)}~\citep{jones_taxonomy_2001} (also known as Bayesian optimization) is a state-of-the-art~\citep{shahriari_taking_2016} technique for expensive black-box optimization problems.
-In comparison to other black-box optimization methods, like Genetic Algorithms or Simulated Annealing, MBO is especially suitable when evaluating a configuration (e.g.\ running a simulation with certain parameters, here denoted by $\theta$) is very time consuming, and it becomes infeasible to evaluate the black-box for thousands of configurations.
-MBO solves the optimization problem within a bounded search space $\Theta$:
+In comparison to other black-box optimization methods, like Genetic Algorithms or Simulated Annealing, MBO is especially suitable when evaluating a configuration (e.g.\ running a simulation with certain parameters, here denoted by $\theta$) is very time consuming.
+Then it becomes infeasible to evaluate the black-box for thousands of configurations.
+
+\subsection{General principle}
+MBO solves an optimization problem within a bounded search space $\Theta$:
 \[
 \theta^\ast := \operatorname{arg\,max}_{\theta \in \Theta} f(\theta),
 \]
@@ -323,16 +349,16 @@ The steps are repeated until a budget is exhausted.
 The proposal of a new configuration $\theta$ is obtained by maximizing a so called acquisition function.
 The acquisition function guides the search to promising new regions in the search space $\Theta$ by facilitating the mean prediction $\hat{\mu}(\theta)$ as well as the uncertainty prediction $\hat{s}^2(\theta)$ of the surrogate.
 It balances between exploration of not yet evaluated regions in $\Theta$ and exploitation.
-The acquisition function achieves exploration by giving a high value to areas where the surrogate predicts a high uncertainty.
-Exploitation is achieved by giving high values to values of $\theta$ where the surrogate predicts a high outcome of $f$.
+The acquisition function achieves exploration by assigning high values to areas where the surrogate predicts a high uncertainty.
+Exploitation is achieved by assigning high values to areas of $\theta$ where the surrogate predicts a high outcome of $f$.
 For deterministic functions the expected improvement~\citep{jones_efficient_1998} is arguably the most popular acquisition function.
 
-\paragraph{Acquisition function for noisy outcomes}
+\subsection{Acquisition function for noisy outcomes}
 Since this work focuses on optimization of a stochastic simulation, we assume that our non-deterministic optimization problem can be formulated as follows:
 \begin{equation}
-\theta^\ast := \operatorname{arg\,max}_{\theta \in \Theta} f(\theta) + \varepsilon \, \text{,with}  \varepsilon \sim N(0, \sigma^2_{n}) \text{iid.}
+\theta^\ast := \operatorname{arg\,max}_{\theta \in \Theta} f(\theta) + \varepsilon, \, \text{ with } \, \varepsilon \sim N(0, \sigma^2_{n}) %\text{ i.i.d.}
 \end{equation}
-In this setting the expected improvement is not feasible as shown in \citet{huang_global_2006}.
+In this setting, the expected improvement is not feasible, as shown in \citet{huang_global_2006}.
 They propose to use the augmented expected improvement instead.
 Therefore, in a first step, we calculate the \emph{effective best solution}:
 \begin{equation}
@@ -346,109 +372,114 @@ In the final step, we calculate the augmented expected improvement~\citep{huang_
   \operatorname{AEI}(\theta) = \left( \hat{\mu}(\theta) - \hat{\mu}(\theta^{\ast\ast}) \right) \cdot  \Phi \biggl( \frac{\hat{\mu}(\theta) - \hat{\mu}(\theta^{\ast\ast})}{\hat{s}(\theta)} \biggr) \\
    + \hat{s}(\theta) \cdot \phi \biggl( \frac{\hat{\mu}(\theta) - \hat{\mu}(\theta^{\ast\ast})}{\hat{s}(\theta)} \biggr) \cdot \biggl(1 - \underbrace{\frac{\sigma_{n}}{\sqrt{\sigma_{n}^2 + \hat{s}^2(\theta)}}}_{\text{correction}}\biggr),
 \end{multline}
-with $\Phi$ and $\phi$ as the distribution and density function of the standard normal distribution, and
-with $\sigma_{n}^2$ denoting the random error (nugget effect) in the Kriging model.
+where $\Phi$ and $\phi$ are the distribution and density function of the standard normal distribution, and $\sigma_{n}^2$ denotes the random error (nugget effect) in the Kriging model.
 The formula is derived under the assumption, that at each point $\theta \in \Theta$ the posterior of the function outcome follows a normal distribution.
 This assumption is also reflected by using a Gaussian process regression as a surrogate.
-However, the intuition in this formula is that the first summand favors exploitation while the second summand favors exploration.
-The correction term is necessary to avoid exploration in areas where the model uncertainty ($\hat{s}^2(\theta)$) equals the random error ($\sigma_{n}^2$), because in this case further evaluations will not decrease the model uncertainty.
+The intuition in formula (\ref{eq:aei}) is that the first summand favors exploitation while the second summand favors exploration.
+The correction term is necessary to avoid exploration in areas where the model uncertainty $\hat{s}^2(\theta)$ equals the random error $\sigma_{n}^2$, because in this case further evaluations will not decrease the model uncertainty.
 
-\paragraph{Choosing the best point from noisy outcomes}
-If we chose the configuration ($\theta$) from all previously evaluated configurations that led to the best outcome of $f$ as the optimization result, we would be overly optimistic.
-It is likely that a single best outcome can be attributed to the random error ($\sigma_{n}^2$).
-Instead we are interested in the optimum of the true posterior mean.
-Therefore, we employ the surrogates estimate of the posterior mean for each evaluated configuration to cancel out the noise.
+\subsection{Selection of the best point from noisy outcomes}
+If we chose the configuration $\theta$ from all previously evaluated configurations according to the best outcome of $f$ as the optimization result, we would be overly optimistic.
+It is likely that a single best outcome can be partially attributed to the random error $\sigma_{n}^2$.
+Instead, we are interested in the optimum of the true posterior mean.
+Therefore, we employ the surrogate estimate of the posterior mean for each evaluated configuration to cancel out the noise.
 The configuration for which the surrogate estimates the best outcome is then returned as the optimization result $\hat{\theta}^\ast$:
 \begin{equation}
-  \hat{\theta}^{\ast\ast} := \operatorname{arg\,max}\limits_{\theta \in \mathcal{D}} \hat{\mu}(\theta),
+  \hat{\theta}^{\ast} := \operatorname{arg\,max}\limits_{\theta \in \mathcal{D}} \hat{\mu}(\theta),
 \end{equation}
 %To obtain a final outcome $\nu^\ast = f(\theta^\ast)$ that is independent of the optimization process, $f(\theta^\ast)$ is calculated again.
-Using the stochastic outcome $\hat{\nu}^\ast = f(\hat{\theta}^\ast) $ observed during the optimization process would still potentially lead to an overly optimistic result.
-Therefore an independent calculation of $f(\hat{\theta}^\ast)$ should be conducted to obtain a fair estimation of the reached best outcome.
+Using the stochastic outcome $\hat{\nu}^\ast := f(\hat{\theta}^\ast) $ observed during the optimization process would still potentially lead to an overly optimistic result.
+Therefore an independent calculation of $f(\hat{\theta}^\ast)$ should be conducted to obtain a fair estimate of the true value of the best outcome.
+
+\clearpage
 
 \section{Simulation Study}
 \label{sec:simulation_study}
 
 % TODO : Jakob
 
-The goal of this simulation study is to show that Model-based optimization can effectively find the trial design setup that yields the highest statistical power for the given \emph{number of total treatments} ($n_{\text{treat}}$), \emph{effect sizes} for all arms and both stages.
+The goal of this simulation study is to investigate the potential benefit of the MBO approach for effectively finding a clinical trial design that maximizes a metric.
+The analysis is motivated by the clinical example with COPD patients introduced in Section~\ref{sect.motivation}, with treatment selection in the first of two stages.
+In the first stage five arms (defined by the control and four different administered doses) are considered, and in the second stage only a selected subset of arms is kept for further evaluation. 
+The metric to be optimized is the statistical power, where a positive outcome means a trial arm with true effect is detected as significant effect.
 
-The effect sizes we consider in this study are given in Table~\ref{tab:table_effect_names}.
+\subsection{Clinical trial design and parameters}
+For the true effect sizes in the simulation, we consider four \emph{effect sets} whose values are inspired and partially based on the corresponding numbers of the motivating example, see Table~\ref{tab:table_effect_names}.
 \input{generated/tables/table_effect_names.tex}
-As this table shows, we restrict ourselves to studies with five arms.
+For the effect set \emph{paper} we use exactly the same numbers as in~\citet{friede_adaptive_2020}.
+For the effect set \emph{paper2} the effect sizes for the second stage are doubled.
+As further case we consider a \emph{linear} effect set with effect sizes linear increasing from 20\% to 80\% for the first stage and effect sizes divided by 4 for the second stage as well as a \emph{sigmoid} relationship, again with 4 times larger effect sizes for the first stage.
+These sets reflect different realistic situations.
 
-The space of possible trial design setups we consider is given in Table~\ref{tab:search_space}.
+The strategies regarding treatment selection for the second stage in the two-phase trial design, following the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}, and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
+The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. In Table~\ref{tab:search_space} the ranges for these two parameters and for the proportion of patients (ratio $r$) allocated to the second stage are given.
 \begin{table}[h]
-  \caption{Search Space of possible trial design setups.}
-  \label{tab:search_space}
-  \centering
-  \begin{tabular}{ll}
-  \hline
-  Parameter          & Range \\
-  \hline
-  Selection strategy & $\{\text{all}, 1, 2, 3, \text{eps}, \text{thr} \}$ \\
-  Ratio ($r$)        & $(0,1)$ \\
-  Epsilon            & $[0,4]$ \\
-  Threshold          & $[0,10]$ \\
-  \hline
-  \end{tabular}
-\end{table}
-The different selection strategies are explained in Table~\ref{tab:selection_strategies}.
-\begin{table}[h]
-  \caption{How are the arms for the second stage selected?}
+  \caption{Overview of the selection strategies that determine which trial arms are kept for the second stage}
   \label{tab:selection_strategies}
   \centering
   \begin{tabular}{ll}
   \hline
-  Selection strategy &  \\
+  Notation & Procedure of selection strategy  \\
   \hline
   \emph{all}     & Select all arms  \\
-  $\{1,2,3\}$    & Select 1, 2 or 3 arms with the maximal test statistic \\
-  \emph{eps}     & Select all arms that are within \emph{Epsilon} of the maximal test statistic \\
-  \emph{thr}     & Select all arms which have a test statistic above the \emph{Threshold} \\
+  $\{1,2,3\}$    & Select 1, 2 or 3 arms, respectively, according to maximal test statistic \\
+  \emph{eps}     & Select all arms with test statistic less than \emph{eps} (epsilon) below maximal test statistic \\
+  \emph{thresh}     & Select all arms with test statistic larger than the value \emph{thresh} (threshold) \\
   \hline
   \end{tabular}
 \end{table}
-This table also explains the meaning of the \emph{Epsilon} and the \emph{Threshold} parameter which are only active for the respective selection strategy.
-The \emph{Ratio} ($r$) parameter defines how many treatments are conducted in the first and in the second stage respectively.
+\begin{table}[h]
+  \caption{Parameters for the selection strategies representing the search space of trial designs}
+  \label{tab:search_space}
+  \centering
+  \begin{tabular}{ll}
+  \hline
+  Parameter         & Range \\
+  \hline
+  Selection strategy & $\{\text{all}, 1, 2, 3, \text{eps}, \text{thr} \}$ \\
+  $r$ (ratio)        & $(0,1)$ \\
+  eps (epsilon)            & $[0,4]$ \\
+  thresh (threshold)          & $[0,10]$ \\
+  \hline
+  \end{tabular}
+\end{table}
 
-\paragraph{Definition of the simulation}
-The simulation and calculation of the statistical power of the trial design can be formulated as a black-box as follows:
-\begin{align}
-  \label{eq:bbox}
-  (y,k_2)' &= f(n_{\text{stage1}}, n_{\text{stage2}}, \text{effect set}, \text{Selection strategy}, \text{Epsilon}, \text{Threshold}).
-\end{align}
-We notice, that we obtain two measures of interest: The simulated statistical power ($y$) and the number of arms in the second stage ($k_2$).
-Our main optimization goal is to maximize $y$.
-$k_2$ is used in a later step.
+\subsection{Calculation of the statistical power}
 
-As mentioned before, one restriction is that the \emph{number of total treatments} ($n_{\text{treat}}$) should be constant.
-The number depends on the number of arms including the control group in stage 1 ($k_1$) and stage 2 ($k_2$) and is calculated as follows:
+Let $n_{\text{treat}}$ be the number of total treatments (in our case 5, including the control), and let $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively. Let $k_1$ and $k_2$ denote the number of treatments in stage 1 and stage 2, respectively. Within one stage, the same number of patients are allocated to all different treatments. Then $n_{\text{treat}}$ can be calculated as
 \begin{equation}
   \label{eq:ntreat}
   n_{\text{treat}} = k_1 \cdot n_{\text{stage1}} + k_2 \cdot n_{\text{stage2}},
 \end{equation}
-whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ denote the number of treatments per arm in the first and second stage.
-In our scenario $k_1 = 5$ and $k_2 \in \{2, \ldots, 5\}$.
-Within one stage, all arms obtain the same number of treatments.
+In our scenario we have $k_1 = 5$ and $k_2 \in \{2, \ldots, 5\}$, where $k_2$ depends on the result of the treatment selection strategy in stage 1.
 
+Our main optimization goal is to maximize the statistical power $y$ depending on the trial design, where $k_2$ depends on the results of the first stage. 
+The power $y$ can be formulated as a black-box as follows:
+\begin{align}
+  \label{eq:bbox}
+  (y,k_2)' &= f(n_{\text{stage1}}, n_{\text{stage2}}, \text{effect set}, \text{selection strategy}, \text{epsilon}, \text{threshold}).
+\end{align}
+
+The total number of treatments $n_{\text{treat}}$ should be constant in the simulation study, when comparing the efficiency of different designs.
+We denote the proportion of patients per treatment in stage 1, compared to stage 2, with 
+$$ r=\frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}$$
 To keep the number of total treatments constant we optimize the ratio ($r \in (0,1)$) of $n_{\text{stage1}}$ and $n_{\text{stage2}}$ instead of optimizing these values directly.
 Therefore we define
 \begin{align}
   \label{eq:stagec}
-  \begin{split}
-  n_{\text{stage1}} &= r \cdot c \\
-  n_{\text{stage2}} &= (1-r) \cdot c \ ,
-  \end{split}
+  %\begin{split}
+  n_{\text{stage1}} &= r \cdot c, \qquad
+  n_{\text{stage2}} = (1-r) \cdot c,
+  %\end{split}
 \end{align}
 whereas $c$ is a constant that depends on $n_{\text{treat}}$, $k_1$ and $k_2$.
 For $k_1 = k_2 = 5$, $c$ would be $n_{\text{treat}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
 For a general solution, we can insert the variables from (\ref{eq:stagec}) into (\ref{eq:ntreat}) and obtain
 \begin{align}
-  \label{eq:ntreatc}
-  n_{\text{treat}} &= k_1 \cdot r \cdot c + k_2 \cdot (1-r) \cdot c \Leftrightarrow \\
+ % \label{eq:ntreatc}
+  n_{\text{treat}} & = k_1 \cdot r \cdot c + k_2 \cdot (1-r) \cdot c \;\; \Leftrightarrow \;\; %\\
   \label{eq:ntreatcc}
-  c &= \frac{n_{\text{treat}}}{k_1 \cdot r + k_2 \cdot (1-r)}.
+  c = \frac{n_{\text{treat}}}{k_1 \cdot r + k_2 \cdot (1-r)}.
 \end{align}
 Placing $c$ into (\ref{eq:stagec}) lets us calculate $n_{\text{stage1}}$ and $n_{\text{stage2}}$ for the given constraints and a given ratio $r$.
 This formula gives us the treatments per arm and per stage if $k_2$ is known. 
@@ -485,9 +516,8 @@ The statistical power is determined by evaluating the simulator $\tilde{f}$ as e
 
 \paragraph{General simulation settings}
 For the simulation we call the \texttt{treatsel.sim} function from the \texttt{asd}~package~\cite{parsons_software_2011} with the following parameters as fixed:
-number of simulation iterations (\texttt{nsim}~$= 1000$), correlation between early and final outcomes  (\texttt{corr}~$= 0.4$), test level (\texttt{level}~$=0.025$), and (TODO Not sure what that means) (\texttt{ptest}~$=(3,4)$).
+number of simulation iterations (\texttt{nsim}~$= 1000$), correlation between early and final outcomes  (\texttt{corr}~$= 0.4$), test level (\texttt{level}~$=0.025$), and (TODO Not sure what that means) (\texttt{ptest}~$=(3,4)$). %jeweils Elementarhypothese 3, 4 verwerfen, gucken wir gar nicht drauf
 
-%FIXME Frage: Warum reicht es nicht wenn der Suchraum select=0,1,2,3,4,5 ist?
 \paragraph{Exhaustive Search}
 For each effect set (see Table~\ref{tab:table_effect_names}) we conduct an exhaustive grid search with a resolution of 25 points per dimension.
 This results in total $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations that are evaluated for each effect set.
@@ -582,6 +612,8 @@ This "bias correction" seems to be effective, as the validation error reported i
 Interestingly the validation error of the grid search is lower for $n_\text{sim} = 5000$ then for $n_\text{sim} = 1000$.
 We would have expected the opposite, since more noise during optimization leads to overly optimistic choices that result in a bad validation error.
 This does not seem to be the case here but also the results are not drastically different and the illustrated IQR for the grid search becomes smaller for $n_\text{sim} = 5000$.
+
+%FIXME: Add Runtime comparision!
 
 \begin{figure}[htb]
 \centering
