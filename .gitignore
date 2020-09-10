@@ -285,3 +285,4 @@ TSWLatexianTemp*
 #*Notes.bib
 .Rproj.user
 *.Rproj
+/generator/memoise

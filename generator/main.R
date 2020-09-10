@@ -9,8 +9,15 @@ library(knitr)
 library(kableExtra)
 library(dplyr)
 library(mlr3misc)
+library(memoise)
 
-plot_wrapper = function(name, fig.height, fig.width, expr) {
+
+FIG_WIDTH = 9
+FIG_HEIGHT = 4.5
+FNT_SMALL = 6
+CACHE = cache_filesystem(path = "memoise")
+
+plot_wrapper_uncached = function(name, fig.height = FIG_HEIGHT, fig.width = FIG_WIDTH, expr) {
   path = paste0("../generated/figures/", name, ".pdf")
   pdf(file = path, width = fig.width, height = fig.height, onefile = TRUE)
   print(eval(expr))
@@ -18,6 +25,7 @@ plot_wrapper = function(name, fig.height, fig.width, expr) {
   #browser()
   knitr::plot_crop(path)
 }
+plot_wrapper = memoise(plot_wrapper_uncached, cache = CACHE)
 
 kable_to_text = function(text, name) {
   text = stri_replace_all_fixed(text, pattern = "\\label{tab:}", sprintf("\\label{tab:%s}", name))
@@ -29,12 +37,6 @@ own_theme = function(...) {
   theme(legend.margin=margin(0,0,0,0))
 }
 theme_set(own_theme())
-
-
-
-FIG_WIDTH = 8
-FIG_HEIGHT = 6
-FNT_SMALL = 6
 
 
 options(
@@ -58,6 +60,19 @@ EFFECTS = list(
 )
 effect_names = setNames(names(EFFECTS), names(EFFECTS)) #to be populated with better names
 
+select_labels = c("0" = "all", "1" = "1 best", "2" = "2 best", "3" = "3 best", "4" = "epsilon rule", "5" = "random", "6" = "threshold rule")
+select_labels_colors = #http://paletton.com/#uid=74Z140kqdu7ghF3lowyu1ppwGk7
+  c(
+    "all" = "#A61E96",
+    "1 best" = "#FF9B55",
+    "2 best" = "#CA5B0D",
+    "3 best" = "#A04200",
+    "epsilon rule" = "#1B9786",
+    "random" = "#000000",
+    "threshold rule" = "#C0E62A"
+  )
+algorithm_labels = c("mbo" = "MBO", "grid" = "Grid")
+algorithm_labels_color = c("mbo" = "#CB1C00", "grid" = "#00962D")
 
 ## ----table_effect_names-------------------------------------------------------
 tmp = lapply(EFFECTS, do.call, what = rbind)
@@ -73,75 +88,74 @@ kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation") %>%
 
 
 ## ----read_data----------------------------------------------------------------
-res_eval = readRDS("../benchmark_results/batchtools_grid_res_eval.rds")
-res_eval = res_eval[,.(job.id, y, stage_1_arms, stage_1_n, stage_2_arms, stage_2_n, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
-res_eval = res_eval[map(algo.pars, "effect") %in% names(EFFECTS),]
+read_results_uncached = function(select_labels) {
+  res_eval = readRDS("../benchmark_results/batchtools_grid_res_eval.rds")
+  res_eval = res_eval[,.(job.id, y, stage_1_arms, stage_1_n, stage_2_arms, stage_2_n, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
+  res_eval = res_eval[map(algo.pars, "effect") %in% names(EFFECTS),]
 
-algo.par.names = c("algorithm", names(res_eval$algo.pars[[1]]))
-algo.par.names.meta = c("algorithm", "effect", "corr", "nsim", "n_cases")
-algo.par.names.optim = setdiff(algo.par.names, algo.par.names.meta)
+  algo.par.names = c("algorithm", names(res_eval$algo.pars[[1]]))
+  algo.par.names.meta = c("algorithm", "effect", "corr", "nsim", "n_cases")
+  algo.par.names.optim = setdiff(algo.par.names, algo.par.names.meta)
 
-res_eval = unnest(res_eval, cols = c("prob.pars", "algo.pars"))
-#res_eval = res_eval[repl %in% 1:10,] #to run faster #FIXME remove for real results
+  res_eval = unnest(res_eval, cols = c("prob.pars", "algo.pars"))
+  #res_eval = res_eval[repl %in% 1:10,] #to run faster #FIXME remove for real results
 
-res_mbo = readRDS("../benchmark_results/batchtools_grid_res_mbo.rds")
-res_mbo = res_mbo[,.(job.id, result, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
-res_mbo = res_mbo[map(algo.pars, "effect") %in% names(EFFECTS),]
-res_mbo = unnest(res_mbo, cols = c("result", "prob.pars", "algo.pars"))
-
-select_labels = c("0" = "all", "1" = "1 best", "2" = "2 best", "3" = "3 best", "4" = "epsilon rule", "5" = "random", "6" = "threshold rule")
-select_labels_colors = #http://paletton.com/#uid=74Z140kqdu7ghF3lowyu1ppwGk7
-  c(
-    "all" = "#A61E96",
-    "1 best" = "#FF9B55",
-    "2 best" = "#CA5B0D",
-    "3 best" = "#A04200",
-    "epsilon rule" = "#1B9786",
-    "random" = "#000000",
-    "threshold rule" = "#C0E62A"
-  )
-algorithm_labels = c("mbo" = "MBO", "grid" = "Grid")
-algorithm_labels_color = c("mbo" = "#CB1C00", "grid" = "#00962D")
-res_eval[, select := factor(select, levels = names(select_labels), labels = select_labels)]
-res_mbo[, select := factor(select, levels = names(select_labels), labels = select_labels)]
-
-
-## ----estimate res_grid--------------------------------------------------------
-# we calculate res_grid which emulates a grid search with an independent validation of the best found x value
-# 1. for each repl we look for the best y and take the x values (randomly 1 on ties)
-# 2. we obtain the y values of the given x-values of the other 9 repls
-# 3. we average the external y values
-# 4. we sum up the time that the grid needed on one replication
-res_grid = res_eval[,
-  {
-    optim_dt = copy(.SD)
-    this_repl = optim_dt$repl[1]
-    optim_dt = optim_dt[sample(which(y == max(y)), 1),]
-    valid_dt = res_eval[repl != this_repl, ]
-    res = merge(optim_dt[,-"y"], valid_dt[, c(algo.par.names, "y"), with = FALSE], by = algo.par.names)
-    # write result into x values dt
-    optim_dt$y = mean(res$y)
-    #strangely we have 3 to 4 missing values here, probably batchtools had a hick up
-    times = .SD$time.running
-    if (any(is.na(times)) && mean(is.na(times)) < 0.004) {
-      times[is.na(times)] = mean(times, na.rm = TRUE)
-    }
-    optim_dt$time.running = sum(times)
-    optim_dt[, c(algo.par.names.meta, "repl") := NULL]
-    optim_dt
-  }, 
-  by = c(algo.par.names.meta, "repl"), 
-  .SDcols = c("y", "repl", algo.par.names, "time.running")]
-res_grid[, algorithm := "grid"]
+  res_mbo = readRDS("../benchmark_results/batchtools_grid_res_mbo.rds")
+  res_mbo = res_mbo[,.(job.id, result, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
+  res_mbo = res_mbo[map(algo.pars, "effect") %in% names(EFFECTS),]
+  res_mbo = unnest(res_mbo, cols = c("result", "prob.pars", "algo.pars"))
+  
+  res_eval[, select := factor(select, levels = names(select_labels), labels = select_labels)]
+  res_mbo[, select := factor(select, levels = names(select_labels), labels = select_labels)]
+  
+  ## ----estimate res_grid--------------------------------------------------------
+  # we calculate res_grid which emulates a grid search with an independent validation of the best found x value
+  # 1. for each repl we look for the best y and take the x values (randomly 1 on ties)
+  # 2. we obtain the y values of the given x-values of the other 9 repls
+  # 3. we average the external y values
+  # 4. we sum up the time that the grid needed on one replication
+  res_grid = res_eval[,
+    {
+      optim_dt = copy(.SD)
+      this_repl = optim_dt$repl[1]
+      optim_dt = optim_dt[sample(which(y == max(y)), 1),]
+      valid_dt = res_eval[repl != this_repl, ]
+      res = merge(optim_dt[,-"y"], valid_dt[, c(algo.par.names, "y"), with = FALSE], by = algo.par.names)
+      # write result into x values dt
+      optim_dt$y = mean(res$y)
+      #strangely we have 3 to 4 missing values here, probably batchtools had a hick up
+      times = .SD$time.running
+      if (any(is.na(times)) && mean(is.na(times)) < 0.004) {
+        times[is.na(times)] = mean(times, na.rm = TRUE)
+      }
+      optim_dt$time.running = sum(times)
+      optim_dt[, c(algo.par.names.meta, "repl") := NULL]
+      optim_dt
+    }, 
+    by = c(algo.par.names.meta, "repl"), 
+    .SDcols = c("y", "repl", algo.par.names, "time.running")]
+  res_grid[, algorithm := "grid"]
 
 
-## ----correct res_mbo----------------------------------------------------------
-# we remove the runtime of the validation (dob = 101) from the total "time.running"
-# determine max dob (probably 101) because it contains outside mbo evals
-max_dob = max(map_int(map(res_mbo$opt.path, "dob"), max))
+  ## ----correct res_mbo----------------------------------------------------------
+  # we remove the runtime of the validation (dob = 101) from the total "time.running"
+  # determine max dob (probably 101) because it contains outside mbo evals
+  max_dob = max(map_int(map(res_mbo$opt.path, "dob"), max))
 
-res_mbo[, time.running := time.running - as.difftime(sum(.SD$opt.path[[1]][dob == max_dob, ]$exec.time), units = "secs") , by = rownames(res_mbo)]
+  res_mbo[, time.running := time.running - as.difftime(sum(.SD$opt.path[[1]][dob == max_dob, ]$exec.time), units = "secs") , by = rownames(res_mbo)]
 
+  list(res_mbo = res_mbo, res_grid = res_grid, res_eval = res_eval, algo.par.names = algo.par.names, algo.par.names.meta = algo.par.names.meta, algo.par.names.optim = algo.par.names.optim, max_dob = max_dob)
+}
+
+read_results = memoise(read_results_uncached, cache = CACHE)
+tmp = read_results(select_labels)
+res_mbo = tmp$res_mbo
+res_grid = tmp$res_grid
+res_eval = tmp$res_eval
+algo.par.names = tmp$algo.par.names
+algo.par.names.meta = tmp$algo.par.names.meta
+algo.par.names.optim = tmp$algo.par.names.optim
+max_dob = tmp$max_dob
 
 ## ----put_ext_eval_mbo_results, eval = FALSE-----------------------------------
 ## res_mbo[, y_tuning := y]
@@ -168,8 +182,8 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   dfmean = df[, lapply(.SD, mean),by = c(algo.par.names), .SDcols = c("y", "stage_1_arms", "stage_1_n")] #stage_1_n can vary a little
   g = ggplot(df, aes(x = (stage_1_arms * stage_1_n), y = y, color = select, group = paste(select, epsilon, thresh)))
   g = g + geom_line(data = dfmean)
-  g = g + geom_point(alpha = 0.1)
-  g = g + geom_point(data = res_mbo[nsim == 1000,], size = 3)
+  g = g + geom_point(alpha = 0.2, size = 0.5)
+  g = g + geom_point(data = res_mbo[nsim == 1000,], size = 2.5)
   g = g + scale_color_manual(values = select_labels_colors)
   g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_both)
   g = g + theme(legend.position = "bottom")
@@ -182,15 +196,14 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
 #g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
 plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   tmp = rbind(res_grid[nsim == 1000,], res_mbo[nsim == 1000, colnames(res_grid ), with = FALSE])
-  g = ggplot(data = tmp, aes(x = stage_ratio, y = y, color = select, shape = algorithm, alpha = algorithm))
+  g = ggplot(data = tmp, aes(x = stage_ratio, y = y, color = select, shape = algorithm))
   g = g + geom_point(size = 3)
-  g = g + geom_text(data = res_mbo[nsim == 1000 & select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
-  g = g + geom_text(data = res_mbo[nsim == 1000 & select == "threshold rule", ], aes(label = round(thresh,2)), hjust = 0, vjust = 1, show.legend = FALSE)
+  #g = g + geom_text(data = res_mbo[nsim == 1000 & select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
+  #g = g + geom_text(data = res_mbo[nsim == 1000 & select == "threshold rule", ], aes(label = round(thresh,2)), hjust = 0, vjust = 1, show.legend = FALSE)
   g = g + facet_wrap(effect~n_cases, scales = "free", labeller = label_both, ncol = 3)
   g = g + scale_x_continuous(expand = expansion(mult = 0.2))
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
-  g = g + scale_alpha_manual(values = c("mbo" = 1, "grid" = 0.5))
-  g = g + scale_shape_manual(values = c("mbo" = 16, "grid" = 4))
+  g = g + scale_shape_manual(values = c("mbo" = 19, "grid" = 21))
   g = g + scale_color_manual(values = select_labels_colors)
   g = g + theme(legend.position = "bottom")
   g
@@ -229,38 +242,42 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
 })
 
 ## ----plot_boxplot_valid_y-----------------------------------------------------
-plot_wrapper(name = "plot_boxplot_valid_y", fig.height = 1.6 * FIG_HEIGHT, expr = {
+plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr = {
   tmp = rbind(res_grid, res_mbo[nsim == 1000, colnames(res_grid), with = FALSE])
-  g = ggplot(tmp, aes(x = algorithm, y = y, color = algorithm, fill = algorithm))
+  g = ggplot(tmp, aes(x = as.factor(n_cases), y = y, color = algorithm, fill = algorithm))
   # mylabels = function(labels) {
   #   do.call(map, args = c(list(paste), labels))
   #   map(paste, labels[[1]], labels[[2]])
   #   paste(value, variable)
   # }
-  g = g + facet_wrap(effect~n_cases, scales = "free", ncol = 3, labeller = label_both)
+  g = g + facet_wrap(~effect, scales = "free", ncol = 4, labeller = label_both)
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
-  g + geom_boxplot()
+  g = g + geom_boxplot() + theme(legend.position = "none")
+  g = g + labs(x = "n_cases")
+  g
 })
 
 ## ----plot_boxplot_valid_y_5000-----------------------------------------------------
-plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.357 * FIG_WIDTH, expr = {
+plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.35 * FIG_WIDTH, expr = {
   tmp = rbind(res_grid, res_mbo[, colnames(res_grid), with = FALSE])
   tmp = tmp[n_cases == 2000 & effect == "paper",]
-  g = ggplot(tmp, aes(x = algorithm, y = y, color = algorithm, fill = algorithm))
-  g = g + facet_grid(.~nsim, scales = "free", labeller = label_both)
+  g = ggplot(tmp, aes(x = as.factor(nsim), y = y, color = algorithm, fill = algorithm))
+  #g = g + facet_grid(.~nsim, scales = "free", labeller = label_both)
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
   g = g + theme(legend.position = "bottom")
-  g + geom_boxplot()
+  g = g + geom_boxplot()
+  g = g + labs(x = "n_sim")
+  g
 })
 
 ## ----plot_opt_path_5000-----------------------------
 
 # calculate y perf of mbo runs
-plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.642 * FIG_WIDTH, expr = {
+plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.64 * FIG_WIDTH, expr = {
   df = res_mbo[n_cases == 2000 & effect == "paper",]
   common_names = intersect(colnames(df), colnames(df$opt.path[[1]]))
   data.table::setnames(df, common_names, paste0("opt.", common_names))
@@ -294,15 +311,15 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
 ## ----table_best---------------------------------------------------------------
 #best of grid
 #FIXME: calculate time of complete grid, devide through 10
-res_ave = res_eval[nsim == 1000, list(mean_y = mean(y), mean_time = sum(time.running)), by = algo.par.names]
-df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, n_cases, select, stage_ratio, epsilon, thresh, mean_y, mean_time)]
+res_ave = res_eval[nsim == 1000, list(mean_y = mean(y)), by = algo.par.names]
+df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, n_cases, select, stage_ratio, epsilon, mean_y)]
 #mbo average
-res_ave_mbo = res_mbo[nsim == 1000, list(mean_y = mean(y), mean_time = mean(time.running)), by = algo.par.names.meta]
-df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, mean_time, select = algorithm)], fill = TRUE)
+res_ave_mbo = res_mbo[nsim == 1000, list(mean_y = mean(y)), by = algo.par.names.meta]
+df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, select = algorithm)], fill = TRUE)
 setkey(df, effect, n_cases, mean_y)
-knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = TRUE, linesep = c(rep("",4), "\\addlinespace")) %>% 
-  kable_styling(position = "center") %>% 
-  collapse_rows(1, latex_hline = "major") %>% 
+knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = FALSE, digits = 3) %>% # linesep = c(rep("",4), "\\addlinespace") 
+  kable_styling(position = "center", font_size = FNT_SMALL) %>% 
+  collapse_rows(1:2, latex_hline = "custom", custom_latex_hline = 1:2) %>% 
   kable_to_text("table_best")
 
 

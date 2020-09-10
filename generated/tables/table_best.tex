@@ -1,103 +1,107 @@
+\begin{table}
 
-\begin{longtable}[t]{lrlrrrrl}
-\caption{\label{tab:table_best}Best configurations per ncases and effects}\\
+\caption{\label{tab:table_best}Best configurations per ncases and effects}
+\centering
+\fontsize{6}{8}\selectfont
+\begin{tabular}[t]{lrlrrr}
 \toprule
-effect & n\_cases & select & stage\_ratio & epsilon & thresh & mean\_y & mean\_time\\
+effect & n\_cases & select & stage\_ratio & epsilon & mean\_y\\
 \midrule
- & 500 & mbo &  &  &  & 0.39597 & 13024.2078 secs\\
+ &  & mbo &  &  & 0.396\\
 
- & 500 & 1 best & 0.0833333 &  &  & 0.40120 & 90.9042 secs\\
+ &  & 1 best & 0.083 &  & 0.401\\
 
- & 500 & epsilon rule & 0.0416667 & 0.0000000 &  & 0.40210 & 1837.9435 secs\\
+ &  & epsilon rule & 0.042 & 0.000 & 0.402\\
 
- & 500 & epsilon rule & 0.0833333 & 0.0000000 &  & 0.40850 & 2018.4585 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & epsilon rule & 0.083 & 0.000 & 0.408\\
+\cmidrule{2-6}
+ &  & mbo &  &  & 0.731\\
 
- & 1000 & mbo &  &  &  & 0.73125 & 12115.3307 secs\\
+ &  & epsilon rule & 0.083 & 0.167 & 0.732\\
 
- & 1000 & epsilon rule & 0.0833333 & 0.1666667 &  & 0.73230 & 1937.6451 secs\\
+ &  & epsilon rule & 0.083 & 0.000 & 0.733\\
 
- & 1000 & epsilon rule & 0.0833333 & 0.0000000 &  & 0.73260 & 2152.6336 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & 1 best & 0.083 &  & 0.734\\
+\cmidrule{2-6}
+ &  & mbo &  &  & 0.962\\
 
- & 1000 & 1 best & 0.0833333 &  &  & 0.73410 & 89.2226 secs\\
+ &  & epsilon rule & 0.125 & 0.000 & 0.965\\
 
- & 2000 & mbo &  &  &  & 0.96165 & 12842.3270 secs\\
+ &  & epsilon rule & 0.083 & 0.000 & 0.966\\
 
- & 2000 & epsilon rule & 0.1250000 & 0.0000000 &  & 0.96480 & 1775.1267 secs\\
+\multirow{-12}{*}{\raggedright\arraybackslash linear} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & epsilon rule & 0.083 & 0.167 & 0.967\\
+\cmidrule{1-6}
+ &  & mbo &  &  & 0.408\\
 
- & 2000 & epsilon rule & 0.0833333 & 0.0000000 &  & 0.96640 & 1844.9156 secs\\
+ &  & epsilon rule & 0.083 & 0.167 & 0.421\\
 
-\multirow{-12}{*}{\raggedright\arraybackslash linear} & 2000 & epsilon rule & 0.0833333 & 0.1666667 &  & 0.96660 & 1923.7577 secs\\
-\cmidrule{1-8}
- & 500 & mbo &  &  &  & 0.40840 & 12353.7743 secs\\
+ &  & epsilon rule & 0.083 & 0.000 & 0.422\\
 
- & 500 & epsilon rule & 0.0833333 & 0.1666667 &  & 0.42110 & 2114.1998 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & epsilon rule & 0.042 & 0.333 & 0.423\\
+\cmidrule{2-6}
+ &  & mbo &  &  & 0.708\\
 
- & 500 & epsilon rule & 0.0833333 & 0.0000000 &  & 0.42250 & 1733.6840 secs\\
+ &  & epsilon rule & 0.125 & 0.167 & 0.718\\
 
- & 500 & epsilon rule & 0.0416667 & 0.3333333 &  & 0.42340 & 1873.8585 secs\\
+ &  & epsilon rule & 0.125 & 0.500 & 0.724\\
 
- & 1000 & mbo &  &  &  & 0.70801 & 14233.7258 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & epsilon rule & 0.125 & 0.333 & 0.727\\
+\cmidrule{2-6}
+ &  & mbo &  &  & 0.955\\
 
- & 1000 & epsilon rule & 0.1250000 & 0.1666667 &  & 0.71820 & 1972.0458 secs\\
+ &  & epsilon rule & 0.208 & 0.833 & 0.955\\
 
- & 1000 & epsilon rule & 0.1250000 & 0.5000000 &  & 0.72380 & 2071.2668 secs\\
+ &  & 2 best & 0.125 &  & 0.958\\
 
- & 1000 & epsilon rule & 0.1250000 & 0.3333333 &  & 0.72680 & 1744.6446 secs\\
+\multirow{-12}{*}{\raggedright\arraybackslash paper} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & 2 best & 0.167 &  & 0.960\\
+\cmidrule{1-6}
+ &  & 2 best & 0.208 &  & 0.916\\
 
- & 2000 & mbo &  &  &  & 0.95503 & 14843.5778 secs\\
+ &  & 2 best & 0.250 &  & 0.916\\
 
- & 2000 & epsilon rule & 0.2083333 & 0.8333333 &  & 0.95540 & 1900.9384 secs\\
+ &  & mbo &  &  & 0.918\\
 
- & 2000 & 2 best & 0.1250000 &  &  & 0.95810 & 110.9503 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & 2 best & 0.292 &  & 0.918\\
+\cmidrule{2-6}
+ &  & mbo &  &  & 0.997\\
 
-\multirow{-12}{*}{\raggedright\arraybackslash paper} & 2000 & 2 best & 0.1666667 &  &  & 0.95970 & 129.6992 secs\\
-\cmidrule{1-8}
- & 500 & 2 best & 0.2083333 &  &  & 0.91580 & 101.7307 secs\\
+ &  & 3 best & 0.125 &  & 0.998\\
 
- & 500 & 2 best & 0.2500000 &  &  & 0.91640 & 111.8320 secs\\
+ &  & 3 best & 0.250 &  & 0.998\\
 
- & 500 & mbo &  &  &  & 0.91759 & 13389.4200 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & 3 best & 0.167 &  & 0.999\\
+\cmidrule{2-6}
+ &  & all & 0.042 &  & 1.000\\
 
- & 500 & 2 best & 0.2916667 &  &  & 0.91820 & 90.8595 secs\\
+ &  & 3 best & 0.042 &  & 1.000\\
 
- & 1000 & mbo &  &  &  & 0.99659 & 11938.7470 secs\\
+ &  & all & 0.083 &  & 1.000\\
 
- & 1000 & 3 best & 0.1250000 &  &  & 0.99830 & 97.1142 secs\\
+\multirow{-12}{*}{\raggedright\arraybackslash paper2} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & mbo &  &  & 1.000\\
+\cmidrule{1-6}
+ &  & epsilon rule & 0.042 & 0.167 & 0.456\\
 
- & 1000 & 3 best & 0.2500000 &  &  & 0.99840 & 107.3938 secs\\
+ &  & epsilon rule & 0.042 & 0.000 & 0.461\\
 
- & 1000 & 3 best & 0.1666667 &  &  & 0.99880 & 110.9484 secs\\
+ &  & mbo &  &  & 0.463\\
 
- & 2000 & all & 0.0416667 &  &  & 1.00000 & 110.8523 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & 1 best & 0.042 &  & 0.464\\
+\cmidrule{2-6}
+ &  & epsilon rule & 0.042 & 0.167 & 0.771\\
 
- & 2000 & 3 best & 0.0416667 &  &  & 1.00000 & 130.0599 secs\\
+ &  & mbo &  &  & 0.773\\
 
- & 2000 & all & 0.0833333 &  &  & 1.00000 & 105.1821 secs\\
+ &  & epsilon rule & 0.042 & 0.000 & 0.782\\
 
-\multirow{-12}{*}{\raggedright\arraybackslash paper2} & 2000 & mbo &  &  &  & 1.00000 & 11635.8510 secs\\
-\cmidrule{1-8}
- & 500 & epsilon rule & 0.0416667 & 0.1666667 &  & 0.45650 & 1774.8559 secs\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & 1 best & 0.042 &  & 0.790\\
+\cmidrule{2-6}
+ &  & mbo &  &  & 0.972\\
 
- & 500 & epsilon rule & 0.0416667 & 0.0000000 &  & 0.46100 & 1660.7118 secs\\
+ &  & epsilon rule & 0.042 & 0.167 & 0.973\\
 
- & 500 & mbo &  &  &  & 0.46271 & 11921.5112 secs\\
+ &  & 1 best & 0.042 &  & 0.977\\
 
- & 500 & 1 best & 0.0416667 &  &  & 0.46410 & 94.4150 secs\\
-
- & 1000 & epsilon rule & 0.0416667 & 0.1666667 &  & 0.77060 & 1821.4296 secs\\
-
- & 1000 & mbo &  &  &  & 0.77348 & 9194.1244 secs\\
-
- & 1000 & epsilon rule & 0.0416667 & 0.0000000 &  & 0.78170 & 1694.4845 secs\\
-
- & 1000 & 1 best & 0.0416667 &  &  & 0.78970 & 79.6675 secs\\
-
- & 2000 & mbo &  &  &  & 0.97173 & 11173.6412 secs\\
-
- & 2000 & epsilon rule & 0.0416667 & 0.1666667 &  & 0.97340 & 1411.2437 secs\\
-
- & 2000 & 1 best & 0.0416667 &  &  & 0.97700 & 92.5185 secs\\
-
-\multirow{-12}{*}{\raggedright\arraybackslash sigmoid} & 2000 & epsilon rule & 0.0416667 & 0.0000000 &  & 0.97940 & 1561.7170 secs\\
+\multirow{-12}{*}{\raggedright\arraybackslash sigmoid} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & epsilon rule & 0.042 & 0.000 & 0.979\\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{table}

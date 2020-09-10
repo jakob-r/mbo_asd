@@ -145,7 +145,7 @@ A common goal is to maximize the test power, given a set of treatment and effect
 From a wide range of possible alternatives we want to select the best plan in a short period of time, to enable quick decisions.
 The standard approach to simulate the power for each single setup can become too time-consuming, when the number of possible setups becomes very large.
 Then, either large computational resources are required or an exhaustive exploration of all possible setups takes a very long time.
-Here, propose a new optimization approach. We show how Model-based Optimization can be used to quickly select a clinical trial setup with high power from a large number of setups options.
+In this work we propose to use Model-based Optimization to quickly find a clinical trial setup with high power from a large number of setups options.
 We demonstrate the effectiveness of our approach by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
 We compare the MBO approach with an exhaustive evaluation of all candidate designs.
 The optimization approach finds competitive setups in a fraction of the time.
@@ -174,7 +174,8 @@ The optimization approach finds competitive setups in a fraction of the time.
 
 \section{Introduction}
 
-Clinical research and in particular drug development is typically structured into phases, e.g. phases I to IV in drug development. Similar approaches exist for complex interventions, such as the MRC framework for non-pharmacological interventions (ref)\cite{}. 
+Clinical research and in particular drug development is typically structured into phases, e.g. phases I to IV in drug development. 
+Similar approaches exist for complex interventions, such as the MRC framework for non-pharmacological interventions (ref)%FIXME ref
 The development phases include elements of learning and confirmation.
 For instance, \citet{sheiner_learning_1997} describe the drug development process as two learning and confirming cycles:
 The first cycle includes learning about the tolerated dose (Phase I) and confirming the efficacy of the selected dose in a selected group of patients (Phase IIa), whereas the second cycle consists of learning about the optimal use in representative patients (Phase IIb) and confirming of an acceptable benefit or risk ratio (Phase III).
@@ -182,7 +183,7 @@ The first cycle includes learning about the tolerated dose (Phase I) and confirm
 Traditionally, separate studies are performed for learning and confirming.
 However, the landscape in clinical research is changing.
 Boundaries between the development phases are increasingly dissolving in multiple aspects.
-Master protocols are a new concept where multiple subgroups and substudies are integrated (ref).
+Master protocols are a new concept where multiple subgroups and substudies are integrated (ref). %FIXME ref
 Here, simultaneously, more than one treatment and more than one disease type are investigated within the same overall trial structure.
 Adaptive designs are established, but are being further developed.
 In general, study designs become more flexible, and more principled approaches to decision making using statistical modeling and integrated analyses across studies become popular. 
@@ -193,9 +194,10 @@ This applies even to usually fairly straightforward tasks as sample size calcula
 Various frameworks and guidance proposals have been developed over the past years on how to plan, execute and interpret the results of such simulation studies.
 Method comparison studies are used to give clinicians and biostatisticians guidance when an approach improves currently used methods.  
 Depending on the setting and the purpose of the simulation study, suitable metrics must be chosen to compare alternative designs or analysis strategies. 
-Especially relevant are neutral comparison studies, which are characterized as follows: The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way (ref).
+Especially relevant are neutral comparison studies, which are characterized as follows: %FIXME Is there someting missing? (Jakob)
+The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way (ref).
 %While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
-A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation). ref
+A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation). ref %FIXME ref
 CSE was particularly developed to support the overall process of performing simulations of clinical trials, especially for complex designs and analysis strategies.
 The problem is decomposed into data models, analysis models, and evaluation models that specify the evaluation metrics.
 
@@ -203,7 +205,7 @@ Here, we propose to use a formal approach to optimization of the clinical trial 
 This set of candidate designs can be regarded as a multi-dimensional search space, including potentially many real-valued and categorical parameters.
 The vast space of possible designs makes the optimization computationally demanding.
 In the following, we demonstrate that the so-called Model-based optimization (MBO) framework~\citep{jones_taxonomy_2001} can be successfully applied to select a clinical trial design.
-As evaluation metric We consider the specific case that the statistical power of the clinical trial design should be maximized, for given effect sizes and number of treatments.
+As evaluation metric we consider the specific case that the statistical power of the clinical trial design should be maximized, for given effect sizes and number of treatments.
 Further, it is crucial that such a design is found in a short time.
 %\subsection{Related work}
 %subsub Clinical 
@@ -221,16 +223,16 @@ However, in this work we restrict ourselves to single-criteria optimization.
 
 The remainder of the manuscript is structured as follows.
 In the next section we present as motivating example an application of adaptive seamless designs for chronic obstructive pulmonary disease (COPD).
-In the sections 3 and 4, we explain the background on adaptive seamless designs (asd) and model-based optimization (MBO), respectively.
-In section 5, we present a simulation study that is closely related to the motivating example and in which the suitability of MBO for optimizing trial designs is demonstrated.
-In the last Section 6, we discuss promising extensions as well as limitations of the approach.
+In the sections~\ref{sec:adaptive_seamless_designs} and~\ref{sec:model_based_optimization}, we explain the background on adaptive seamless designs (asd) and model-based optimization (MBO), respectively.
+In section~\ref{sec:simulation_study}, we present a simulation study that is closely related to the motivating example and in which the suitability of MBO for optimizing trial designs is demonstrated.
+In the last Section~\ref{sec:discussion}, we discuss promising extensions as well as limitations of the approach.
 
 \section{Motivating Example}
 \label{sect.motivation}
 
 The general idea of this paper is to apply MBO for finding a trial design that is optimal with respect to a certain metric.
 As an example, we consider the maximization of the statistical power of a trail design, given a set of parameters to be chosen for the trial design.
-We compare the computation time as well as the maximal obtained power between the results obtained with MBO and with an exhaustive grid search on the space of adjustable parameters.
+We compare the computation time as well as the maximal obtained power between the results obtained with MBO and with an exhaustive grid search over the space of adjustable parameters.
 The presented optimization approach can also be applied for optimizing other metrics than the power, as long as the metric itself is numeric and the parameters of the trial design are numeric and include none or just few categorical choices.
 
 One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd}~\cite{parsons_software_2011} package and described in Section~\ref{sec:adaptive_seamless_designs}.
@@ -259,7 +261,8 @@ For the final outcome days of poor control, also, from real data the standardize
 These were approximately 0.13, 0.17, 0.23, and 0.20, for the four doses.
 The approximate sample sizes per arm were 100 patients in stage 1 and 300 patients in stage 2.
 
-In the analysis of \citet{friede_adaptive_2020}, the aim was to select two doses of indacaterol at the interim analysis that are passed to stage 2, resulting in a total sample size $5 \cdot 100 + 3 \cdot 300 = 1,400$ patients. In the simulations, a positive correlation between early and final outcomes of 0.4 was assumed.
+In the analysis of \citet{friede_adaptive_2020}, the aim was to select two doses of indacaterol at the interim analysis that are passed to stage 2, resulting in a total sample size $5 \cdot 100 + 3 \cdot 300 = 1,400$ patients. 
+In the simulations, a positive correlation between early and final outcomes of 0.4 was assumed.
 Further, different settings with continuous early and continuous or binary final outcomes and different treatment selection strategies were compared.
 
 
@@ -617,15 +620,13 @@ This does not seem to be the case here but also the results are not drastically 
 
 \begin{figure}[htb]
 \centering
-  \begin{minipage}{0.642\textwidth}
+  \begin{minipage}{0.64\textwidth}
     \centering
     \includegraphics[width=\linewidth]{generated/figures/plot_opt_path_5000.pdf}%
     \captionof{figure}{Opt Path}
     \label{fig:plot_opt_path_5000}
-  \end{minipage}%
-  \begin{minipage}{0.1\textwidth}
-  \end{minipage}%
-  \begin{minipage}{0.357\textwidth}
+  \end{minipage}\hspace{0.01\textwidth}%
+  \begin{minipage}{0.35\textwidth}
     \centering
     \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y_5000.pdf}%
     \captionof{figure}{Boxplot}
@@ -648,6 +649,7 @@ This does not seem to be the case here but also the results are not drastically 
 % MASS, http://www.biometrical-journal.com.}}
 
 \section{Discussion}
+\label{sec:discussion}
 
 % subsection Summary
 
