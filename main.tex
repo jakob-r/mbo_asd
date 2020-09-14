@@ -382,6 +382,7 @@ The intuition in formula (\ref{eq:aei}) is that the first summand favors exploit
 The correction term is necessary to avoid exploration in areas where the model uncertainty $\hat{s}^2(\theta)$ equals the random error $\sigma_{n}^2$, because in this case further evaluations will not decrease the model uncertainty.
 
 \subsection{Selection of the best point from noisy outcomes}
+\label{ssec:best_point}
 If we chose the configuration $\theta$ from all previously evaluated configurations according to the best outcome of $f$ as the optimization result, we would be overly optimistic.
 It is likely that a single best outcome can be partially attributed to the random error $\sigma_{n}^2$.
 Instead, we are interested in the optimum of the true posterior mean.
@@ -522,34 +523,36 @@ For the simulation we call the \texttt{treatsel.sim} function from the \texttt{a
 number of simulation iterations (\texttt{nsim}~$= 1000$), correlation between early and final outcomes  (\texttt{corr}~$= 0.4$), test level (\texttt{level}~$=0.025$), and (TODO Not sure what that means) (\texttt{ptest}~$=(3,4)$). %jeweils Elementarhypothese 3, 4 verwerfen, gucken wir gar nicht drauf
 
 \paragraph{Exhaustive Search}
-For each effect set (see Table~\ref{tab:table_effect_names}) we conduct an exhaustive grid search with a resolution of 25 points per dimension.
+For each effect set (see Table~\ref{tab:table_effect_names}) we conduct an exhaustive grid search with a resolution of 25 points per real-valued dimension for each selection strategy.
 This results in total $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations that are evaluated for each effect set.
-Each conf
-Additionally
-Each numeric parameter ($r$, \emph{Epsilon}, \emph{Threshold}) is discretized over 25 equidistant points.
+Additionally the grid is evaluated with 10 stochastic repliactions to obtain an estimation of the variance of the simulation.
 
+The best point of one grid is determined by selecting the configuration that let to the best outcome.
+If we would report this outcome, we will likely be overoptimistic, as the chances are high that the noise contributed to the good outcome.
+To be able to report an unbiased performance we take the best found configuration and look up the results in the remaining 9 stochastic replications of the grid evaluations, similar to a cross-validation in machine learning applications.
+This eliminates the risk of only reporting outcomes that are optimal by chance.
 
 \paragraph{Application of MBO}
-We apply Kriging (also called Gaussian process regression) to fit the surrogate model that predicts the outcome of $f$ for unknown values of $\theta$.
-We use the implementation in the R-package \texttt{DiceKriging}~\citep{roustant_dicekriging_2012} and configure it to apply the Mattern$\frac{5}{2}$ kernel with an estimated \emph{nugget effect} to account for the noisy response of $f$ and without scaling the input variables to $[0,1]$.
-We use one-hot encoding to handle categorical parameters.
-Also our search space is hierarchical because \emph{Epsilon} and \emph{Threshold} are only active for the respective \emph{selection strategy}.
+Before the application of MBO, we have to define how the surrogate model that predicts the outcome of $f$ for unknown values of $\theta$ is generated.
+As the regression model for the surrogate we chose Kriging (also called Gaussian process regression) and use the implementation in the R-package \texttt{DiceKriging}~\citep{roustant_dicekriging_2012}, because it is well known to work well for fairly low dimensional search spaces.
+We configure Kriging to apply the Mattern$\frac{5}{2}$ kernel with an estimated \emph{nugget effect} to account for the noisy response of $f$ and without scaling the input variables to $[0,1]$.
+
+Kringing expects a numerical input, but our search space contains categorical parameters and is even hierarchical.
+First, to transform categorical parameters of the search space (see Table~\ref{tab:search_space}) into numerical values we use one-hot encoding.
+Furthermore, our search space is hierarchical because \emph{Epsilon} and \emph{Threshold} are only active for the respective \emph{selection strategy}.
 The hierarchical structure of introduces inactive values for the configurations ($\theta$), i.e.\ if the \emph{selection strategy} is set to \emph{eps} the parameter of \emph{thr} inactive.
-If a value is inactive it is set to a value two times as high as the maximum in its active range.
+If a value is inactive, we set it to a value two times as high as the maximum in its active range (e.g.\ if \emph{thresh} is inactive it will be set to 20).
+To set the inactive value to a high value outside of the original range ensures that within the original range the Kriging-model does not or only marginally gets affected by the inactive values.
+Note, that this trick only works because we did not scale the input variables to $[0,1]$ and because the estimated covariance by the Mattern$\frac{5}{2}$ kernel is approximately zero for distances greater than $4$.
+With the above steps we ensured that the input for the Kriging is purely numeric.
 
-The outcome of the simulation and therefore our optimization objective is stochastic.
-Also our search space is hierarchical because \emph{Epsilon} and \emph{Threshold} are only active for the respective selection strategy.
+As an acquisition function we chose the $\operatorname{AEI}$ as explained in Section~\ref{sec:model_based_optimization}.
+We start MBO with an inital design of $16$ randomly sampled points and allow $100$ further iterations, summing up to a total budget of $116$ evaluated configurations of the simulator.
 
+At the end of the optimization procedure, the best point is chosen according to the best prediction obtained on the set of evaluated poins as explained in Section~\ref{ssec:best_point}.
+The best selected point is then evaluated $10$ times to allow us to report an an unbiased estimate of the true performance of the optimization result.
 
-
-
-
-\begin{itemize}
-  \item Discretize search space and evaluate grid (possible with enough computational resources)
-  \item Apply MBO and compare results
-\end{itemize}
-
-
+The whole MBO procedure is repeated $10$ times to ensure that a single optimization run was not just lucky in finding the optimum.
 
 \subsection{Design}
 
@@ -558,16 +561,16 @@ The underlying algorithms in this study are implemented in R, for the model-base
 
 \subsection{Results}
 
-To obtain an unbiased result, we do not simply report the best observed power of both optimization approaches.
-Instead we use the best found parameters to run the simulation again independently, repeated times, similar to a cross-validation in machine learning applications.
-This eliminates the risk of only reporting outcomes that are optimal by chance.
-
+As explained before, we obtained unbiased result from the exhaustive grid search and the MBO procedure.
+However, in Figure~\ref{fig:plot_allbest} we show the observed outcomes during evaluation of the grid as well as the final configurations found by MBO, to demonstrate the behaviour of the simulation in dependence of the parameters \emph{selection strategy} and \emph{stage ratio}.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_allbest.pdf}
 \caption{Power of the different selection rules. For the epsilon and threshold rule only the curve for the epsilon and threshold value that reached the best power is dispayed.}
 \label{fig:plot_allbest}
 \end{figure}
+Note that the \emph{stage ratio} is not drawn directly but the resulting number of treatments at the early stage.
+Also, for the \emph{selection strategy} \emph{epsilon rule} and \emph{threshold rule} only the curves are shown of the repsective \emph{eps} and \emph{thresh} value that led to the best outcome within the respective selection strategy.
 
 
 \begin{figure}[htb]
@@ -610,7 +613,7 @@ Furthermore, MBO might need less iterations because the signal to noise ratio is
 Figure~\ref{fig:plot_opt_path_5000} shows that the lower noise level leads to more stable simulation runs, meaning that a single optimization run leads to a results closer to the mean result.
 Also the outcome of the best found point by MBO is closer to the best outcome found by the exhaustive grid search.
 We have to remember that this plot reports the best observed outcome so far. 
-However, as explained in Section~\ref{sec:model_based_optimization} the final point is not determined by the best found outcome but by the surrogates mean prediction of all evaluated point.
+However, as explained in Section~\ref{ssec:best_point} the best point is not determined by the best found outcome but by the surrogates mean prediction of all evaluated point.
 This "bias correction" seems to be effective, as the validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for MBO in both cases.
 Interestingly the validation error of the grid search is lower for $n_\text{sim} = 5000$ then for $n_\text{sim} = 1000$.
 We would have expected the opposite, since more noise during optimization leads to overly optimistic choices that result in a bad validation error.

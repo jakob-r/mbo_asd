@@ -78,10 +78,10 @@ algorithm_labels_color = c("mbo" = "#CB1C00", "grid" = "#00962D")
 tmp = lapply(EFFECTS, do.call, what = rbind)
 tmp = lapply(tmp, function(x) cbind.data.frame(stage = rownames(x), x))
 tmp = rbindlist(tmp, idcol = TRUE)
-setnames(tmp, ".id", "effect set")
+setnames(tmp, ".id", "Effect Set")
+setnames(tmp, "stage", "Stage")
 kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation") %>% 
   collapse_rows(columns = 1:2, latex_hline = "major") %>% 
-  pack_rows("Set 1", 2, ncol(tmp), indent = FALSE) %>% 
   add_header_above(c(" " = 2, "Treatment" = 5)) %>% 
   kable_styling(position = "center") %>% 
   kable_to_text("table_effect_names")
