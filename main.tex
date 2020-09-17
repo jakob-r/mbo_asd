@@ -418,7 +418,7 @@ These sets reflect different realistic situations.
 The strategies regarding treatment selection for the second stage in the two-phase trial design, following the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}, and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
 The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. In Table~\ref{tab:search_space} the ranges for these two parameters and for the proportion of patients (ratio $r$) allocated to the second stage are given.
 \begin{table}[h]
-  \caption{Overview of the selection strategies that determine which trial arms are kept for the second stage}
+  \caption{Overview of selection strategies to determine which trial arms are kept for second stage}
   \label{tab:selection_strategies}
   \centering
   \begin{tabular}{ll}
@@ -465,31 +465,28 @@ The power $y$ can be formulated as a black-box as follows:
 \end{align}
 
 The total number of treatments $n_{\text{treat}}$ should be constant in the simulation study, when comparing the efficiency of different designs.
-We denote the proportion of patients per treatment in stage 1, compared to stage 2, with 
-$$ r=\frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}$$
-To keep the number of total treatments constant we optimize the ratio ($r \in (0,1)$) of $n_{\text{stage1}}$ and $n_{\text{stage2}}$ instead of optimizing these values directly.
-Therefore we define
+We denote the proportion of patients per treatment in stage 1, compared to patients per treatment in both stages, with 
+$$ r=\frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}.$$
+Given the number of treatments $k_1$ and $k_2$ and the total number of patients $n_{\text{treat}}$, optimizing the power with respect to $n_{\text{stage1}}$ and $n_{\text{stage2}}$ is equivalent to optimizing with respect to $r$, since
 \begin{align}
   \label{eq:stagec}
   %\begin{split}
-  n_{\text{stage1}} &= r \cdot c, \qquad
-  n_{\text{stage2}} = (1-r) \cdot c,
+  n_{\text{stage1}} & = 
+  n_{\text{stage1}}\cdot \frac{n_{\text{treat}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} = 
+  n_{\text{treat}} \cdot \frac{n_{\text{stage1}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} \\
+  & = n_{\text{treat}}\cdot
+  \frac{r}{k_1\cdot
+  r+k_2\cdot (1-r)}, \\
+  n_{\text{stage2}} & =
+  n_{\text{treat}}\cdot
+  \frac{1-r}{k_1\cdot
+  r+k_2\cdot (1-r)}.
   %\end{split}
 \end{align}
-whereas $c$ is a constant that depends on $n_{\text{treat}}$, $k_1$ and $k_2$.
-For $k_1 = k_2 = 5$, $c$ would be $n_{\text{treat}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
-For a general solution, we can insert the variables from (\ref{eq:stagec}) into (\ref{eq:ntreat}) and obtain
-\begin{align}
- % \label{eq:ntreatc}
-  n_{\text{treat}} & = k_1 \cdot r \cdot c + k_2 \cdot (1-r) \cdot c \;\; \Leftrightarrow \;\; %\\
-  \label{eq:ntreatcc}
-  c = \frac{n_{\text{treat}}}{k_1 \cdot r + k_2 \cdot (1-r)}.
-\end{align}
-Placing $c$ into (\ref{eq:stagec}) lets us calculate $n_{\text{stage1}}$ and $n_{\text{stage2}}$ for the given constraints and a given ratio $r$.
-This formula gives us the treatments per arm and per stage if $k_2$ is known. 
-Unfortunately, this is only the case for \emph{selection strategy} $\in \{\text{all},1,2,3\}$.
-
-For the selection strategies \emph{thr} and \emph{eps}, the number of arms in the second stage ($k_2$) depends on the choice of the \emph{Threshold} or \emph{Epsilon} parameter.
+%For $k_1 = k_2 = 5$, $c$ would be $n_{\text{treat}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
+These formulas give the treatments per arm and per stage if $k_2$ is known. 
+However, this is only the case for selection strategies 1, 2, and 3.
+For the selection strategies \emph{threshold} and \emph{epsilon}, the number of arms in the second stage ($k_2$) depends on the choice of the \emph{thresh} or \emph{eps} parameter.
 However, for given values of $n_{\text{stage1}}$ and \emph{Threshold} or \emph{Epsilon} respectively we can estimate the expected number of arms at stage 2 ($\hat{k}_2$), by running a simulation of the first stage.
 This simulation is run multiple times for different values of $n_{\text{stage1}}$ in a calibration step until the desired number of $n_{\text{treat}}$ is reached approximately.
 In fact, this calibration step formulates an independent optimization problem:
