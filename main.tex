@@ -408,6 +408,7 @@ In the first stage five arms (defined by the control and four different administ
 The metric to be optimized is the statistical power, where a positive outcome means a trial arm with true effect is detected as significant effect.
 
 \subsection{Clinical trial design and parameters}
+\label{subsec:design}
 For the true effect sizes in the simulation, we consider four \emph{effect sets} whose values are inspired and partially based on the corresponding numbers of the motivating example, see Table~\ref{tab:table_effect_names}.
 \input{generated/tables/table_effect_names.tex}
 For the effect set \emph{paper} we use exactly the same numbers as in~\citet{friede_adaptive_2020}.
@@ -450,33 +451,35 @@ The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according 
 
 \subsection{Calculation of the statistical power}
 
-Let $n_{\text{treat}}$ be the number of total treatments (in our case 5, including the control), and let $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively. Let $k_1$ and $k_2$ denote the number of treatments in stage 1 and stage 2, respectively. Within one stage, the same number of patients are allocated to all different treatments. Then $n_{\text{treat}}$ can be calculated as
+Let $n_{\text{treat}}$ be the total number of treatments in the overall trial, and let $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively. Let $k_1$ and $k_2$ denote the number of treatments in stage 1 and stage 2, respectively. Within one stage, the same number of patients are allocated to all different treatments. Then $n_{\text{treat}}$ is given by
 \begin{equation}
   \label{eq:ntreat}
-  n_{\text{treat}} = k_1 \cdot n_{\text{stage1}} + k_2 \cdot n_{\text{stage2}},
+  n_{\text{treat}} = k_1 \cdot n_{\text{stage1}} + k_2 \cdot n_{\text{stage2}}.
 \end{equation}
-In our scenario we have $k_1 = 5$ and $k_2 \in \{2, \ldots, 5\}$, where $k_2$ depends on the result of the treatment selection strategy in stage 1.
+In our scenario (as described in Section \ref{subsec:design}) we have $k_1 = 5$ and $k_2 \in \{2, \ldots, 5\}$, where $k_2$ depends on the result of the treatment selection strategy in stage 1 and the control treatment is included in both stages.
 
-Our main optimization goal is to maximize the statistical power $y$ depending on the trial design, where $k_2$ depends on the results of the first stage. 
-The power $y$ can be formulated as a black-box as follows:
+Our main optimization goal is to maximize the statistical power $y$ depending on the trial design. The power can be formulated as a black-box as follows:
 \begin{align}
   \label{eq:bbox}
-  (y,k_2)' &= f(n_{\text{stage1}}, n_{\text{stage2}}, \text{effect set}, \text{selection strategy}, \text{epsilon}, \text{threshold}).
+  y & = f(n_{\text{stage1}}, n_{\text{stage2}}, \text{effect set}, \text{selection strategy}, \text{epsilon}, \text{threshold}).
 \end{align}
 
 The total number of treatments $n_{\text{treat}}$ should be constant in the simulation study, when comparing the efficiency of different designs.
 We denote the proportion of patients per treatment in stage 1, compared to patients per treatment in both stages, with 
-$$ r=\frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}.$$
-Given the number of treatments $k_1$ and $k_2$ and the total number of patients $n_{\text{treat}}$, optimizing the power with respect to $n_{\text{stage1}}$ and $n_{\text{stage2}}$ is equivalent to optimizing with respect to $r$, since
+\begin{align}
+  \label{eq:r}
+ r & = \frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}.
+\end{align}
+Given the number of treatments $k_1$ and $k_2$ in the two stages and the total number of patients $n_{\text{treat}}$, optimizing the power with respect to $n_{\text{stage1}}$ and $n_{\text{stage2}}$ is equivalent to optimizing with respect to $r$, since
 \begin{align}
   \label{eq:stagec}
   %\begin{split}
   n_{\text{stage1}} & = 
   n_{\text{stage1}}\cdot \frac{n_{\text{treat}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} = 
-  n_{\text{treat}} \cdot \frac{n_{\text{stage1}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} \\
+  n_{\text{treat}} \cdot \frac{n_{\text{stage1}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} \nonumber \\
   & = n_{\text{treat}}\cdot
   \frac{r}{k_1\cdot
-  r+k_2\cdot (1-r)}, \\
+  r+k_2\cdot (1-r)}, \nonumber \\
   n_{\text{stage2}} & =
   n_{\text{treat}}\cdot
   \frac{1-r}{k_1\cdot
@@ -484,77 +487,99 @@ Given the number of treatments $k_1$ and $k_2$ and the total number of patients 
   %\end{split}
 \end{align}
 %For $k_1 = k_2 = 5$, $c$ would be $n_{\text{treat}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
-These formulas give the treatments per arm and per stage if $k_2$ is known. 
-However, this is only the case for selection strategies 1, 2, and 3.
-For the selection strategies \emph{threshold} and \emph{epsilon}, the number of arms in the second stage ($k_2$) depends on the choice of the \emph{thresh} or \emph{eps} parameter.
-However, for given values of $n_{\text{stage1}}$ and \emph{Threshold} or \emph{Epsilon} respectively we can estimate the expected number of arms at stage 2 ($\hat{k}_2$), by running a simulation of the first stage.
-This simulation is run multiple times for different values of $n_{\text{stage1}}$ in a calibration step until the desired number of $n_{\text{treat}}$ is reached approximately.
-In fact, this calibration step formulates an independent optimization problem:
-We minimize 
+These formulas give the numbers of patients per treatment arm in the two stages, if $k_2$ is known. 
+This is only the case for selection strategies 1, 2, and 3.
+For the selection strategies \emph{threshold} and \emph{epsilon}, $k_2$ depends on the outcome of stage 1.
+%choice of the \emph{thresh} or \emph{eps} parameter.
+In these cases, for given values of $n_{\text{stage1}}$ and \emph{thresh} or \emph{eps}, respectively, we can  obtain an estimate $\hat{k}_2$ of $k_2$ with a so-called calibration step.
+For a set of values for $n_{\text{stage1}}$ in the interval $\left[ \lceil 0.01 \cdot \frac{n_{\text{treat}}}{k_1} \rceil, \lceil \frac{n_{\text{treat}}}{k_1} \rceil \right]$, we simulate stage 1 of the trial multiple times.
+We calculate $n_{\text{stage2}} = (1-r)/r\cdot n_{\text{stage1}}$ from formula (\ref{eq:r}) and $\hat{k}_2$ as the average of the resulting values of $k_2$ for all simulations with a fixed values for $n_{\text{stage1}}$.
+Then we select the value of $n_{\text{stage1}}$ such that the corresponding number of total patients is closest to $n_{\text{treat}}$.
+More precisely, we minimize
 \begin{align}
   \label{eq:targettreat}
   \begin{split}
-  & \operatorname{min}_{n_{\text{stage1}} \in [l,u]} h(n_{\text{stage1}}) \,  \text{, with} \\
-  h(n_{\text{stage1}}) &:= \biggl( (k_1 \cdot n_{\text{stage1}} + \hat{k}_2 \cdot \underbrace{\frac{1-r}{r} \cdot n_{\text{stage1}}}_{=n_{\text{stage2}}}) - n_{\text{treat}} \biggr)^2 \, \text{and} \\
-  \hat{k}_2 &= f(n_{\text{stage1}}, 1, \text{effect set}, \text{Selection strategy}, \text{Epsilon}, \text{Threshold})_{k_2}
+  h(n_{\text{stage1}}) &:= \left( \Big(k_1 \cdot n_{\text{stage1}} + \hat{k}_2 \cdot %\underbrace{
+  \frac{1-r}{r} \cdot n_{\text{stage1}}
+  %}_{=n_{\text{stage2}}}
+  \Big) - n_{\text{treat}} \right)^2
+%  \hat{k}_2 &= f(n_{\text{stage1}}, 1, \text{effect set}, \text{Selection strategy}, \text{Epsilon}, \text{Threshold})_{k_2}
   \end{split}
 \end{align}
-and $l = \lceil 0.01 \cdot \frac{n_{\text{treat}}}{k_1} \rceil$ and $u = \lceil \frac{n_{\text{treat}}}{k_1} \rceil$. 
-$f$ is the simulator black-box from Equation~\ref{eq:bbox}, that gives us the estimated number of $\hat{k}_2$.
-This number is independent of the simulation of the second stage, so we can set $n_{\text{stage2}}$ to 1.
-The value of $\hat{k}_2$ that was observed with the minimal outcome of $h$ is then used to calculate $c$ in equation~\ref{eq:ntreatcc}.
+with respect to $n_{\text{stage1}}$, where the estimate $\hat{k}_2$ is obtained as described above dependent on $n_{\text{stage1}}$. 
+%$f$ is the simulator black-box from Equation~\ref{eq:bbox}, that gives us the estimated number of $\hat{k}_2$.
+%This number is independent of the simulation of the second stage, so we can set $n_{\text{stage2}}$ to 1.
+%The value of $\hat{k}_2$ that was observed with the minimal outcome of $h$ is then used to calculate $c$ in equation~\ref{eq:ntreatcc}.
 
-With the calibration step that is necessary for selection strategy $\in \{\text{thr}, \text{eps} \}$ we can always set $n_{\text{stage1}}$ and $n_{\text{stage2}}$ according to $n_{\text{treat}}$, $r$.
-This allows us to reparametrize the black-box from equation~\ref{eq:bbox} to directly depend from the parameters of interest:
+The calibration step is necessary to guarantee that the total number of treatments $n_{\text{treat}}$ is (in average) the same, also for the variable selection strategies $\text{thr}$ and $\text{eps}$. Then the black-box from formula (\ref{eq:bbox}) can be reformulated as 
 \begin{equation}
-  y = \tilde{f}_{n_{\text{treat}}}(r, \text{effect set}, \text{Selection strategy}, \text{Epsilon}, \text{Threshold}) \, ,
+  y = \tilde{f}(n_{\text{treat}}, r, \text{effect set}, \text{selection strategy}, \text{epsilon}, \text{threshold}).
 \end{equation}
-whereas $n_{\text{treat}}$ is considered to be set constant.
-This constraint is necessary because otherwise bigger number of treatments almost certainly imply a higher statistical power of the study design.
+In our simulations, $n_{\text{treat}}$ is considered to be a constant.
 
-In the following we try to find the clinical design setup, represented by the parameter settings $r$, \emph{effect set}, \emph{Selection strategy}, \emph{Epsilon} and \emph{Thresold} that yield the highest statistical power.
-The statistical power is determined by evaluating the simulator $\tilde{f}$ as explained before.
+Summarizing, in the following we aim to find the clinical design setup, represented by the parameter values for $r$, \emph{effect set}, \emph{Selection strategy}, \emph{epsilon} and \emph{threshold} that yield the highest statistical power, when evaluation $\tilde{f}$.
 
-\paragraph{General simulation settings}
-For the simulation we call the \texttt{treatsel.sim} function from the \texttt{asd}~package~\cite{parsons_software_2011} with the following parameters as fixed:
-number of simulation iterations (\texttt{nsim}~$= 1000$), correlation between early and final outcomes  (\texttt{corr}~$= 0.4$), test level (\texttt{level}~$=0.025$), and (TODO Not sure what that means) (\texttt{ptest}~$=(3,4)$). %jeweils Elementarhypothese 3, 4 verwerfen, gucken wir gar nicht drauf
+\subsection{Optimization strategies}
 
-\paragraph{Exhaustive Search}
-For each effect set (see Table~\ref{tab:table_effect_names}) we conduct an exhaustive grid search with a resolution of 25 points per real-valued dimension for each selection strategy.
-This results in total $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations that are evaluated for each effect set.
-Additionally the grid is evaluated with 10 stochastic repliactions to obtain an estimation of the variance of the simulation.
+In the simulation study we compare an exhaustive grid search on the parameter space with MBO (Model-based optimization) with respect to both performance (power) and runtime.
 
-The best point of one grid is determined by selecting the configuration that let to the best outcome.
-If we would report this outcome, we will likely be overoptimistic, as the chances are high that the noise contributed to the good outcome.
-To be able to report an unbiased performance we take the best found configuration and look up the results in the remaining 9 stochastic replications of the grid evaluations, similar to a cross-validation in machine learning applications.
-This eliminates the risk of only reporting outcomes that are optimal by chance.
+First, we describe the \emph{exhaustive grid search}.
+For each effect set (see Table~\ref{tab:table_effect_names}) and for each selection strategy, we conduct an exhaustive grid search with a resolution of 25 points per real-valued dimension, i.e. one parameter ($r$) for the strategies all, 1, 2, and 3, and two parameters ($r$ and \emph{eps} or \emph{thresh}, respectively).
+This results in a total of $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations that are evaluated for each effect set.
+Additionally, the grid is evaluated with 10 stochastic replictions to estimate the variance of the estimated power.
 
-\paragraph{Application of MBO}
-Before the application of MBO, we have to define how the surrogate model that predicts the outcome of $f$ for unknown values of $\theta$ is generated.
-As the regression model for the surrogate we chose Kriging (also called Gaussian process regression) and use the implementation in the R-package \texttt{DiceKriging}~\citep{roustant_dicekriging_2012}, because it is well known to work well for fairly low dimensional search spaces.
+The best point per evaluated grid is determined by selecting the configuration (parameter set) with the best outcome, i.e. the largest power.
+The corresponding value is generally too optimistic, as the random noise on the estimated value can contribute to the good outcome.
+To account for this optimism and report unbiased performance estimates, for each of the 10 replicate simulations, we identify the best configuration and consider the corresponding 9 values of the other 9 replicate simulations, similar to a cross-validation framework in machine learning applications. \\
+%This eliminates the risk of only reporting outcomes that are optimal by chance.
+
+Next, we describe our realization of the search with the \emph{MBO (Model-based optimization)} approach.
+For the application of MBO, we first have to define how the surrogate model that predicts the outcome of $f$ for unknown values of $\theta$ (parameter sets) is generated.
+As the regression model for the surrogate we choose Kriging (also called Gaussian process regression) and use the implementation in the R-package \texttt{DiceKriging}~\citep{roustant_dicekriging_2012}, because it is well known to work well for fairly low dimensional search spaces.
 We configure Kriging to apply the Mattern$\frac{5}{2}$ kernel with an estimated \emph{nugget effect} to account for the noisy response of $f$ and without scaling the input variables to $[0,1]$.
 
-Kringing expects a numerical input, but our search space contains categorical parameters and is even hierarchical.
+Kriging expects a numerical input, but our search space contains categorical parameters and is even hierarchical.
 First, to transform categorical parameters of the search space (see Table~\ref{tab:search_space}) into numerical values we use one-hot encoding.
-Furthermore, our search space is hierarchical because \emph{Epsilon} and \emph{Threshold} are only active for the respective \emph{selection strategy}.
-The hierarchical structure of introduces inactive values for the configurations ($\theta$), i.e.\ if the \emph{selection strategy} is set to \emph{eps} the parameter of \emph{thr} inactive.
+Furthermore, our search space is hierarchical because the parameters \emph{epsilon} and \emph{threshold} are only active for the respective \emph{selection strategies}.
+The hierarchical structure introduces inactive values for the configurations ($\theta$), i.e.\ if the \emph{selection strategy} is set to \emph{eps} the parameter of \emph{thresh} is inactive.
 If a value is inactive, we set it to a value two times as high as the maximum in its active range (e.g.\ if \emph{thresh} is inactive it will be set to 20).
-To set the inactive value to a high value outside of the original range ensures that within the original range the Kriging-model does not or only marginally gets affected by the inactive values.
-Note, that this trick only works because we did not scale the input variables to $[0,1]$ and because the estimated covariance by the Mattern$\frac{5}{2}$ kernel is approximately zero for distances greater than $4$.
-With the above steps we ensured that the input for the Kriging is purely numeric.
+This ensures that within the original range the Kriging model is not or only minimally affected by the inactive values.
+Note, that this trick only works because we did not scale the input variables to $[0,1]$ and because the estimated covariance of the Mattern$\frac{5}{2}$ kernel is approximately zero for distances greater than $4$.
+With the above steps we ensure that the input for the Kriging is purely numeric.
 
-As an acquisition function we chose the $\operatorname{AEI}$ as explained in Section~\ref{sec:model_based_optimization}.
+As an acquisition function we choose the $\operatorname{AEI}$ as explained in Section~\ref{sec:model_based_optimization}.
 We start MBO with an inital design of $16$ randomly sampled points and allow $100$ further iterations, summing up to a total budget of $116$ evaluated configurations of the simulator.
 
-At the end of the optimization procedure, the best point is chosen according to the best prediction obtained on the set of evaluated poins as explained in Section~\ref{ssec:best_point}.
-The best selected point is then evaluated $10$ times to allow us to report an an unbiased estimate of the true performance of the optimization result.
+At the end of the optimization procedure, the best point is chosen according to the best prediction obtained on the set of evaluated points as explained in Section~\ref{ssec:best_point}.
+Again, overoptimism must be avoided. Thus, the best selected point (the best parameter setting) is then independently evaluated $10$ times again.
 
 The whole MBO procedure is repeated $10$ times to ensure that a single optimization run was not just lucky in finding the optimum.
 
-\subsection{Design}
+\subsection{Implementation}
 
-The underlying algorithms in this study are implemented in R, for the model-based optimization the R-package mlrMBO~\citep{bischl_mlrmbo_2017} is used, and the simulation of the clinical trials is performed using the R-package asd~\citep{parsons_software_2011}.
+The algorithms used in this study are implemented in R.
+For the model-based optimization, the R-package mlrMBO~\citep{bischl_mlrmbo_2017} is used.
+For the simulation of clinical trials, the function \texttt{treatsel.sim} of the R-package asd~\citep{parsons_software_2011} is used, with parameter values given in Table~\ref{tab:par_implement}.
+The vector of treatment numbers for determining power \texttt{ptest} counts rejections of 3 or 4 hypotheses ???
 
+\begin{table}[h]
+  \caption{Parameter choices for the R function \texttt{treatsel.sim}}
+  \label{tab:par_implement}
+  \centering
+  \begin{tabular}{lll}
+  \hline
+  Meaning of parameter & Parameter & Value \\
+  \hline
+  Number of simulation iterations & \texttt{nsim} & $1000$ \\
+  Correlation between early and final outcomes & \texttt{corr} & $0.4$ \\
+  Test level & \texttt{level} & $0.025$ \\
+  Vector of treatment numbers for determining power & \texttt{ptest} & $(3,4)$ \\
+  \hline
+  \end{tabular}
+\end{table}
+
+
+% (TODO Not sure what ptest that means)  %jeweils Elementarhypothese 3, 4 verwerfen, gucken wir gar nicht drauf
 
 \subsection{Results}
 
