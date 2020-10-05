@@ -497,13 +497,15 @@ The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according 
   \hline
   Parameter         & Range \\
   \hline
-  Selection strategy & $\{\text{all}, 1, 2, 3, \text{eps}, \text{thr} \}$ \\
+  Selection strategy & $\{\text{all}, 1, 2, 3, \text{eps}, \text{thresh} \}$ \\
   $r$ (ratio)        & $(0,1)$ \\
   eps (epsilon)            & $[0,4]$ \\
   thresh (threshold)          & $[0,10]$ \\
   \hline
   \end{tabular}
 \end{table}
+
+%FIXME: JR: uniform naming: eps, thersh for the values and epsilon and treshold for the strategies
 
 \subsection{Calculation of the statistical power}
 
@@ -549,7 +551,7 @@ For the selection strategies \emph{threshold} and \emph{epsilon}, $k_2$ depends 
 %choice of the \emph{thresh} or \emph{eps} parameter.
 In these cases, for given values of $n_{\text{stage1}}$ and \emph{thresh} or \emph{eps}, respectively, we can  obtain an estimate $\hat{k}_2$ of $k_2$ with a so-called calibration step.
 For a set of values for $n_{\text{stage1}}$ in the interval $\left[ \lceil 0.01 \cdot \frac{n_{\text{treat}}}{k_1} \rceil, \lceil \frac{n_{\text{treat}}}{k_1} \rceil \right]$, we simulate stage 1 of the trial multiple times.
-We calculate $n_{\text{stage2}} = (1-r)/r\cdot n_{\text{stage1}}$ from formula (\ref{eq:r}) and $\hat{k}_2$ as the average of the resulting values of $k_2$ for all simulations with a fixed values for $n_{\text{stage1}}$.
+We calculate $n_{\text{stage2}} = (1-r)/r\cdot n_{\text{stage1}}$ from formula (\ref{eq:r}) and $\hat{k}_2$ as the average of the resulting values of $k_2$ for all simulations with a fixed value for $n_{\text{stage1}}$.
 Then we select the value of $n_{\text{stage1}}$ such that the corresponding number of total patients is closest to $n_{\text{treat}}$.
 More precisely, we minimize
 \begin{align}
@@ -567,7 +569,7 @@ with respect to $n_{\text{stage1}}$, where the estimate $\hat{k}_2$ is obtained 
 %This number is independent of the simulation of the second stage, so we can set $n_{\text{stage2}}$ to 1.
 %The value of $\hat{k}_2$ that was observed with the minimal outcome of $h$ is then used to calculate $c$ in equation~\ref{eq:ntreatcc}.
 
-The calibration step is necessary to guarantee that the total number of treatments $n_{\text{treat}}$ is (in average) the same, also for the variable selection strategies $\text{thr}$ and $\text{eps}$. Then the black-box from formula (\ref{eq:bbox}) can be reformulated as 
+The calibration step is necessary to guarantee that the total number of treatments $n_{\text{treat}}$ is (in average) the same, also for the variable selection strategies $\text{threshold}$ and $\text{epsilon}$. Then the black-box from formula (\ref{eq:bbox}) can be reformulated as 
 \begin{equation}
   y = \tilde{f}(n_{\text{treat}}, r, \text{effect set}, \text{selection strategy}, \text{epsilon}, \text{threshold}).
 \end{equation}
