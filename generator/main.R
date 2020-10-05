@@ -9,6 +9,8 @@ library(knitr)
 library(kableExtra)
 library(dplyr)
 library(mlr3misc)
+library(grid)
+library(gridExtra)
 library(memoise)
 
 
@@ -205,8 +207,19 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
   g = g + scale_shape_manual(values = c("mbo" = 19, "grid" = 21))
   g = g + scale_color_manual(values = select_labels_colors)
-  g = g + theme(legend.position = "bottom")
-  g
+  g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
+  #grid headlines
+  col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 12))
+  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 12), rot=90)
+  layout_mat = matrix(c(
+    NA, 1, 2, 3,
+     4, 8, 8, 8,
+     5, 8, 8, 8,
+     6, 8, 8, 8,
+     7, 8, 8, 8,
+    NA, 8, 8, 8
+  ), byrow = TRUE, ncol = 4)
+  grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(1,10,10,10), heights=c(1,5,5,5,5,3))
 })
 
 

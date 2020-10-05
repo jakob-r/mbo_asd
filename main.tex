@@ -320,8 +320,8 @@ Multi-arm trial; two-stages; treatment selection in interim analysis; final anal
 
 \begin{figure}[ht]
 \centering
-\begin{tikzpicture}[auto,node distance=1cm,align=center,text width = 3cm, inner sep = 0.1cm, font=\scriptsize, outer sep= 0cm]
-  \node[draw, ellipse, minimum height=1cm, text width=2cm] (ClinicalScenarios) at (0,0) {
+\begin{tikzpicture}[auto,node distance=1cm,align=center,text width = 3cm, inner sep = 0.1cm, font=\sffamily \scriptsize, outer sep= 0cm]
+  \node[draw, ellipse, minimum height=1cm, text width=2.5cm] (ClinicalScenarios) at (0,0) {
     \textbf{Clinical scenarios}\\
     Simulation Studies};
   \node[name=block, rectangle split, rectangle split parts=2, draw, above = of ClinicalScenarios] (UnknownPoints)
@@ -643,6 +643,19 @@ The vector of treatment numbers for determining power \texttt{ptest} counts reje
 
 As explained before, we obtained unbiased result from the exhaustive grid search and the MBO procedure.
 However, in Figure~\ref{fig:plot_allbest} we show the observed outcomes during evaluation of the grid as well as the final configurations found by MBO, to demonstrate the behaviour of the simulation in dependence of the parameters \emph{selection strategy} and \emph{stage ratio}.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y.pdf}
+\caption{%
+  Validated performance of both approaches.
+  }
+\label{fig:plot_boxplot_valid_y}
+\end{figure}
+
+\input{generated/tables/table_time.tex}
+
+
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_allbest.pdf}
@@ -660,28 +673,9 @@ Also, for the \emph{selection strategy} \emph{epsilon rule} and \emph{threshold 
 \label{fig:plot_best_x}
 \end{figure}
 
-
-\begin{figure}[htb]
-\centering
-\includegraphics[width=\linewidth]{generated/figures/plot_opt_path.pdf}
-\caption{%
-  Optimization curves of each optimization run and the mean of all runs drawn as a black line.
-  }
-\label{fig:plot_opt_path} 
-\end{figure}
-
-\begin{figure}[htb]
-\centering
-\includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y.pdf}
-\caption{%
-  Validated performance of both approaches.
-  }
-\label{fig:plot_boxplot_valid_y}
-\end{figure}
-
 \input{generated/tables/table_best.tex}
 
-\input{generated/tables/table_time.tex}
+
 
 \subsection{More simulation rounds}
 
