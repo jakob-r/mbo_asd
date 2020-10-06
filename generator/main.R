@@ -303,7 +303,7 @@ plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT *
   g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
   g = g + theme(legend.position = "bottom")
   g = g + geom_boxplot()
-  g = g + labs(x = expression(n[sim]), y = expression(y[valid]), color = NULL)
+  g = g + labs(x = expression(n[sim]), y = expression(y[valid]), color = NULL, fill = NULL)
   g
 })
 
