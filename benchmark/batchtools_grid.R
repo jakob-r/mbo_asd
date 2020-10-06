@@ -4,7 +4,7 @@ library(asd.mod)
 library(data.table)
 library(mlr3misc)
 
-TESTMODE = Sys.info()[["nodename"]] %in% c("JayBook2")
+TESTMODE = Sys.info()[["nodename"]] %in% c("JayBook2", "HERKULES5ARCH")
 
 if (TESTMODE) {
   #try out params
@@ -57,7 +57,7 @@ fn = function(
       stage2 = round((1-p) * const)
     )
   }
-
+  
   calculate_nselect = function(res) { #calculate the nselect from the results after the simulation ran
     if (!is.null(res$error)) {
       return(0)
@@ -119,7 +119,7 @@ fn = function(
         mean_select = getOptPathEl(res$opt.path, getOptPathBestIndex(res$opt.path))$extra$mean_select)
       return(n)
     }
-      = calibrate_n(x)
+    calib_res = calibrate_n(x)
     select2 = calib_res$mean_select
   }
   n = calculate_n(select2)
@@ -211,23 +211,26 @@ addAlgorithm("mbo", fun = function(job, data, instance, corr, nsim, n_cases, mbo
   res
 })
 
-const_design = expand.grid(n_cases = NCASES, nsim = NSIM, corr = 0.4, effect = names(EFFECTS), stringsAsFactors = FALSE)
-# add 5times sim steps for one experiment
-new_line = subset(const_design, n_cases == 2000 & effect == "paper")
-new_line$nsim = 5 * new_line$nsim
-const_design = rbind(const_design, new_line)
-eval_design = generateGridDesign(getParamSet(fun), GRIDRES)
-eval_design = subset(eval_design, stage_ratio != 1 & stage_ratio != 0)
-eval_design = merge.data.frame(eval_design, const_design)
-setDT(eval_design)
-
-mbo_design = cbind(const_design, mbo_iters = MBOITERS)
-ades = list(
-  eval = eval_design,
-  mbo = mbo_design
-)
-
+generate_eval_mbo_design = function(n_cases = NCASES, nsim = NSIM, effect = names(EFFECTS)) {
+  const_design = expand.grid(n_cases = n_cases, nsim = nsim, corr = 0.4, effect = effect, stringsAsFactors = FALSE)
+  eval_design = generateGridDesign(getParamSet(fun), GRIDRES)
+  eval_design = subset(eval_design, stage_ratio != 1 & stage_ratio != 0)
+  eval_design = merge.data.frame(eval_design, const_design)
+  setDT(eval_design)
+  
+  mbo_design = cbind(const_design, mbo_iters = MBOITERS)
+  list(
+    eval = eval_design,
+    mbo = mbo_design
+  )
+  
+}
+ades = generate_eval_mbo_design()
 addExperiments(algo.designs = ades, repls = REPLS)
+
+# add 5times sim steps for one experiment
+ades_nsim_high = generate_eval_mbo_design(n_cases = tail(NCASES,1), nsim = c(NSIM, 5 * NSIM), effect = "paper")
+addExperiments(algo.designs = ades_nsim_high, repls = 10 * REPLS)
 
 if (TESTMODE) {
   stop()
