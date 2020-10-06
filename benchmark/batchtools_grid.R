@@ -252,23 +252,23 @@ if (FALSE) {
   reg$status[ids_expired[is_ready == TRUE, .(job.id)], done := Sys.time()]
 }
 
-jdf = getJobTable(findDone())
-res_eval = reduceResultsDataTable(jdf[algorithm == "eval", ], fun = function(res, ...) {
+jdf_done = getJobTable(findDone())
+res_eval = reduceResultsDataTable(jdf_done[algorithm == "eval", ], fun = function(res, ...) {
   extras = attr(res, "extras")
   extras = lapply(extras, function(x) {attributes(x) = NULL; x}) #clean extras
   c(y = res[[1]], extras)
 })
 res_eval = unwrap(res_eval, "result")
-res_eval = ljoin(jdf[algorithm == "eval", ], res_eval)
+res_eval = ljoin(jdf_done[algorithm == "eval", ], res_eval)
 saveRDS(res_eval, "batchtools_grid_res_eval.rds")
 
-res_mbo = reduceResultsDataTable(jdf[algorithm == "mbo" & map(algo.pars, "effect") %in% names(EFFECTS),], fun = function(res) {
+res_mbo = reduceResultsDataTable(jdf_done[algorithm == "mbo" & map(algo.pars, "effect") %in% names(EFFECTS),], fun = function(res) {
   opdf = as.data.table(res$opt.path)
-  opdf[, c("error.model", "eol") := NULL]
+  opdf[, c("error.model", "eol", "aei", "train.time", "propose.time", "se", "mean", "tau") := NULL]
   best_el = getOptPathEl(res$opt.path, index = res$best.ind)
-  c(res$x, y = res$y, best_el$extra[c("stage_1_arms", "stage_1_n","stage_2_arms", "stage_2_n")], opt.path = list(opdf))
+  c(res$x, y = res$y, best_index = res$best.ind, best_el$extra[c("stage_1_arms", "stage_1_n","stage_2_arms", "stage_2_n")], opt.path = list(opdf))
 })
-res_mbo = ljoin(jdf[algorithm == "mbo", ], res_mbo)
+res_mbo = ljoin(jdf_done[algorithm == "mbo", ], res_mbo)
 saveRDS(res_mbo, "batchtools_grid_res_mbo.rds")
 
 if (FALSE) {

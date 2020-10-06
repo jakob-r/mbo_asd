@@ -94,6 +94,7 @@
 % own packages
 \usepackage{siunitx}
 \usepackage{enumitem}
+\usepackage{placeins} %floatbarrier
 % tikz
 \usepackage{tikz}
 % we want ER + above/below + left/right
@@ -142,6 +143,10 @@ applicable)
 \author[]{Jörg Rahnenführer\inst{1}} %please provide full author names. Middle names should be indicated by initials only, i.e. Henry J. James
 %%%%    \dedicatory{This is a dedicatory.}
 \Receiveddate{zzz} \Reviseddate{zzz} \Accepteddate{zzz} 
+
+\makeatletter
+\let\newtitle\@title
+\makeatother
 
 % max 250 words
 \begin{abstract}
@@ -673,8 +678,6 @@ Also, for the \emph{selection strategy} \emph{epsilon rule} and \emph{threshold 
 \label{fig:plot_best_x}
 \end{figure}
 
-\input{generated/tables/table_best.tex}
-
 
 
 \subsection{More simulation rounds}
@@ -787,4 +790,33 @@ This work was partly supported by Deutsche Forschungsgemeinschaft (DFG) within t
 
 \newpage
 \phantom{aaaa}
+%%%%%%%%%% Merge with supplemental materials %%%%%%%%%%
+\clearpage
+\begin{center}
+\textbf{\large Supplemental Materials: \newtitle}
+\end{center}
+\FloatBarrier
+%%%%%%%%%% Merge with supplemental materials %%%%%%%%%%
+%%%%%%%%%% Prefix a "S" to all equations, figures, tables and reset the counter %%%%%%%%%%
+\setcounter{equation}{0}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{page}{1}
+\makeatletter
+\renewcommand{\theequation}{S\arabic{equation}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\bibnumfmt}[1]{[S#1]}
+%%%%%%%%%% Prefix a "S" to all equations, figures, tables and reset the counter %%%%%%%%%%
+
+\input{generated/tables/table_best.tex}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\linewidth]{generated/figures/plot_opt_path.pdf}
+\caption{%
+  Optimization curves of each optimization run and the mean of all runs drawn as a black line.
+  }
+\label{fig:plot_opt_path} 
+\end{figure}
+
 \end{document}

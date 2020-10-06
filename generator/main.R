@@ -127,7 +127,7 @@ read_results_uncached = function(select_labels) {
       valid_dt = res_eval[repl != this_repl, ]
       res = merge(optim_dt[,-"y"], valid_dt[, c(algo.par.names, "y"), with = FALSE], by = algo.par.names)
       # write result into x values dt
-      optim_dt$y = mean(res$y)
+      optim_dt$y_valid = mean(res$y)
       #strangely we have 3 to 4 missing values here, probably batchtools had a hick up
       times = .SD$time.running
       if (any(is.na(times)) && mean(is.na(times)) < 0.004) {
@@ -147,7 +147,10 @@ read_results_uncached = function(select_labels) {
   # determine max dob (probably 101) because it contains outside mbo evals
   max_dob = max(map_int(map(res_mbo$opt.path, "dob"), max))
 
-  res_mbo[, time.running := time.running - as.difftime(sum(.SD$opt.path[[1]][dob == max_dob, ]$exec.time), units = "secs") , by = rownames(res_mbo)]
+  res_mbo[, time.running := time.running - as.difftime(sum(.SD$opt.path[[1]][prop.type == "final_eval", ]$exec.time), units = "secs") , by = rownames(res_mbo)]
+  data.table::setnames(res_mbo, "y", "y_valid")
+  res_mbo[, y := .SD$opt.path[[1]][.SD$best_index, ]$y, by = rownames(res_mbo)]
+  
 
   list(res_mbo = res_mbo, res_grid = res_grid, res_eval = res_eval, algo.par.names = algo.par.names, algo.par.names.meta = algo.par.names.meta, algo.par.names.optim = algo.par.names.optim, max_dob = max_dob)
 }
@@ -191,6 +194,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + geom_point(data = res_mbo[nsim == 1000 & repl <= 10,], size = 2.5)
   g = g + scale_color_manual(values = select_labels_colors)
   g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_both)
+  g = g + labs(x = expression(k[1] %.% n[stage1]))
   g = g + theme(legend.position = "bottom")
   g
 })
@@ -201,7 +205,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
 #g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
 plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   tmp = rbind(res_grid[nsim == 1000 & repl <= 10,], res_mbo[nsim == 1000 & repl <= 10, colnames(res_grid ), with = FALSE])
-  g = ggplot(data = tmp, aes(x = stage_ratio, y = y, color = select, shape = algorithm))
+  g = ggplot(data = tmp, aes(x = stage_ratio, y = y_valid, color = select, shape = algorithm))
   g = g + geom_point(size = 3)
   #g = g + geom_text(data = res_mbo[nsim == 1000 & repl <= 10 & select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
   #g = g + geom_text(data = res_mbo[nsim == 1000 & repl <= 10 & select == "threshold rule", ], aes(label = round(thresh,2)), hjust = 0, vjust = 1, show.legend = FALSE)
@@ -210,6 +214,7 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
   g = g + scale_shape_manual(values = c("mbo" = 19, "grid" = 21))
   g = g + scale_color_manual(values = select_labels_colors)
+  g = g + labs(x = expression(r), y = expression(y[valid]))
   g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
   #grid headlines
   col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
@@ -235,7 +240,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   data.table::setnames(df, common_names, paste0("opt.", common_names))
   df = tidyr::unnest(df, "opt.path")
   setDT(df)
-  df = df[, cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
+  df = df[prop.type != "final_eval", cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
   
   # calculate theoretical best y from grid
   res_ave = res_eval[nsim == 1000 & repl <= 10, list(mean_y = mean(y)), by = algo.par.names]
@@ -243,24 +248,36 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   df_best[algorithm == "eval", algorithm := "grid"]
   df = merge(df_best[, -"algorithm"], df, by = c("effect", "n_cases"))
   
-  dfmean = df[, list(cummax_y_mean = mean(cummax_y), y_mean = median(y), y_sd = sd(y)), by = c(algo.par.names.meta, "dob", "best_y")]
+  dfmean = df[, list(cummax_y_mean = mean(cummax_y), y_mean = mean(y), y_sd = sd(y)), by = c(algo.par.names.meta, "dob", "best_y")]
   
-  g = ggplot(df[dob > 0 & dob < max_dob, ], aes(x = dob, y = cummax_y-best_y, color = algorithm))
+  g = ggplot(df[dob > 0 & prop.type != "final_eval", ], aes(x = dob, y = cummax_y-best_y, color = algorithm))
   g = g + geom_line(alpha = 0.3, aes(group = paste0(repl)))
   g = g + geom_line(data = dfmean, aes(y = cummax_y_mean-best_y))
   g = g + facet_wrap(effect~n_cases, scales = "free_y", labeller = label_both, ncol = 3)
   g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.6))
-  g = g + geom_text(data = df_best, aes(label = best_y), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
-  darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
-  names(darker_colors) = names(algorithm_labels_color)
-  g = g + scale_color_manual(values = darker_colors)
-  g
+  g = g + geom_label(data = df_best, aes(label = formatC(best_y, 4)), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
+  g = g + scale_color_manual(values = algorithm_labels_color)
+  g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
+  g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
+  g = g + guides(colour = guide_legend(override.aes = list(size=2)))
+  #grid headlines
+  col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
+  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10), rot=90*3)
+  layout_mat = matrix(c(
+    1, 2, 3, NA,
+    8, 8, 8,  4,
+    8, 8, 8,  5,
+    8, 8, 8,  6,
+    8, 8, 8,  7,
+    8, 8, 8, NA
+  ), byrow = TRUE, ncol = 4)
+  grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,5,5,1.5))
 })
 
 ## ----plot_boxplot_valid_y-----------------------------------------------------
 plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr = {
   tmp = rbind(res_grid, res_mbo[nsim == 1000 & repl <= 10, colnames(res_grid), with = FALSE])
-  g = ggplot(tmp, aes(x = as.factor(n_cases), y = y, color = algorithm, fill = algorithm))
+  g = ggplot(tmp, aes(x = as.factor(n_cases), y = y_valid, color = algorithm, fill = algorithm))
   # mylabels = function(labels) {
   #   do.call(map, args = c(list(paste), labels))
   #   map(paste, labels[[1]], labels[[2]])
@@ -270,8 +287,8 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr 
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
-  g = g + geom_boxplot() + theme(legend.position = "none")
-  g = g + labs(x = "n_cases")
+  g = g + geom_boxplot() + theme(legend.position = "right")
+  g = g + labs(x = expression(n[treat]), y = expression(y[valid]), color = NULL, fill = NULL)
   g
 })
 
@@ -279,14 +296,14 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr 
 plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.35 * FIG_WIDTH, expr = {
   tmp = rbind(res_grid, res_mbo[, colnames(res_grid), with = FALSE])
   tmp = tmp[n_cases == 2000 & effect == "paper",]
-  g = ggplot(tmp, aes(x = as.factor(nsim), y = y, color = algorithm, fill = algorithm))
+  g = ggplot(tmp, aes(x = as.factor(nsim), y = y_valid, color = algorithm, fill = algorithm))
   #g = g + facet_grid(.~nsim, scales = "free", labeller = label_both)
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
   g = g + theme(legend.position = "bottom")
   g = g + geom_boxplot()
-  g = g + labs(x = "n_sim")
+  g = g + labs(x = expression(n[sim]), y = expression(y[valid]), color = NULL)
   g
 })
 
@@ -299,7 +316,7 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
   data.table::setnames(df, common_names, paste0("opt.", common_names))
   df = tidyr::unnest(df, "opt.path")
   setDT(df)
-  df = df[, cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
+  df = df[prop.type != "final_eval", cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
   
   # calculate theoretical best y from grid
   res_ave = res_eval[n_cases == 2000 & effect == "paper", list(mean_y = mean(y)), by = algo.par.names]
@@ -308,18 +325,18 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
   df_best[algorithm == "eval", algorithm := "grid"]
   df = merge(df_best[, -"algorithm"], df, by = setdiff(algo.par.names.meta, "algorithm"))
   
-  dfmean = df[, list(cummax_y_mean = mean(cummax_y), y_mean = median(y), y_sd = sd(y)), by = c(algo.par.names.meta, "dob", "best_y")]
+  dfmean = df[, list(cummax_y_mean = mean(cummax_y), y_mean = mean(y), y_sd = sd(y)), by = c(algo.par.names.meta, "dob", "best_y")]
   
-  g = ggplot(df[dob > 0 & dob < max_dob, ], aes(x = dob, y = cummax_y-best_y, color = algorithm))
+  g = ggplot(df[dob > 0 & prop.type != "final_eval", ], aes(x = dob, y = cummax_y-best_y, color = algorithm))
   g = g + geom_line(alpha = 0.3, aes(group = paste0(repl)))
   g = g + geom_line(data = dfmean, aes(y = cummax_y_mean-best_y))
   g = g + facet_grid(.~nsim, scales = "free")
   g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.6))
-  g = g + geom_text(data = df_best, aes(label = best_y), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
-  darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
-  names(darker_colors) = names(algorithm_labels_color)
-  g = g + scale_color_manual(values = darker_colors)
+  g = g + geom_label(data = df_best, aes(label = formatC(best_y, 4)), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
+  g = g + scale_color_manual(values = algorithm_labels_color)
   g = g + theme(legend.position = "bottom")
+  g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
+  g = g + guides(colour = guide_legend(override.aes = list(size=2)))
   g
 })
 
