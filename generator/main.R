@@ -76,8 +76,8 @@ select_labels_colors = #http://paletton.com/#uid=74Z140kqdu7ghF3lowyu1ppwGk7
     "random" = "#000000",
     "threshold rule" = "#C0E62A"
   )
-algorithm_labels = c("mbo" = "MBO", "grid" = "Grid")
-algorithm_labels_color = c("mbo" = "#CB1C00", "grid" = "#00962D")
+algorithm_labels = c("mbo" = "MBO", "eval" = "Grid", "mbo grid" = "MBO Grid", "grid" = "Grid")
+algorithm_labels_color = c("mbo" = "#F04A2B", "eval" = "#099438", "mbo grid" = "#690D86", "grid" = "#099438")
 
 ## ----table_effect_names-------------------------------------------------------
 tmp = lapply(EFFECTS, do.call, what = rbind)
@@ -182,6 +182,38 @@ algo.par.names.meta = tmp$algo.par.names.meta
 algo.par.names.optim = tmp$algo.par.names.optim
 max_dob = tmp$max_dob
 
+cases = list(
+  default = quote(nsim == 1000 & repl <= 10),
+  nsim = quote(n_cases == 2000 & effect == "paper")
+)
+
+get_res = function(dt = res_eval, case = "default") {
+  dt[eval(cases[[case]]),]
+}
+
+get_res_grid = function(case = "default") {
+  get_res(res_grid, case)
+}
+
+get_res_mbo = function(case = "default") {
+  get_res(res_mbo, case)
+}
+
+get_res_eval = function(case = "default") {
+  get_res(res_eval, case)
+}
+
+get_res_mbogrid = function(case = "default") {
+  tmp_mbogrid = get_res_mbo(case = case)
+  tmp_mbogrid[, algorithm := "mbo grid"]
+  tmp_mbogrid[, y_valid := NULL]
+  setnames(tmp_mbogrid, "y_grid", "y_valid")
+}
+
+get_res_eval_average = function(case = "default") {
+  get_res_eval(case = case)[, list(mean_y = mean(y)), by = algo.par.names]
+}
+
 ## ----put_ext_eval_mbo_results, eval = FALSE-----------------------------------
 ## res_mbo[, y_tuning := y]
 ## map_dbl(res_mbo$opt.path, function(op) mean(op[dob == max(dob), y])) == res_mbo$y_tuning
@@ -199,7 +231,7 @@ max_dob = tmp$max_dob
 ## ----plot_allbest, fig.height = 1.5 * FIG_HEIGHT------------------------------
 # find best performing solution for each select methods and across all epsilon and threshold choices
 plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
-  res_ave = res_eval[nsim == 1000 & repl <= 10, list(mean_y = mean(y)), by = c(algo.par.names)]
+  res_ave = get_res_eval_average()
   res_best = res_ave[, .SD[order(-mean_y)[1], ], by = c("select", algo.par.names.meta)]
   res_best = res_best[, !c("mean_y", "stage_ratio")]
   # merge so the plot only contains the best curves (applies for epsilon and threshold rule)
@@ -207,9 +239,10 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   dfmean = df[, lapply(.SD, mean),by = c(algo.par.names), .SDcols = c("y", "stage_1_arms", "stage_1_n")] #stage_1_n can vary a little
   g = ggplot(df, aes(x = (stage_1_arms * stage_1_n), y = y, color = select, group = paste(select, epsilon, thresh)))
   g = g + geom_line(data = dfmean)
-  g = g + geom_point(alpha = 0.2, size = 0.5)
-  g = g + geom_point(data = res_mbo[nsim == 1000 & repl <= 10,], size = 2.5)
+  g = g + geom_point(aes(size = algorithm), alpha = 0.2)
+  g = g + geom_point(aes(size = algorithm), data = get_res_mbo())
   g = g + scale_color_manual(values = select_labels_colors)
+  g = g + scale_size_manual(labels = algorithm_labels[c("mbo" ,"eval")], values = c("mbo" = 2.5, "eval" = 0.5))
   g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_both)
   g = g + labs(x = expression(k[1] %.% n[stage1]))
   g = g + theme(legend.position = "bottom")
@@ -221,7 +254,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
 # find best from grid 
 #g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
 plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
-  tmp = rbind(res_grid[nsim == 1000 & repl <= 10,], res_mbo[nsim == 1000 & repl <= 10, colnames(res_grid ), with = FALSE])
+  tmp = rbind(get_res_grid(), get_res_mbo()[, colnames(res_grid), with = FALSE])
   g = ggplot(data = tmp, aes(x = stage_ratio, y = y_valid, color = select, shape = algorithm))
   g = g + geom_point(size = 3)
   #g = g + geom_text(data = res_mbo[nsim == 1000 & repl <= 10 & select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
@@ -229,8 +262,8 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + facet_wrap(effect~n_cases, scales = "free", labeller = label_both, ncol = 3)
   g = g + scale_x_continuous(expand = expansion(mult = 0.2))
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
-  g = g + scale_shape_manual(values = c("mbo" = 19, "grid" = 21))
-  g = g + scale_color_manual(values = select_labels_colors)
+  g = g + scale_shape_manual(labels = algorithm_labels, values = c("mbo" = 19, "grid" = 21))
+  g = g + scale_color_manual(labels = select_labels, values = select_labels_colors)
   g = g + labs(x = expression(r), y = expression(y[valid]))
   g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
   #grid headlines
@@ -252,7 +285,7 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
 
 # calculate y perf of mbo runs
 plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
-  df = res_mbo[nsim == 1000 & repl <= 10,]
+  df = get_res_mbo()
   common_names = intersect(colnames(df), colnames(df$opt.path[[1]]))
   data.table::setnames(df, common_names, paste0("opt.", common_names))
   df = tidyr::unnest(df, "opt.path")
@@ -260,7 +293,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   df = df[prop.type != "final_eval", cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
   
   # calculate theoretical best y from grid
-  res_ave = res_eval[nsim == 1000 & repl <= 10, list(mean_y = mean(y)), by = algo.par.names]
+  res_ave = get_res_eval_average()
   df_best = res_ave[,.SD[order(-mean_y)[1]], by = c("effect", "n_cases", "algorithm")][,.(effect, n_cases, algorithm, best_y = mean_y)]
   df_best[algorithm == "eval", algorithm := "grid"]
   df = merge(df_best[, -"algorithm"], df, by = c("effect", "n_cases"))
@@ -273,7 +306,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   g = g + facet_wrap(effect~n_cases, scales = "free_y", labeller = label_both, ncol = 3)
   g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.6))
   g = g + geom_label(data = df_best, aes(label = formatC(best_y, 4)), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
-  g = g + scale_color_manual(values = algorithm_labels_color)
+  g = g + scale_color_manual(labels = algorithm_labels, values = algorithm_labels_color)
   g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
   g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
   g = g + guides(colour = guide_legend(override.aes = list(size=2)))
@@ -291,9 +324,16 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,5,5,1.5))
 })
 
+create_boxplot_df = function(case = "default") {
+  rbind(
+    get_res_grid(case = case), 
+    get_res_mbo(case = case)[, colnames(res_grid), with = FALSE], 
+    get_res_mbogrid(case = case)[, colnames(res_grid), with = FALSE]
+  )
+}
 ## ----plot_boxplot_valid_y-----------------------------------------------------
 plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr = {
-  tmp = rbind(res_grid, res_mbo[nsim == 1000 & repl <= 10, colnames(res_grid), with = FALSE])
+  tmp = create_boxplot_df()
   g = ggplot(tmp, aes(x = as.factor(n_cases), y = y_valid, color = algorithm, fill = algorithm))
   # mylabels = function(labels) {
   #   do.call(map, args = c(list(paste), labels))
@@ -303,7 +343,7 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr 
   g = g + facet_wrap(~effect, scales = "free", ncol = 4, labeller = label_both)
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
-  g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
+  g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
   g = g + geom_boxplot() + theme(legend.position = "right")
   g = g + labs(x = expression(n[treat]), y = expression(y[valid]), color = NULL, fill = NULL)
   g
@@ -311,13 +351,12 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr 
 
 ## ----plot_boxplot_valid_y_5000-----------------------------------------------------
 plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.35 * FIG_WIDTH, expr = {
-  tmp = rbind(res_grid, res_mbo[, colnames(res_grid), with = FALSE])
-  tmp = tmp[n_cases == 2000 & effect == "paper",]
+  tmp = create_boxplot_df(case = "nsim")
   g = ggplot(tmp, aes(x = as.factor(nsim), y = y_valid, color = algorithm, fill = algorithm))
   #g = g + facet_grid(.~nsim, scales = "free", labeller = label_both)
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
-  g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
+  g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
   g = g + theme(legend.position = "bottom")
   g = g + geom_boxplot()
   g = g + labs(x = expression(n[sim]), y = expression(y[valid]), color = NULL, fill = NULL)
@@ -328,7 +367,7 @@ plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT *
 
 # calculate y perf of mbo runs
 plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.64 * FIG_WIDTH, expr = {
-  df = res_mbo[n_cases == 2000 & effect == "paper",]
+  df = get_res_mbo(case = "nsim")
   common_names = intersect(colnames(df), colnames(df$opt.path[[1]]))
   data.table::setnames(df, common_names, paste0("opt.", common_names))
   df = tidyr::unnest(df, "opt.path")
@@ -336,7 +375,7 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
   df = df[prop.type != "final_eval", cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
   
   # calculate theoretical best y from grid
-  res_ave = res_eval[n_cases == 2000 & effect == "paper", list(mean_y = mean(y)), by = algo.par.names]
+  res_ave = get_res_eval_average(case = "nsim")
   df_best = res_ave[,.SD[order(-mean_y)[1]], by = algo.par.names.meta][, c(algo.par.names.meta, "mean_y"), with = FALSE]
   data.table::setnames(df_best, old = "mean_y", new = "best_y")
   df_best[algorithm == "eval", algorithm := "grid"]
@@ -361,10 +400,10 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
 ## ----table_best---------------------------------------------------------------
 #best of grid
 #FIXME: calculate time of complete grid, devide through 10
-res_ave = res_eval[nsim == 1000 & repl <= 10, list(mean_y = mean(y)), by = algo.par.names]
+res_ave = get_res_eval_average()
 df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, n_cases, select, stage_ratio, epsilon, mean_y)]
 #mbo average
-res_ave_mbo = res_mbo[nsim == 1000, list(mean_y = mean(y)), by = algo.par.names.meta]
+res_ave_mbo = get_res_mbo()[, list(mean_y = mean(y)), by = algo.par.names.meta]
 df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, select = algorithm)], fill = TRUE)
 setkey(df, effect, n_cases, mean_y)
 knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = FALSE, digits = 3) %>% # linesep = c(rep("",4), "\\addlinespace") 
@@ -375,7 +414,7 @@ knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and 
 
 ## ----table_time---------------------------------------------------------------
 #table(res_eval$n_cases, res_eval$effect)
-tmp = rbind(res_grid[nsim == 1000 & repl <= 10,], res_mbo[nsim == 1000, colnames(res_grid), with = FALSE])
+tmp = rbind(get_res_grid(), get_res_mbo()[, colnames(res_grid), with = FALSE])
 tmp = tmp[, list(time.running = mean(as.numeric(time.running, unit = "hours"))), by = c("algorithm", "effect", "n_cases")]
 setkeyv(tmp, c("algorithm", "effect", "n_cases"))
 tmp[, time.running := round(time.running, 1)]

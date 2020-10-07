@@ -485,12 +485,12 @@ The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according 
   \centering
   \begin{tabular}{ll}
   \hline
-  Notation & Procedure of selection strategy  \\
+  Notation       & Procedure of selection strategy  \\
   \hline
   \emph{all}     & Select all arms  \\
   $\{1,2,3\}$    & Select 1, 2 or 3 arms, respectively, according to maximal test statistic \\
-  \emph{eps}     & Select all arms with test statistic less than \emph{eps} (epsilon) below maximal test statistic \\
-  \emph{thresh}     & Select all arms with test statistic larger than the value \emph{thresh} (threshold) \\
+  \emph{eps}     & Select all arms with test statistic less than $\epsilon$ (epsilon) below maximal test statistic \\
+  \emph{thresh}  & Select all arms with test statistic larger than the value $\tau$ (threshold) \\
   \hline
   \end{tabular}
 \end{table}
@@ -500,12 +500,12 @@ The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according 
   \centering
   \begin{tabular}{ll}
   \hline
-  Parameter         & Range \\
+  Parameter                        & Range \\
   \hline
-  Selection strategy & $\{\text{all}, 1, 2, 3, \text{eps}, \text{thresh} \}$ \\
-  $r$ (ratio)        & $(0,1)$ \\
-  eps (epsilon)            & $[0,4]$ \\
-  thresh (threshold)          & $[0,10]$ \\
+  Selection strategy               & $\{\text{all}, 1, 2, 3, \text{eps}, \text{thresh} \}$ \\
+  $r$ (ratio)                      & $(0,1)$ \\
+  $\epsilon$ (only for \emph{eps}) & $[0,4]$ \\
+  $\tau$ (onlt for \emph{thresh})  & $[0,10]$ \\
   \hline
   \end{tabular}
 \end{table}
