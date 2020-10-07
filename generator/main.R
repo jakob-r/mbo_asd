@@ -24,7 +24,7 @@ CACHE = cache_filesystem(path = "memoise")
 
 plot_wrapper_uncached = function(name, fig.height = FIG_HEIGHT, fig.width = FIG_WIDTH, expr) {
   path = paste0("../generated/figures/", name, ".pdf")
-  pdf(file = path, width = fig.width, height = fig.height, onefile = TRUE)
+  cairo_pdf(filename = path, width = fig.width, height = fig.height, onefile = TRUE)
   print(eval(expr))
   dev.off()
   #browser()
@@ -96,7 +96,7 @@ kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation") %>%
 read_results_uncached = function(select_labels) {
   res_eval = readRDS("../benchmark_results/batchtools_grid_res_eval.rds")
   res_eval = res_eval[,.(job.id, y, stage_1_arms, stage_1_n, stage_2_arms, stage_2_n, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
-  res_eval = res_eval[map(algo.pars, "effect") %in% names(EFFECTS),]
+  res_eval = res_eval[map_chr(algo.pars, "effect") %in% names(EFFECTS),]
 
   algo.par.names = c("algorithm", names(res_eval$algo.pars[[1]]))
   algo.par.names.meta = c("algorithm", "effect", "corr", "nsim", "n_cases")
@@ -107,7 +107,7 @@ read_results_uncached = function(select_labels) {
 
   res_mbo = readRDS("../benchmark_results/batchtools_grid_res_mbo.rds")
   res_mbo = res_mbo[,.(job.id, result, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
-  res_mbo = res_mbo[map(algo.pars, "effect") %in% names(EFFECTS),]
+  res_mbo = res_mbo[map_chr(algo.pars, "effect") %in% names(EFFECTS),]
   res_mbo = unnest(res_mbo, cols = c("result", "prob.pars", "algo.pars"))
   
   res_eval[, select := factor(select, levels = names(select_labels), labels = select_labels)]
@@ -140,6 +140,23 @@ read_results_uncached = function(select_labels) {
     by = c(algo.par.names.meta, "repl"), 
     .SDcols = c("y", "repl", algo.par.names, "time.running")]
   res_grid[, algorithm := "grid"]
+  
+  ## calculate y result on grid
+  fct.vars = c("select", "effect", "n_cases", "nsim", "corr") # first match where fcts are equal
+  num.vars = setdiff(algo.par.names, c(fct.vars, "algorithm")) # knn on numeric rest
+  res_mbo[, y_grid := {
+    mbo_eval = .SD
+    matches = batchtools::rjoin(res_eval, mbo_eval[, fct.vars, with=FALSE]) # look for grid results with same factors
+    num.matches = matches[, num.vars, with=FALSE] # just take numeric columns
+    non.na.cols = map_lgl(num.matches, function(x) !all(is.na(x))) # just take not na + numeric columsn
+    non.na.cols = names(non.na.cols)[non.na.cols]
+    mbo_eval[, non.na.cols, with = FALSE]
+    knn_res = FNN::get.knnx(data = num.matches[, non.na.cols, with = FALSE], query = mbo_eval[, non.na.cols, with = FALSE], k = 10) #find 10=max_repl next evals on grid
+    if (length(unique(knn_res$nn.dist[1,])) != 1) {
+      stop ("knn found different results. Should not happen!")
+    }
+    mean(matches[knn_res$nn.index[1,],]$y)
+  }, by = rownames(res_mbo)]
 
 
   ## ----correct res_mbo----------------------------------------------------------
@@ -218,7 +235,7 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
   #grid headlines
   col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
-  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10), rot=90*3)
+  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
     8, 8, 8,  4,
@@ -261,8 +278,8 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
   g = g + guides(colour = guide_legend(override.aes = list(size=2)))
   #grid headlines
-  col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
-  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10), rot=90*3)
+  col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"))
+  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
     8, 8, 8,  4,
