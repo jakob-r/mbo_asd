@@ -620,7 +620,7 @@ Thus, the best selected configuration (the best parameter set) is then independe
 
 The whole MBO procedure is repeated $10$ times to ensure that a single optimization run was not just lucky in finding the optimum.
 
-Additionally we want to compare whether the results of \emph{MBO} are different from the \emph{grid search} just because \emph{MBO} can propose configurations on within the whole search space and not only the grid.
+Additionally we want to investigate whether the results of \emph{MBO} are better then \emph{grid search} because \emph{MBO} can propose configurations within the whole search space and not only limited the grid.
 Therefore we introduce \textbf{MBO Grid}.
 The optimization is executed as described for \emph{MBO} but with one difference:
 At the end we conduct the independent evaluation for the configuration within the \emph{grid} that is closest to the configuration that is proposed by \emph{MBO}.
@@ -670,34 +670,57 @@ Figure~\ref{fig:plot_boxplot_valid_y} shows that \emph{MBO} yields better result
 \end{figure}
 The difference in the number of evaluations is also reflected in the average runtime of each optimization methods given in Table~\ref{tab:table_time}.
 \input{generated/tables/table_time.tex}
+For the chosen grid resoultion and evaluation budget for \emph{MBO}, \emph{MBO} is approxamatly 20-times faster and yields better configurations.
+
 The good performance of \emph{MBO Grid} indicates that the resolution of the grid is sufficiently high to find a good configuration.
 Accordingly, the good performance of \emph{MBO} can be contributed mostly to the fact that the best configuration is determined by the surrogates mean estimation es explained in Section~\ref{ssec:best_point}.
-In other words, the \emph{grid search} is not only extremely demanding in terms of necessary black-box evaluations but also does take into account the stochasticity of the problem.
+In other words, the \emph{grid search} is not only extremely demanding in terms of necessary black-box evaluations but also does not take into account the stochasticity of the problem.
 This seemingly leads to proposals of configurations that were observed to yield a high power but that do not perform well, if evaluated independently.
 We will later study on single scenario if a reduced noise due to a higher value of \texttt{nsim} decreases the effect of the overly optimistic selection of the \emph{gird search}.
 
-However, in Figure~\ref{fig:plot_allbest} we show the observed outcomes during evaluation of the grid as well as the final configurations found by MBO, to demonstrate the behavior of the simulation in dependence of the parameters \emph{selection strategy} and \emph{stage ratio}.
-
-
-
-
-
+After having only looked at the outcome of our probelms and established the superiority of \emph{MBO} over the \emph{grid search} we want to investigate the problems in more detail.
+In Figure~\ref{fig:plot_allbest} we show the observed outcomes during evaluation of the grid as well as the final configurations found by MBO, to demonstrate the behavior of the simulation in dependence of the parameters \emph{selection strategy} and \emph{stage ratio} $r$.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_allbest.pdf}
-\caption{Power of the different selection rules. For the epsilon and threshold rule only the curve for the epsilon and threshold value that reached the best power is dispayed.}
+\caption{%
+  All evaluated configurations and their outcomes from the \emph{grid search}.
+  For the epsilon and threshold rule only the curve for the $\epsilon$ and $\tau$ value that reached the best power is displayed.
+  For each configuration in the grid we obtained 10 stochastic results.
+  The line connects the mean outcomes for each configuration.
+  Additionally the best found configurations from \emph{MBO} are displayed.
+  }
 \label{fig:plot_allbest}
 \end{figure}
 Note that the \emph{stage ratio} is not drawn directly but the resulting number of treatments at the early stage.
-Also, for the \emph{selection strategy} \emph{epsilon rule} and \emph{threshold rule} only the curves are shown of the repsective \emph{eps} and \emph{thresh} value that led to the best outcome within the respective selection strategy.
+Also, for the \emph{selection strategy} \emph{epsilon rule} and \emph{threshold rule} only the curves are shown of the respective \emph{eps} and \emph{thresh} value that led to the best outcome within the respective selection strategy.
+For the selection strategies \emph{eps} and \emph{thresh}, we only show the curve of the one $\epsilon$ and $\tau$ setting that led to the optimal outcome for the respective selection strategy.
+Instead of showing $r$ on the $x$-Axis we show the resulting value of treatments at stage 1 as this allows for easier comparison between the different selection strategies.
+Also note that for effect set \emph{linear} and \emph{sigmoid} the curves for selection strategy \emph{1 best} and \emph{eps} are nearly identical.
+In accordance with intuition, for most scenarios it is the worst decision to use all available treatments in stage 1. 
+In all scenarios \emph{MBO} was able to identify the peak of all curves in combination.
+Within the 10 stochastic repetitions \emph{MBO} found different configurations that all yield similarly good outcomes.
+That no unique best setting was found across the repetitions can be attributed to the relatively high noise of the simulation and the relatively flat peaks, i.e. different configurations yield similarly good outcomes.
+In case multiple optimization runs give different configurations it might be advisable to let a human expert choose the final configuration.
 
-
+In contrast to Figure~\ref{fig:plot_allbest}, Figure~\ref{fig:plot_best_x} shows the outcome of the independent validation and the ratio $r$ directly.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_best_x.pdf}
 \caption{Best found $x$-values from MBO runs.}
 \label{fig:plot_best_x}
 \end{figure}
+The results show that in many cases the grid search returned configurations of $r$ that are far from the solutions that \emph{MBO} found. 
+
+
+
+
+
+
+
+
+
+
 
 
 

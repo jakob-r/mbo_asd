@@ -389,7 +389,7 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
   g = g + facet_grid(.~nsim, scales = "free")
   g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.6))
   g = g + geom_label(data = df_best, aes(label = formatC(best_y, 4)), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
-  g = g + scale_color_manual(values = algorithm_labels_color)
+  g = g + scale_color_manual(labels = algorithm_labels, values = algorithm_labels_color)
   g = g + theme(legend.position = "bottom")
   g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
   g = g + guides(colour = guide_legend(override.aes = list(size=2)))
