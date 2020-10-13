@@ -123,7 +123,8 @@ read_results_uncached = function(select_labels) {
     {
       optim_dt = copy(.SD)
       this_repl = optim_dt$repl[1]
-      optim_dt = optim_dt[sample(which(y == max(y)), 1),]
+      optim_dt = optim_dt[y == max(y),]
+      if (nrow(optim_dt) > 1) optim_dt = optim_dt[sample.int(nrow(optim_dt), 1),] # in case of multiple best
       valid_dt = res_eval[repl != this_repl, ]
       res = merge(optim_dt[,-"y"], valid_dt[, c(algo.par.names, "y"), with = FALSE], by = algo.par.names)
       # write result into x values dt
@@ -332,20 +333,22 @@ create_boxplot_df = function(case = "default") {
   )
 }
 ## ----plot_boxplot_valid_y-----------------------------------------------------
-plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.5, expr = {
+plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.9, expr = {
   tmp = create_boxplot_df()
-  g = ggplot(tmp, aes(x = as.factor(n_cases), y = y_valid, color = algorithm, fill = algorithm))
+  g = ggplot(tmp, aes(x = algorithm, y = y_valid, color = algorithm, fill = algorithm))
   # mylabels = function(labels) {
   #   do.call(map, args = c(list(paste), labels))
   #   map(paste, labels[[1]], labels[[2]])
   #   paste(value, variable)
   # }
-  g = g + facet_wrap(~effect, scales = "free", ncol = 4, labeller = label_both)
+  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_both)
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
+  g = g + scale_x_discrete(labels = algorithm_labels)
   g = g + geom_boxplot() + theme(legend.position = "right")
-  g = g + labs(x = expression(n[treat]), y = expression(y[valid]), color = NULL, fill = NULL)
+  g = g + labs(x = NULL, y = expression(y[valid]), color = NULL, fill = NULL)
+  g = g + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
   g
 })
 
