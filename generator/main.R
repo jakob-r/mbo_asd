@@ -76,8 +76,8 @@ select_labels_colors = #http://paletton.com/#uid=74Z140kqdu7ghF3lowyu1ppwGk7
     "random" = "#000000",
     "threshold rule" = "#C0E62A"
   )
-algorithm_labels = c("mbo" = "MBO", "eval" = "Grid", "mbo grid" = "MBO Grid", "grid" = "Grid")
-algorithm_labels_color = c("mbo" = "#F04A2B", "eval" = "#099438", "mbo grid" = "#690D86", "grid" = "#099438")
+algorithm_labels = c("mbo" = "MBO", "eval" = "Grid", "mbo grid" = "MBO Grid", "grid" = "Grid", "grid7" = "Grid 7")
+algorithm_labels_color = c("mbo" = "#F04A2B", "eval" = "#099438", "mbo grid" = "#690D86", "grid" = "#099438", "grid7" = "#44CA6D") #https://paletton.com/#uid=6060R0krPwadDMilcBuwcpxDti6
 
 ## ----table_effect_names-------------------------------------------------------
 tmp = lapply(EFFECTS, do.call, what = rbind)
@@ -119,28 +119,50 @@ read_results_uncached = function(select_labels) {
   # 2. we obtain the y values of the given x-values of the other 9 repls
   # 3. we average the external y values
   # 4. we sum up the time that the grid needed on one replication
-  res_grid = res_eval[,
-    {
-      optim_dt = copy(.SD)
-      this_repl = optim_dt$repl[1]
-      optim_dt = optim_dt[y == max(y),]
-      if (nrow(optim_dt) > 1) optim_dt = optim_dt[sample.int(nrow(optim_dt), 1),] # in case of multiple best
-      valid_dt = res_eval[repl != this_repl, ]
-      res = merge(optim_dt[,-"y"], valid_dt[, c(algo.par.names, "y"), with = FALSE], by = algo.par.names)
-      # write result into x values dt
-      optim_dt$y_valid = mean(res$y)
-      #strangely we have 3 to 4 missing values here, probably batchtools had a hick up
-      times = .SD$time.running
-      if (any(is.na(times)) && mean(is.na(times)) < 0.004) {
-        times[is.na(times)] = mean(times, na.rm = TRUE)
-      }
-      optim_dt$time.running = sum(times)
-      optim_dt[, c(algo.par.names.meta, "repl") := NULL]
-      optim_dt
-    }, 
+  calc_res_grid_internal = function(.SD) {
+    optim_dt = copy(.SD)
+    this_repl = optim_dt$repl[1]
+    optim_dt = optim_dt[y == max(y),]
+    if (nrow(optim_dt) > 1) optim_dt = optim_dt[sample.int(nrow(optim_dt), 1),] # in case of multiple best
+    valid_dt = res_eval[repl != this_repl, ]
+    res = merge(optim_dt[,-"y"], valid_dt[, c(algo.par.names, "y"), with = FALSE], by = algo.par.names)
+    # write result into x values dt
+    optim_dt$y_valid = mean(res$y)
+    #strangely we have 3 to 4 missing values here, probably batchtools had a hick up
+    times = .SD$time.running
+    if (any(is.na(times)) && mean(is.na(times)) < 0.004) {
+      times[is.na(times)] = mean(times, na.rm = TRUE)
+    }
+    optim_dt$time.running = sum(times)
+    optim_dt[, c(algo.par.names.meta, "repl") := NULL]
+    return(optim_dt)
+  }
+  res_grid = res_eval[,calc_res_grid_internal(.SD), 
     by = c(algo.par.names.meta, "repl"), 
     .SDcols = c("y", "repl", algo.par.names, "time.running")]
   res_grid[, algorithm := "grid"]
+  
+  # calculate grid 7 result (subset of res_grid)
+  grid7 = local({
+    library(smoof)
+    source("../benchmark/_functions.R")
+    full_design = generateGridDesign(getParamSet(fun), 7) # this hack is necessary because floats are not equal when generated with another resolution so join would not work, maybe the problem is actually NA does not match NA!
+    #num_cols = map_lgl(full_design, is.numeric)
+    #for (num_col in names(num_cols[num_cols])) {
+    #  col = full_design[[num_col]]
+    #  keep = sort(unique(col))[c(TRUE,FALSE,FALSE,FALSE)]
+    #  full_design = full_design[is.na(full_design[[num_col]]) | full_design[[num_col]] %in% keep, ]
+    #}
+    full_design
+  })
+  setDT(grid7)
+  grid7[, select := factor(select, levels = names(select_labels), labels = select_labels)]
+  res_eval7 = merge(res_eval, grid7, by = colnames(grid7), all.y = FALSE)
+  res_grid7 = res_eval7[,calc_res_grid_internal(.SD), 
+                      by = c(algo.par.names.meta, "repl"), 
+                      .SDcols = c("y", "repl", algo.par.names, "time.running")]
+  res_grid7[, algorithm := "grid7"]
+  
   
   ## calculate y result on grid
   fct.vars = c("select", "effect", "n_cases", "nsim", "corr") # first match where fcts are equal
@@ -170,13 +192,14 @@ read_results_uncached = function(select_labels) {
   res_mbo[, y := .SD$opt.path[[1]][.SD$best_index, ]$y, by = rownames(res_mbo)]
   
 
-  list(res_mbo = res_mbo, res_grid = res_grid, res_eval = res_eval, algo.par.names = algo.par.names, algo.par.names.meta = algo.par.names.meta, algo.par.names.optim = algo.par.names.optim, max_dob = max_dob)
+  list(res_mbo = res_mbo, res_grid = res_grid, res_grid7 = res_grid7, res_eval = res_eval, algo.par.names = algo.par.names, algo.par.names.meta = algo.par.names.meta, algo.par.names.optim = algo.par.names.optim, max_dob = max_dob)
 }
 
 read_results = memoise(read_results_uncached, cache = CACHE)
 tmp = read_results(select_labels)
 res_mbo = tmp$res_mbo
 res_grid = tmp$res_grid
+res_grid7 = tmp$res_grid7
 res_eval = tmp$res_eval
 algo.par.names = tmp$algo.par.names
 algo.par.names.meta = tmp$algo.par.names.meta
@@ -194,6 +217,10 @@ get_res = function(dt = res_eval, case = "default") {
 
 get_res_grid = function(case = "default") {
   get_res(res_grid, case)
+}
+
+get_res_grid7 = function(case = "default") {
+  get_res(res_grid7, case)
 }
 
 get_res_mbo = function(case = "default") {
@@ -328,6 +355,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
 create_boxplot_df = function(case = "default") {
   rbind(
     get_res_grid(case = case), 
+    get_res_grid7(case = case)[, colnames(res_grid), with = FALSE],
     get_res_mbo(case = case)[, colnames(res_grid), with = FALSE], 
     get_res_mbogrid(case = case)[, colnames(res_grid), with = FALSE]
   )
@@ -417,17 +445,18 @@ knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and 
 
 ## ----table_time---------------------------------------------------------------
 #table(res_eval$n_cases, res_eval$effect)
-tmp = rbind(get_res_grid(), get_res_mbo()[, colnames(res_grid), with = FALSE])
+tmp = rbind(get_res_grid(), get_res_mbo()[, colnames(res_grid), with = FALSE], get_res_grid7()[, colnames(res_grid), with = FALSE])
 tmp = tmp[, list(time.running = mean(as.numeric(time.running, unit = "hours"))), by = c("algorithm", "effect", "n_cases")]
 setkeyv(tmp, c("algorithm", "effect", "n_cases"))
 tmp[, time.running := round(time.running, 1)]
 tmp2 = tidyr::pivot_wider(tmp, id_cols = "algorithm", names_from = c("effect", "n_cases"), values_from = "time.running")
+tmp2$algorithm = dplyr::recode(tmp2$algorithm, !!!algorithm_labels)
 kable(tmp2, 
   booktabs = TRUE, 
   col.names = c("", as.character(tmp[algorithm == "mbo"]$n_cases)),
   caption = "Average runtime in hours, for evaluating one grid and one optimization run of MBO."
 ) %>% 
-  add_header_above(c(" " = 1, table(tmp$effect)/2)) %>% 
+  add_header_above(c(" " = 1, 3) %>% 
   kable_styling(position = "center") %>% 
   kable_to_text("table_time")
 

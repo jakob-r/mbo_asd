@@ -121,9 +121,9 @@ addToEnvironment = function(f, ...) {
   return(f)
 }
 
-generate_eval_mbo_design = function(n_cases, nsim, effect) {
+generate_eval_mbo_design = function(n_cases, nsim, effect, par_set = getParamSet(fun), grid_res = GRIDRES) {
   const_design = expand.grid(n_cases = n_cases, nsim = nsim, corr = 0.4, effect = effect, stringsAsFactors = FALSE)
-  eval_design = generateGridDesign(getParamSet(fun), GRIDRES)
+  eval_design = generateGridDesign(par_set, grid_res)
   eval_design = subset(eval_design, stage_ratio != 1 & stage_ratio != 0)
   eval_design = merge.data.frame(eval_design, const_design)
   setDT(eval_design)
