@@ -456,7 +456,7 @@ kable(tmp2,
   col.names = c("", as.character(tmp[algorithm == "mbo"]$n_cases)),
   caption = "Average runtime in hours, for evaluating one grid and one optimization run of MBO."
 ) %>% 
-  add_header_above(c(" " = 1, 3) %>% 
+  add_header_above(c(" " = 1, table(tmp$effect)/3)) %>% 
   kable_styling(position = "center") %>% 
   kable_to_text("table_time")
 
