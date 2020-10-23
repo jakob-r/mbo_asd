@@ -694,7 +694,7 @@ We will later study on a single scenario if a reduced noise due to a higher valu
 To compare \emph{MBO} with a grid search that uses approximately the same time  (see~\ref{tab:table_time}) and number of evaluations, we will look at the results of \emph{Grid Small}.
 The resolution of 7 points per dimension leads to 126 evaluations which roughly take up the same time as \emph{MBO} (see~\ref{tab:table_time}) with 116 allowed evaluations, giving a small advantage to \emph{Grid Small}.
 Despite the 10 more allowed evaluations, in the majority of cases the results of \emph{Grid Small} are inferior the the results of \emph{MBO} as can be seen in Figure~\ref{fig:plot_boxplot_valid_y}.
-Only for the scenarios (\emph{effect: paper2}, $n_{\text{treat}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$) \emph{Grid Small} has a small advantage over \emph{MBO} and \emph{Grid}.
+Only for the scenarios (\emph{effect: paper}, $n_{\text{treat}} = 2000$) and (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$) \emph{Grid Small} has a small advantage over \emph{MBO} and \emph{Grid}.
 For the first scenario the absolute differences are negligible as all methods obtain a high outcome.
 For the second scenario we will later see, that the optimal configuration is close to the border of the search space.
 The higher resolution of the exhaustive \emph{Grid} probably leads to the selection of slightly suboptimal configurations close to the optimum due to the stochasticity.
@@ -772,7 +772,7 @@ This does not seem to be the case here but also the results are not drastically 
   \begin{minipage}{0.35\textwidth}
     \centering
     \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y_5000.pdf}%
-    \captionof{figure}{Validated performance of all optimization strategies on effect set \emph{paper} and $n_treat = 2000$ with 100 stochastic repititions and different values for \texttt{nsim}}
+    \captionof{figure}{Validated performance of all optimization strategies on effect set \emph{paper} and $n_{\text{treat}} = 2000$ with 100 stochastic repetitions and different values for \texttt{nsim}}
     \label{fig:plot_boxplot_valid_y_5000}
   \end{minipage}
 \end{figure}
