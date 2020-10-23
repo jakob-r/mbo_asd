@@ -76,8 +76,16 @@ select_labels_colors = #http://paletton.com/#uid=74Z140kqdu7ghF3lowyu1ppwGk7
     "random" = "#000000",
     "threshold rule" = "#C0E62A"
   )
-algorithm_labels = c("mbo" = "MBO", "eval" = "Grid", "mbo grid" = "MBO Grid", "grid" = "Grid", "grid7" = "Grid 7")
+algorithm_labels = c("mbo" = "MBO", "eval" = "Grid", "mbo grid" = "MBO Grid", "grid" = "Grid", "grid7" = "Grid Small")
 algorithm_labels_color = c("mbo" = "#F04A2B", "eval" = "#099438", "mbo grid" = "#690D86", "grid" = "#099438", "grid7" = "#44CA6D") #https://paletton.com/#uid=6060R0krPwadDMilcBuwcpxDti6
+
+ncases_labels = c(500,1000,2000)
+ncases_labels = paste0("n[cases] ",ncases_labels)
+names(ncases_labels) = c(500,1000,2000)
+
+names(effect_labels) = effect_labels = c("linear", "paper", "paper2", "sigmoid")
+
+
 
 ## ----table_effect_names-------------------------------------------------------
 tmp = lapply(EFFECTS, do.call, what = rbind)
@@ -91,10 +99,27 @@ kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation") %>%
   kable_styling(position = "center") %>% 
   kable_to_text("table_effect_names")
 
-
 ## ----read_data----------------------------------------------------------------
-read_results_uncached = function(select_labels) {
-  res_eval = readRDS("../benchmark_results/batchtools_grid_res_eval.rds")
+read_results_uncached = function(select_labels, case = "default") {
+  if (case == "default") {
+    case_selector = quote(nsim == 1000 & repl <= 10)
+  } else if (case == "nsim") {
+    case_selector = quote(n_cases == 2000 & effect == "paper")
+  } else {
+    stop("not supported case")
+  }
+  
+  read_res_eval_uncached = function() {
+    readRDS("../benchmark_results/batchtools_grid_res_eval.rds")
+  }
+  read_res_eval = memoise(read_res_eval_uncached)
+  
+  read_res_mbo_uncached = function() {
+    readRDS("../benchmark_results/batchtools_grid_res_mbo.rds")
+  }
+  read_res_mbo = memoise(read_res_mbo_uncached)
+  
+  res_eval = read_res_eval()
   res_eval = res_eval[,.(job.id, y, stage_1_arms, stage_1_n, stage_2_arms, stage_2_n, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
   res_eval = res_eval[map_chr(algo.pars, "effect") %in% names(EFFECTS),]
 
@@ -103,12 +128,14 @@ read_results_uncached = function(select_labels) {
   algo.par.names.optim = setdiff(algo.par.names, algo.par.names.meta)
 
   res_eval = unnest(res_eval, cols = c("prob.pars", "algo.pars"))
+  res_eval = res_eval[eval(case_selector),]
   #res_eval = res_eval[repl %in% 1:10,] #to run faster #FIXME remove for real results
 
-  res_mbo = readRDS("../benchmark_results/batchtools_grid_res_mbo.rds")
+  res_mbo = read_res_mbo()
   res_mbo = res_mbo[,.(job.id, result, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
   res_mbo = res_mbo[map_chr(algo.pars, "effect") %in% names(EFFECTS),]
   res_mbo = unnest(res_mbo, cols = c("result", "prob.pars", "algo.pars"))
+  res_mbo = res_mbo[eval(case_selector),]
   
   res_eval[, select := factor(select, levels = names(select_labels), labels = select_labels)]
   res_mbo[, select := factor(select, levels = names(select_labels), labels = select_labels)]
@@ -130,14 +157,17 @@ read_results_uncached = function(select_labels) {
     optim_dt$y_valid = mean(res$y)
     #strangely we have 3 to 4 missing values here, probably batchtools had a hick up
     times = .SD$time.running
-    if (any(is.na(times)) && mean(is.na(times)) < 0.004) {
+    if (any(is.na(times)) && mean(is.na(times)) < 0.01) {
       times[is.na(times)] = mean(times, na.rm = TRUE)
+    } else if (any(is.na(times))) {
+      # investigate please!
+      browser()
     }
     optim_dt$time.running = sum(times)
     optim_dt[, c(algo.par.names.meta, "repl") := NULL]
     return(optim_dt)
   }
-  res_grid = res_eval[,calc_res_grid_internal(.SD), 
+  res_grid = res_eval[, calc_res_grid_internal(.SD), 
     by = c(algo.par.names.meta, "repl"), 
     .SDcols = c("y", "repl", algo.par.names, "time.running")]
   res_grid[, algorithm := "grid"]
@@ -146,19 +176,19 @@ read_results_uncached = function(select_labels) {
   grid7 = local({
     library(smoof)
     source("../benchmark/_functions.R")
-    full_design = generateGridDesign(getParamSet(fun), 7) # this hack is necessary because floats are not equal when generated with another resolution so join would not work, maybe the problem is actually NA does not match NA!
-    #num_cols = map_lgl(full_design, is.numeric)
-    #for (num_col in names(num_cols[num_cols])) {
-    #  col = full_design[[num_col]]
-    #  keep = sort(unique(col))[c(TRUE,FALSE,FALSE,FALSE)]
-    #  full_design = full_design[is.na(full_design[[num_col]]) | full_design[[num_col]] %in% keep, ]
-    #}
+    full_design = generateGridDesign(getParamSet(fun), 25) # instead of just saying 7, we create a set with the index using elem 2, 5, 9, 13, 17, 21 and 25. Not the first because it is often 0!
+    num_cols = map_lgl(full_design, is.numeric)
+    for (num_col in names(num_cols[num_cols])) {
+      col = full_design[[num_col]]
+      keep = sort(unique(col))[c(2, seq(1,25, by = 4)[-1])] #every 4th element but start with 2 instead of 1 because 1 often is unfeasible
+      full_design = full_design[is.na(full_design[[num_col]]) | full_design[[num_col]] %in% keep, ]
+    }
     full_design
   })
   setDT(grid7)
   grid7[, select := factor(select, levels = names(select_labels), labels = select_labels)]
-  res_eval7 = merge(res_eval, grid7, by = colnames(grid7), all.y = FALSE)
-  res_grid7 = res_eval7[,calc_res_grid_internal(.SD), 
+  res_eval7 = merge(res_eval, grid7, by = colnames(grid7), all.y = FALSE) # NA actually matches NA
+  res_grid7 = res_eval7[, calc_res_grid_internal(.SD), 
                       by = c(algo.par.names.meta, "repl"), 
                       .SDcols = c("y", "repl", algo.par.names, "time.running")]
   res_grid7[, algorithm := "grid7"]
@@ -179,7 +209,7 @@ read_results_uncached = function(select_labels) {
       stop ("knn found different results. Should not happen!")
     }
     mean(matches[knn_res$nn.index[1,],]$y)
-  }, by = rownames(res_mbo)]
+  }, by = list(rownames(res_mbo))]
 
 
   ## ----correct res_mbo----------------------------------------------------------
@@ -187,9 +217,9 @@ read_results_uncached = function(select_labels) {
   # determine max dob (probably 101) because it contains outside mbo evals
   max_dob = max(map_int(map(res_mbo$opt.path, "dob"), max))
 
-  res_mbo[, time.running := time.running - as.difftime(sum(.SD$opt.path[[1]][prop.type == "final_eval", ]$exec.time), units = "secs") , by = rownames(res_mbo)]
+  res_mbo[, time.running := time.running - as.difftime(sum(.SD$opt.path[[1]][prop.type == "final_eval", ]$exec.time), units = "secs") , by = list(rownames(res_mbo))]
   data.table::setnames(res_mbo, "y", "y_valid")
-  res_mbo[, y := .SD$opt.path[[1]][.SD$best_index, ]$y, by = rownames(res_mbo)]
+  res_mbo[, y := .SD$opt.path[[1]][.SD$best_index, ]$y, by = list(rownames(res_mbo))]
   
 
   list(res_mbo = res_mbo, res_grid = res_grid, res_grid7 = res_grid7, res_eval = res_eval, algo.par.names = algo.par.names, algo.par.names.meta = algo.par.names.meta, algo.par.names.optim = algo.par.names.optim, max_dob = max_dob)
@@ -197,38 +227,25 @@ read_results_uncached = function(select_labels) {
 
 read_results = memoise(read_results_uncached, cache = CACHE)
 tmp = read_results(select_labels)
-res_mbo = tmp$res_mbo
-res_grid = tmp$res_grid
-res_grid7 = tmp$res_grid7
-res_eval = tmp$res_eval
 algo.par.names = tmp$algo.par.names
 algo.par.names.meta = tmp$algo.par.names.meta
 algo.par.names.optim = tmp$algo.par.names.optim
 max_dob = tmp$max_dob
 
-cases = list(
-  default = quote(nsim == 1000 & repl <= 10),
-  nsim = quote(n_cases == 2000 & effect == "paper")
-)
-
-get_res = function(dt = res_eval, case = "default") {
-  dt[eval(cases[[case]]),]
-}
-
 get_res_grid = function(case = "default") {
-  get_res(res_grid, case)
+  read_results(select_labels, case)$res_grid
 }
 
 get_res_grid7 = function(case = "default") {
-  get_res(res_grid7, case)
+  read_results(select_labels, case)$res_grid7
 }
 
 get_res_mbo = function(case = "default") {
-  get_res(res_mbo, case)
+  read_results(select_labels, case)$res_mbo
 }
 
 get_res_eval = function(case = "default") {
-  get_res(res_eval, case)
+  read_results(select_labels, case)$res_eval
 }
 
 get_res_mbogrid = function(case = "default") {
@@ -263,7 +280,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   res_best = res_ave[, .SD[order(-mean_y)[1], ], by = c("select", algo.par.names.meta)]
   res_best = res_best[, !c("mean_y", "stage_ratio")]
   # merge so the plot only contains the best curves (applies for epsilon and threshold rule)
-  df = merge(res_eval, res_best, all.x = FALSE, all.y = TRUE, by = colnames(res_best))
+  df = merge(get_res_eval(), res_best, all.x = FALSE, all.y = TRUE, by = colnames(res_best))
   dfmean = df[, lapply(.SD, mean),by = c(algo.par.names), .SDcols = c("y", "stage_1_arms", "stage_1_n")] #stage_1_n can vary a little
   g = ggplot(df, aes(x = (stage_1_arms * stage_1_n), y = y, color = select, group = paste(select, epsilon, thresh)))
   g = g + geom_line(data = dfmean)
@@ -271,7 +288,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + geom_point(aes(size = algorithm), data = get_res_mbo())
   g = g + scale_color_manual(values = select_labels_colors)
   g = g + scale_size_manual(labels = algorithm_labels[c("mbo" ,"eval")], values = c("mbo" = 2.5, "eval" = 0.5))
-  g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_both)
+  g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_bquote(cols = {n[treat]==.(n_cases)}))
   g = g + labs(x = expression(k[1] %.% n[stage1]))
   g = g + theme(legend.position = "bottom")
   g
@@ -282,12 +299,13 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
 # find best from grid 
 #g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
 plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
-  tmp = rbind(get_res_grid(), get_res_mbo()[, colnames(res_grid), with = FALSE])
+  tmp = get_res_grid()
+  tmp = rbind(tmp, get_res_mbo()[, colnames(tmp), with = FALSE])
   g = ggplot(data = tmp, aes(x = stage_ratio, y = y_valid, color = select, shape = algorithm))
   g = g + geom_point(size = 3)
   #g = g + geom_text(data = res_mbo[nsim == 1000 & repl <= 10 & select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
   #g = g + geom_text(data = res_mbo[nsim == 1000 & repl <= 10 & select == "threshold rule", ], aes(label = round(thresh,2)), hjust = 0, vjust = 1, show.legend = FALSE)
-  g = g + facet_wrap(effect~n_cases, scales = "free", labeller = label_both, ncol = 3)
+  g = g + facet_wrap(effect~n_cases, scales = "free", ncol = 3) # labels not used
   g = g + scale_x_continuous(expand = expansion(mult = 0.2))
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
   g = g + scale_shape_manual(labels = algorithm_labels, values = c("mbo" = 19, "grid" = 21))
@@ -295,7 +313,7 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + labs(x = expression(r), y = expression(y[valid]))
   g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
   #grid headlines
-  col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
+  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[treat]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
   row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
@@ -339,7 +357,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
   g = g + guides(colour = guide_legend(override.aes = list(size=2)))
   #grid headlines
-  col_heads = paste0("n_cases: ", unique(tmp$n_cases)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"))
+  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[treat]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
   row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
@@ -353,11 +371,12 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
 })
 
 create_boxplot_df = function(case = "default") {
+  tmp = get_res_grid(case = case)
   rbind(
-    get_res_grid(case = case), 
-    get_res_grid7(case = case)[, colnames(res_grid), with = FALSE],
-    get_res_mbo(case = case)[, colnames(res_grid), with = FALSE], 
-    get_res_mbogrid(case = case)[, colnames(res_grid), with = FALSE]
+    tmp, 
+    get_res_grid7(case = case)[, colnames(tmp), with = FALSE],
+    get_res_mbo(case = case)[, colnames(tmp), with = FALSE], 
+    get_res_mbogrid(case = case)[, colnames(tmp), with = FALSE]
   )
 }
 ## ----plot_boxplot_valid_y-----------------------------------------------------
@@ -369,7 +388,8 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.9, expr 
   #   map(paste, labels[[1]], labels[[2]])
   #   paste(value, variable)
   # }
-  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_both)
+  
+  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(n[treat]==.(n_cases),.(effect))}))
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
@@ -445,19 +465,22 @@ knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and 
 
 ## ----table_time---------------------------------------------------------------
 #table(res_eval$n_cases, res_eval$effect)
-tmp = rbind(get_res_grid(), get_res_mbo()[, colnames(res_grid), with = FALSE], get_res_grid7()[, colnames(res_grid), with = FALSE])
-tmp = tmp[, list(time.running = mean(as.numeric(time.running, unit = "hours"))), by = c("algorithm", "effect", "n_cases")]
+tmp = get_res_grid()
+tmp = rbind(tmp, get_res_mbo()[, colnames(tmp), with = FALSE], get_res_grid7()[, colnames(tmp), with = FALSE])
+tmp = tmp[, list(time.running = mean(as.numeric(time.running, unit = "hours"), na.rm = TRUE)), by = c("algorithm", "effect", "n_cases")]
 setkeyv(tmp, c("algorithm", "effect", "n_cases"))
 tmp[, time.running := round(time.running, 1)]
 tmp2 = tidyr::pivot_wider(tmp, id_cols = "algorithm", names_from = c("effect", "n_cases"), values_from = "time.running")
 tmp2$algorithm = dplyr::recode(tmp2$algorithm, !!!algorithm_labels)
+tmp2 = cbind(tmp2, data.frame("evals" = c(1350,126,116)))
 kable(tmp2, 
   booktabs = TRUE, 
-  col.names = c("", as.character(tmp[algorithm == "mbo"]$n_cases)),
-  caption = "Average runtime in hours, for evaluating one grid and one optimization run of MBO."
+  col.names = c("", as.character(tmp[algorithm == "mbo"]$n_cases), "\\emph{evals}"),
+  caption = "Average runtime in hours, for evaluating one grid and one optimization run of MBO.",
+  escape = FALSE
 ) %>% 
-  add_header_above(c(" " = 1, table(tmp$effect)/3)) %>% 
-  kable_styling(position = "center") %>% 
+  add_header_above(c(" " = 1, table(tmp$effect)/3, " " = 1)) %>% 
+  kable_styling(position = "center", latex_options = "scale_down") %>% 
   kable_to_text("table_time")
 
 # res_grid[effect == "sigmoid" & n_cases == 1000, ]

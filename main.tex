@@ -587,11 +587,11 @@ Summarizing, in the following we aim to find the clinical design setup, represen
 
 In the simulation study we compare an exhaustive grid search on the parameter space with MBO (Model-based optimization) with respect to both performance (power) and runtime.
 
-First, we describe the \emph{exhaustive grid search}.
+First, we describe the \emph{exhaustive grid search} (\emph{Grid}).
 For each effect set (see Table~\ref{tab:table_effect_names}) and for each selection strategy, we conduct an exhaustive grid search with a resolution of 25 points per real-valued dimension, i.e.\ one parameter ($r$) for the strategies all, 1, 2, and 3, and two parameters ($r$ and $\epsilon$ or $\tau$, respectively).
 This results in a total of $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations that are evaluated for each effect set.
-Additionally, we will use a subset of this grid of 7 points per dimensions, resulting in $4 \cdot 7 + 2 \cdot 7 \cdot 7 = 126$ design configurations, which we will call \emph{grid small}.
-The grid is evaluated with 10 stochastic replications to estimate the variance of the estimated power.
+Additionally, we will use a subset of this grid of 7 points per dimensions, resulting in $4 \cdot 7 + 2 \cdot 7 \cdot 7 = 126$ design configurations, which we will call \emph{Grid Small}.
+Both grids are evaluated with 10 stochastic replications to estimate the variance of the estimated power.
 
 The best point per evaluated grid is determined by selecting the configuration (parameter set) with the best outcome, i.e.\ the largest power.
 The corresponding value is generally too optimistic, as the random noise on the estimated value can contribute to the good outcome.
@@ -669,16 +669,12 @@ Figure~\ref{fig:plot_boxplot_valid_y} shows that \emph{MBO} yields comparable re
   }
 \label{fig:plot_boxplot_valid_y}
 \end{figure}
-Looking at the results in detail, we can see that in some cases ($n_{\text{treat}} = 2000$, \emph{effect: linear}; $n_{\text{treat}} = 1000$, \emph{effect: sigmoid}; $n_{\text{treat}} = 2000$, \emph{effect: sigmoid}) the exhaustive \emph{Grid} has a slight lead.
-In other cases ($n_{\text{treat}} = 1000$, \emph{effect: linear}; $n_{\text{treat}} = 500$, \emph{effect: paper2}; $n_{\text{treat}} = 500$, \emph{effect: sigmoid}) MBO yields slightly better results.
+Looking at the results in detail, we can see that in some cases (\emph{effect: linear}, $n_{\text{treat}} = 2000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 2000$) the exhaustive \emph{Grid} has a slight lead.
+In other cases (\emph{effect: linear}, $n_{\text{treat}} = 1000$; \emph{effect: paper2}, $n_{\text{treat}} = 500$; \emph{effect: sigmoid}, $n_{\text{treat}} = 500$) MBO yields slightly better results.
 In total \emph{MBO} and the exhaustive \emph{Grid} give equally good results, even though \emph{MBO} is just allowed 116 evaluations in contrast to the 1350 evaluations that are conducted by the \emph{Grid}.
 The difference in the number of evaluations is also reflected in the average runtime of each optimization methods given in Table~\ref{tab:table_time}.
 \input{generated/tables/table_time.tex}
 For the given resolution of 25 points per dimension, the exhaustive \emph{Grid} and the evaluation budget for \emph{MBO}, \emph{MBO} is approximately 20-times faster, while giving equally good results.
-
-To compare \emph{MBO} with a grid search that uses approximately the same time, we will look at the results of \emph{Grid Small}.
-The resolution of 7 points per dimension leads to 126 evaluations which roughly take up the same time as \emph{MBO} (see~\ref{tab:table_time}) with 116 allowed evaluations, giving a small advantage to \emph{Grid Small}.
-Yet, in the majority of cases the results of \emph{Grid Small} are inferior the the results of \emph{MBO} as can be seen in Figure~\ref{fig:plot_boxplot_valid_y}.
 
 Looking at the results of \emph{MBO Grid} in comparison to \emph{MBO} and the exhaustive \emph{Grid}, we can observe two patterns.
 
@@ -686,17 +682,27 @@ First, if \emph{Grid} achieves equal or better results then \emph{MBO}, the resu
 In case \emph{MBO} was not able to find a better solution then \emph{Grid}, also \emph{MBO Grid} cannot yield better results as it just takes the configuration on the Grid that is closest to the configuration found by \emph{MBO}.
 An increase in performance of \emph{MBO Grid} towards \emph{MBO} could just be by chance.
 
-Second and in contrast to the first pattern: If \emph{MBO} is able to find better configurations then the exhaustive \emph{Grid} (e.g. for scenario \ $n_{\text{treat}} = 1000$, \emph{effect: linear}), also the results of \emph{MBO Grid} are better then the results of \emph{Grid}.
+Second and in contrast to the first pattern: If \emph{MBO} is able to find better configurations then the exhaustive \emph{Grid} (e.g. for scenario \ \emph{effect: linear}, $n_{\text{treat}} = 1000$), also the results of \emph{MBO Grid} are better then the results of \emph{Grid}.
 This leads to the conclusion that the resolution of the exhaustive grid is sufficiently fine but the selection of the final configuration within the grid search is faulty in such scenarios.
 The grid search has no notion of the stochasticity of the problem.
 The configuration that yielded the best outcome is "optimistically" taken as the final configuration.
 The independent validation that gives the measure of $y_{\text{valid}}$ shows the unbiased performance of this final configuration. %FIXME: Plot y vs y_valid?
 In conclusion we are able to see that even though \emph{Grid} has "seen" all outcomes on the grid, the optimistic choice of the final configuration is indeed overly optimistic and not as good as the final configuration that is determined by the mean prediction of the surrogate of \emph{MBO} as explained in Section~\ref{ssec:best_point}.
 In other words, the exhaustive \emph{Grid} is not only extremely demanding in terms of necessary black-box evaluations but also does not take into account the stochasticity of the problem.
-We will later study on a single scenario if a reduced noise due to a higher value of \texttt{nsim} decreases the effect of the overly optimistic selection of the \emph{gird search}. %FIXME: n_treat 500, paper 2 would be more interesting or n_treat 1000 and linear)
+We will later study on a single scenario if a reduced noise due to a higher value of \texttt{nsim} decreases the effect of the overly optimistic selection of the \emph{grid search}. %FIXME: n_treat 500, paper 2 would be more interesting or n_treat 1000 and linear)
+
+To compare \emph{MBO} with a grid search that uses approximately the same time  (see~\ref{tab:table_time}) and number of evaluations, we will look at the results of \emph{Grid Small}.
+The resolution of 7 points per dimension leads to 126 evaluations which roughly take up the same time as \emph{MBO} (see~\ref{tab:table_time}) with 116 allowed evaluations, giving a small advantage to \emph{Grid Small}.
+Despite the 10 more allowed evaluations, in the majority of cases the results of \emph{Grid Small} are inferior the the results of \emph{MBO} as can be seen in Figure~\ref{fig:plot_boxplot_valid_y}.
+Only for the scenarios (\emph{effect: paper2}, $n_{\text{treat}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$) \emph{Grid Small} has a small advantage over \emph{MBO} and \emph{Grid}.
+For the first scenario the absolute differences are negligible as all methods obtain a high outcome.
+For the second scenario we will later see, that the optimal configuration is close to the border of the search space.
+The higher resolution of the exhaustive \emph{Grid} probably leads to the selection of slightly suboptimal configurations close to the optimum due to the stochasticity.
+These points are not included in the coarse grid.
+In other words, if we are lucky and \emph{Grid Small} covers the optimum we are more likely to select it correctly because of less competing candidates.
 
 Note that between the scenarios the absolute differences of the optimization results are of different practical significance, %FIXME "practical significance?"
-i.e.\ for scenario \ $n_{\text{treat}} = 1000$, \emph{effect: sigmoid}), \emph{Grid} is superior to \emph{MBO} but the difference is smaller than $0.25\%$.
+i.e.\ for scenario (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$), \emph{Grid} is superior to \emph{MBO} but the difference is smaller than $0.25\%$.
 
 After having looked at the best obtained outcome on our problem scenarios and established the ability of \emph{MBO} to find equally good configurations as the much more demanding exhaustive \emph{Grid} we want to investigate the problems in more detail.
 In Figure~\ref{fig:plot_allbest} we show the observed outcomes during evaluation of the grid as well as the final configurations found by MBO, to demonstrate the behavior of the simulation in dependence of the parameters \emph{selection strategy} and \emph{stage ratio} ($r$).
@@ -729,29 +735,15 @@ In contrast to Figure~\ref{fig:plot_allbest}, Figure~\ref{fig:plot_best_x} shows
 \caption{Best found $x$-values from MBO runs.}
 \label{fig:plot_best_x}
 \end{figure}
-The results show that for some scenarios most replications of the \emph{Grid} returned the same optimal configurations (e.g. for scenario \ $n_{\text{treat}} = 1000$, \emph{effect: sigmoid})
+The results show that for some scenarios most replications of the \emph{Grid} returned the same optimal configurations (e.g.\ for scenario \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$)
 In such cases the signal to noise ratio was high enough to reliably find the best configuration.
 These are also the scenarios where \emph{Grid} was superior the \emph{MBO} as can be seen in the previously shown Box plots in Figure~\ref{fig:plot_boxplot_valid_y}.
-In other cases \emph{Grid} found varying configurations and \emph{MBO} found more stable results that lead to better outcomes (e.g.\ $n_{\text{treat}} = 1000$, \emph{effect: linear}; $n_{\text{treat}} = 500$, \emph{effect: paper2}; $n_{\text{treat}} = 500$, \emph{effect: sigmoid}).
-A special scenario is $n_{\text{treat}} = 2000$, \emph{effect: paper2}: Here nearly all found configurations yield perfect outcomes.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+In other cases \emph{Grid} found varying configurations and \emph{MBO} found more stable results that lead to better outcomes (e.g.\ \emph{effect: linear}, $n_{\text{treat}} = 1000$; \emph{effect: paper2}, $n_{\text{treat}} = 500$; \emph{effect: sigmoid}, $n_{\text{treat}} = 500$).
+A special scenario is \emph{effect: paper2}, $n_{\text{treat}} = 2000$: Here nearly all found configurations yield perfect outcomes.
 
 \subsection{More simulation rounds}
+
+%FIXME TODO by Jakob
 
 To investigate the effect of the function noise variance ($\sigma^2_n$) on the optimization result we increased the simulation iterations from $n_\text{sim} = 1000$ to $n_\text{sim} = 5000$ for the scenario with the \emph{paper} effect set and  $n_{\text{treat}} = 2000$.
 This is expected to increase the runtime by a factor of 5.
