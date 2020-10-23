@@ -41,6 +41,8 @@
 *.synctex.gz(busy)
 *.pdfsync
 
+
+
 ## Build tool directories for auxiliary files
 # latexrun
 latex.out/
@@ -286,3 +288,4 @@ TSWLatexianTemp*
 .Rproj.user
 *.Rproj
 /generator/memoise
+Rplots.pdf

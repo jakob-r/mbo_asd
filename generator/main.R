@@ -389,7 +389,7 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.9, expr 
   #   paste(value, variable)
   # }
   
-  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(n[treat]==.(n_cases),.(effect))}))
+  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(.(effect), n[treat]==.(n_cases))}))
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
@@ -411,6 +411,7 @@ plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT *
   g = g + theme(legend.position = "bottom")
   g = g + geom_boxplot()
   g = g + labs(x = expression(n[sim]), y = expression(y[valid]), color = NULL, fill = NULL)
+  g = g + guides(fill=guide_legend(nrow=2,byrow=FALSE))
   g
 })
 
