@@ -591,11 +591,11 @@ First, we describe the \emph{exhaustive grid search} (\emph{Grid}).
 For each effect set (see Table~\ref{tab:table_effect_names}) and for each selection strategy, we conduct an exhaustive grid search with a resolution of 25 points per real-valued dimension, i.e.\ one parameter ($r$) for the strategies all, 1, 2, and 3, and two parameters ($r$ and $\epsilon$ or $\tau$, respectively).
 This results in a total of $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations that are evaluated for each effect set.
 Additionally, we will use a subset of this grid of 7 points per dimensions, resulting in $4 \cdot 7 + 2 \cdot 7 \cdot 7 = 126$ design configurations, which we will call \emph{Grid Small}.
-Both grids are evaluated with 10 stochastic replications to estimate the variance of the estimated power.
+Both grids are evaluated with 20 stochastic replications to estimate the variance of the estimated power.
 
 The best point per evaluated grid is determined by selecting the configuration (parameter set) with the best outcome, i.e.\ the largest power.
 The corresponding value is generally too optimistic, as the random noise on the estimated value can contribute to the good outcome.
-To account for this optimism and report unbiased performance estimates, for each of the 10 replicate simulations, we identify the best configuration and consider the corresponding 9 outcomes of the other 9 replicate simulations, similar to a cross-validation framework in machine learning applications. 
+To account for this optimism and report unbiased performance estimates, for each of the 20 replicate simulations, we identify the best configuration and consider the corresponding 19 outcomes of the other 19 replicate simulations, similar to a cross-validation framework in machine learning applications. 
 %This eliminates the risk of only reporting outcomes that are optimal by chance.
 
 Next, we describe our realization of the search with the \emph{MBO (Model-based optimization)} approach.
@@ -750,21 +750,23 @@ Here nearly all found configurations yield perfect outcomes.
 %FIXME TODO by Jakob
 
 To investigate the effect of the function noise variance ($\sigma^2_n$) on the optimization result we increased the simulation iterations from $n_\text{sim} = 1000$ to $n_\text{sim} = 5000$ for the scenario with the \emph{paper} effect set and  $n_{\text{treat}} = 2000$.
-This is expected to increase the runtime by a factor of 5.
-Also we expect that due to the decreased noise variance the grid search might be less prone to select over optimistic configurations.
-Furthermore, MBO might need less iterations because the signal to noise ratio is higher.
+% This is expected to increase the runtime by a factor of 5. % obvious, also not of interest here
+Additionally, we run 100 stochastic replicates instead of the previously 20 to obtain a more precise estimation of the independent validation.
 
-Figure~\ref{fig:plot_opt_path_5000} shows that the lower noise level leads to more stable simulation runs, meaning that a single optimization run leads to a results closer to the mean result.
+We expect, that increasing $n_\text{sim}$ decreases the noise variance of the outcomes of the simulation that returns the statistical power of the design configuration.
+For the exhaustive \emph{Grid}, we expect that the decreased noise leads to less selections of overly optimistic outcomes as result.
+Also \emph{MBO} should profit from a less noisy objective function as the surrogates predictions will be more precise.
+
+Figure~\ref{fig:plot_opt_path_5000} shows that the lower noise level leads to more stable simulation runs, meaning that each single optimization run leads to a results closer to the mean result.
+It has to be noted, that this plot reports the best observed outcome so far and not the one that is chosen as the final result.
+So on the left side of Figure~\ref{fig:plot_opt_path_5000}, we see more curves that oberved overoptimistic outcomes in compaision the the right side.
+Ideally, the choise of the final point should not be influenced by these overoptimistic observations for \emph{MBO} as explained in Section~\ref{ssec:best_point}, as the final point is determined by the surrogates mean prediction.
+
 Also the outcome of the best found point by MBO is closer to the best outcome found by the exhaustive grid search.
-We have to remember that this plot reports the best observed outcome so far. 
+We have to remember that this plot 
 However, as explained in Section~\ref{ssec:best_point} the best point is not determined by the best found outcome but by the surrogates mean prediction of all evaluated point.
-This "bias correction" seems to be effective, as the validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for MBO in both cases.
-Interestingly the validation error of the grid search is lower for $n_\text{sim} = 5000$ then for $n_\text{sim} = 1000$.
-We would have expected the opposite, since more noise during optimization leads to overly optimistic choices that result in a bad validation error.
-This does not seem to be the case here but also the results are not drastically different and the illustrated IQR for the grid search becomes smaller for $n_\text{sim} = 5000$.
-
-%FIXME: Add Runtime comparision!
-
+This "bias correction" seems to be effective, as the validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for \emph{MBO} for the low and the high value of $n_\text{sim}$.
+%FIXME: Add Runtime comparision? Maybe boring because it probably is just 5 times the old values
 \begin{figure}[htb]
 \centering
   \begin{minipage}{0.62\textwidth}
@@ -780,7 +782,11 @@ This does not seem to be the case here but also the results are not drastically 
     \label{fig:plot_boxplot_valid_y_5000}
   \end{minipage}
 \end{figure}
-
+For all methods the IQR displayed in the is much smaller for $n_\text{sim} = 5000$, indicating that the found solutions vary less within the 100 stochastic replications.
+Also the absolute differences between the methods seem even more negligible.
+This demonstrates, that for the selected scenario all methods can find the optimal configuration if the results are not noisy.
+But as an increased value of $n_\text{sim}$ also increases the runtime linearly this is not always a feasible choice if the goal is to find the optimal configuration quickly.
+We conclude with the observation, that \emph{MBO} can find configurations with a low number of needed simulations (higher noise) that are close to the optimal found solution with a high numer of simulation.
 
 % This is the body text. Please note that cross-references in the body text should be shown as follows:
 % (Miller, 1900), (Miller and Baker, 1900) or if three or more authors (Miller {\it{et al}}., 1900)

@@ -63,7 +63,7 @@ addExperiments(algo.designs = ades, repls = REPLS)
 
 # add 5times sim steps for one experiment
 ades_nsim_high = generate_eval_mbo_design(n_cases = tail(NCASES,1), nsim = c(NSIM, 5 * NSIM), effect = "paper")
-addExperiments(algo.designs = ades_nsim_high, repls = 10 * REPLS)
+addExperiments(algo.designs = ades_nsim_high, repls = max(4 * REPLS, 100))
 
 if (TESTMODE) {
   stop()

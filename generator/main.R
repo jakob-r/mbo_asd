@@ -80,7 +80,7 @@ algorithm_labels = c("mbo" = "MBO", "eval" = "Grid", "mbo grid" = "MBO Grid", "g
 algorithm_labels_color = c("mbo" = "#F04A2B", "eval" = "#099438", "mbo grid" = "#690D86", "grid" = "#099438", "grid7" = "#44CA6D") #https://paletton.com/#uid=6060R0krPwadDMilcBuwcpxDti6
 
 ncases_labels = c(500,1000,2000)
-ncases_labels = paste0("n[cases] ",ncases_labels)
+ncases_labels = paste0("n[cases] ", ncases_labels)
 names(ncases_labels) = c(500,1000,2000)
 
 names(effect_labels) = effect_labels = c("linear", "paper", "paper2", "sigmoid")
@@ -102,7 +102,7 @@ kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation") %>%
 ## ----read_data----------------------------------------------------------------
 read_results_uncached = function(select_labels, case = "default") {
   if (case == "default") {
-    case_selector = quote(nsim == 1000 & repl <= 10)
+    case_selector = quote(nsim == 1000 & repl <= 20)
   } else if (case == "nsim") {
     case_selector = quote(n_cases == 2000 & effect == "paper")
   } else {
@@ -143,7 +143,7 @@ read_results_uncached = function(select_labels, case = "default") {
   ## ----estimate res_grid--------------------------------------------------------
   # we calculate res_grid which emulates a grid search with an independent validation of the best found x value
   # 1. for each repl we look for the best y and take the x values (randomly 1 on ties)
-  # 2. we obtain the y values of the given x-values of the other 9 repls
+  # 2. we obtain the y values of the given x-values of the other 19 repls
   # 3. we average the external y values
   # 4. we sum up the time that the grid needed on one replication
   calc_res_grid_internal = function(.SD) {
@@ -283,11 +283,11 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   df = merge(get_res_eval(), res_best, all.x = FALSE, all.y = TRUE, by = colnames(res_best))
   dfmean = df[, lapply(.SD, mean),by = c(algo.par.names), .SDcols = c("y", "stage_1_arms", "stage_1_n")] #stage_1_n can vary a little
   g = ggplot(df, aes(x = (stage_1_arms * stage_1_n), y = y, color = select, group = paste(select, epsilon, thresh)))
+  g = g + geom_point(aes(size = algorithm, shape = algorithm), data = get_res_mbo(), shape = 16)
   g = g + geom_line(data = dfmean)
-  g = g + geom_point(aes(size = algorithm), alpha = 0.2)
-  g = g + geom_point(aes(size = algorithm), data = get_res_mbo())
+  g = g + geom_point(aes(size = algorithm, shape = algorithm), alpha = 0.15, shape = 16)
   g = g + scale_color_manual(values = select_labels_colors)
-  g = g + scale_size_manual(labels = algorithm_labels[c("mbo" ,"eval")], values = c("mbo" = 2.5, "eval" = 0.5))
+  g = g + scale_size_manual(labels = algorithm_labels[c("mbo" ,"eval")], values = c("mbo" = 2, "eval" = 0.5))
   g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_bquote(cols = {n[treat]==.(n_cases)}))
   g = g + labs(x = expression(k[1] %.% n[stage1]))
   g = g + theme(legend.position = "bottom")
@@ -308,7 +308,7 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + facet_wrap(effect~n_cases, scales = "free", ncol = 3) # labels not used
   g = g + scale_x_continuous(expand = expansion(mult = 0.2))
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
-  g = g + scale_shape_manual(labels = algorithm_labels, values = c("mbo" = 19, "grid" = 21))
+  g = g + scale_shape_manual(labels = algorithm_labels, values = c("mbo" = 16, "grid" = 21))
   g = g + scale_color_manual(labels = select_labels, values = select_labels_colors)
   g = g + labs(x = expression(r), y = expression(y[valid]))
   g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
@@ -436,8 +436,8 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
   dfmean = df[, list(cummax_y_mean = mean(cummax_y), y_mean = mean(y), y_sd = sd(y)), by = c(algo.par.names.meta, "dob", "best_y")]
   
   g = ggplot(df[dob > 0 & prop.type != "final_eval", ], aes(x = dob, y = cummax_y-best_y, color = algorithm))
-  g = g + geom_line(alpha = 0.3, aes(group = paste0(repl)))
-  g = g + geom_line(data = dfmean, aes(y = cummax_y_mean-best_y))
+  g = g + geom_line(alpha = 0.1, aes(group = paste0(repl)), size = 0.5)
+  g = g + geom_line(data = dfmean, aes(y = cummax_y_mean-best_y), color = colorspace::darken(algorithm_labels_color[["mbo"]], amount = 0.6))
   g = g + facet_grid(.~nsim, scales = "free")
   g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.6))
   g = g + geom_label(data = df_best, aes(label = formatC(best_y, 4)), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)

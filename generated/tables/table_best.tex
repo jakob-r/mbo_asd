@@ -7,67 +7,67 @@
 \toprule
 effect & n\_cases & select & stage\_ratio & epsilon & mean\_y\\
 \midrule
- &  & 1 best & 0.083 &  & 0.401\\
+ &  & epsilon rule & 0.042 & 0.000 & 0.401\\
 
- &  & epsilon rule & 0.042 & 0.000 & 0.402\\
+ &  & 1 best & 0.083 &  & 0.405\\
 
- &  & epsilon rule & 0.083 & 0.000 & 0.408\\
+ &  & epsilon rule & 0.083 & 0.000 & 0.407\\
 
  & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & mbo &  &  & 0.422\\
 \cmidrule{2-6}
- &  & epsilon rule & 0.083 & 0.167 & 0.732\\
+ &  & epsilon rule & 0.083 & 0.167 & 0.729\\
 
- &  & epsilon rule & 0.083 & 0.000 & 0.733\\
+ &  & 1 best & 0.083 &  & 0.731\\
 
- &  & 1 best & 0.083 &  & 0.734\\
+ &  & epsilon rule & 0.083 & 0.000 & 0.735\\
 
- & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & mbo &  &  & 0.746\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & mbo &  &  & 0.744\\
 \cmidrule{2-6}
- &  & epsilon rule & 0.125 & 0.000 & 0.965\\
+ &  & epsilon rule & 0.083 & 0.000 & 0.965\\
 
- &  & epsilon rule & 0.083 & 0.000 & 0.966\\
+ &  & epsilon rule & 0.083 & 0.333 & 0.965\\
 
- &  & epsilon rule & 0.083 & 0.167 & 0.967\\
+ &  & epsilon rule & 0.083 & 0.167 & 0.965\\
 
 \multirow{-12}{*}{\raggedright\arraybackslash linear} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & mbo &  &  & 0.970\\
 \cmidrule{1-6}
+ &  & 1 best & 0.125 &  & 0.417\\
+
  &  & epsilon rule & 0.083 & 0.167 & 0.421\\
 
- &  & epsilon rule & 0.083 & 0.000 & 0.422\\
+ &  & epsilon rule & 0.083 & 0.000 & 0.424\\
 
- &  & epsilon rule & 0.042 & 0.333 & 0.423\\
-
- & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & mbo &  &  & 0.434\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & mbo &  &  & 0.435\\
 \cmidrule{2-6}
- &  & epsilon rule & 0.125 & 0.167 & 0.718\\
+ &  & epsilon rule & 0.167 & 0.500 & 0.719\\
 
- &  & epsilon rule & 0.125 & 0.500 & 0.724\\
+ &  & epsilon rule & 0.125 & 0.500 & 0.723\\
 
- &  & epsilon rule & 0.125 & 0.333 & 0.727\\
+ &  & epsilon rule & 0.125 & 0.333 & 0.728\\
 
- & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & mbo &  &  & 0.730\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & mbo &  &  & 0.731\\
 \cmidrule{2-6}
- &  & epsilon rule & 0.208 & 0.833 & 0.955\\
+ &  & 2 best & 0.167 &  & 0.956\\
 
- &  & 2 best & 0.125 &  & 0.958\\
+ &  & 2 best & 0.208 &  & 0.957\\
 
- &  & 2 best & 0.167 &  & 0.960\\
+ &  & 2 best & 0.125 &  & 0.960\\
 
-\multirow{-12}{*}{\raggedright\arraybackslash paper} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & mbo &  &  & 0.964\\
+\multirow{-12}{*}{\raggedright\arraybackslash paper} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & mbo &  &  & 0.965\\
 \cmidrule{1-6}
- &  & 2 best & 0.208 &  & 0.916\\
+ &  & 2 best & 0.208 &  & 0.915\\
 
- &  & 2 best & 0.250 &  & 0.916\\
+ &  & 2 best & 0.292 &  & 0.917\\
 
- &  & 2 best & 0.292 &  & 0.918\\
+ &  & 2 best & 0.250 &  & 0.919\\
 
- & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & mbo &  &  & 0.928\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & mbo &  &  & 0.929\\
 \cmidrule{2-6}
- &  & 3 best & 0.125 &  & 0.998\\
-
  &  & 3 best & 0.250 &  & 0.998\\
 
- &  & 3 best & 0.167 &  & 0.999\\
+ &  & 3 best & 0.208 &  & 0.998\\
+
+ &  & 3 best & 0.167 &  & 0.998\\
 
  & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & mbo &  &  & 1.000\\
 \cmidrule{2-6}
@@ -79,27 +79,27 @@ effect & n\_cases & select & stage\_ratio & epsilon & mean\_y\\
 
 \multirow{-12}{*}{\raggedright\arraybackslash paper2} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & mbo &  &  & 1.000\\
 \cmidrule{1-6}
- &  & epsilon rule & 0.042 & 0.167 & 0.456\\
+ &  & epsilon rule & 0.042 & 0.167 & 0.455\\
 
- &  & epsilon rule & 0.042 & 0.000 & 0.461\\
+ &  & 1 best & 0.042 &  & 0.462\\
 
- &  & 1 best & 0.042 &  & 0.464\\
+ &  & epsilon rule & 0.042 & 0.000 & 0.463\\
 
- & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & mbo &  &  & 0.488\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 500} & mbo &  &  & 0.479\\
 \cmidrule{2-6}
- &  & epsilon rule & 0.042 & 0.167 & 0.771\\
+ &  & epsilon rule & 0.042 & 0.167 & 0.772\\
 
- &  & epsilon rule & 0.042 & 0.000 & 0.782\\
+ &  & epsilon rule & 0.042 & 0.000 & 0.784\\
 
- &  & mbo &  &  & 0.783\\
+ &  & mbo &  &  & 0.787\\
 
- & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & 1 best & 0.042 &  & 0.790\\
+ & \multirow{-4}{*}{\raggedleft\arraybackslash 1000} & 1 best & 0.042 &  & 0.794\\
 \cmidrule{2-6}
- &  & epsilon rule & 0.042 & 0.167 & 0.973\\
+ &  & epsilon rule & 0.042 & 0.167 & 0.972\\
 
  &  & 1 best & 0.042 &  & 0.977\\
 
- &  & mbo &  &  & 0.977\\
+ &  & mbo &  &  & 0.978\\
 
 \multirow{-12}{*}{\raggedright\arraybackslash sigmoid} & \multirow{-4}{*}{\raggedleft\arraybackslash 2000} & epsilon rule & 0.042 & 0.000 & 0.979\\
 \bottomrule

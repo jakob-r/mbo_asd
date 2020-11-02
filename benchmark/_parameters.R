@@ -21,7 +21,7 @@ if (TESTMODE) {
   NSIM = 1000
   MBOITERS = 100
   GRIDRES = 25
-  REPLS = 10
+  REPLS = 20
   NCASES = c(500,1000,2000)
   EFFECTS = list(
     paper = list(early = c(0,0.68,0.82,0.95,0.91), final = c(0,0.13,0.17,0.23,0.20)),
