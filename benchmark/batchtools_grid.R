@@ -47,7 +47,7 @@ addAlgorithm("mbo", fun = function(job, data, instance, corr, nsim, n_cases, mbo
     min(getOptPathY(opt.path), na.rm = TRUE)
   }
 
-  mbo_ctrl = makeMBOControl(on.surrogate.error = "warn", final.method = "best.predicted", impute.y.fun = impute_y, final.evals = 10)
+  mbo_ctrl = makeMBOControl(on.surrogate.error = "warn", final.method = "best.predicted", impute.y.fun = impute_y, final.evals = 20)
   mbo_ctrl = setMBOControlInfill(mbo_ctrl, crit = makeMBOInfillCritAEI(aei.use.nugget = TRUE))
   mbo_ctrl = setMBOControlTermination(mbo_ctrl, iters = mbo_iters)
 
