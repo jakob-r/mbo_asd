@@ -124,7 +124,7 @@
 \Issue{61}
 \Year{2020}
 \pagespan{1}{}
-\keywords{Adaptive Seamless Designs; Clinical Trials; Model-Based Optimization; Treatment Selection\\\\ %FIXME: name 5 %Up to five keywords are allowed and should be given in alphabetical order. Please capitalize the key
+\keywords{Adaptive Seamless Designs; Bayesian Optimization; Clinical Trials; Treatment Selection\\\\ %Up to five keywords are allowed and should be given in alphabetical order. Please capitalize the key
 %\noindent \hspace*{-4pc}\\
 %\hspace*{-4pc} 
 %{\small\it words)}\\[1pc]
@@ -204,7 +204,8 @@ This applies even to usually fairly straightforward tasks as sample size calcula
 Various frameworks and guidance proposals have been developed over the past years on how to plan, execute and interpret the results of such simulation studies.
 Method comparison studies are used to give clinicians and biostatisticians guidance when an approach improves currently used methods.  
 Depending on the setting and the purpose of the simulation study, suitable metrics must be chosen to compare alternative designs or analysis strategies. 
-Especially relevant are neutral comparison studies, which are characterized as follows: %FIXME Is there someting missing? (Jakob)
+Especially relevant are neutral comparison studies, which are characterized as follows:
+%FIXME Is there someting missing? (Jakob)
 The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way~\citep{boulesteix_plea_2013}.
 %While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
 A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation). ref %FIXME ref
@@ -281,13 +282,6 @@ Further, different settings with continuous early and continuous or binary final
 % auf der individuen ebene
 
 
-% TODO: Jakob 
-% phase 1 idea something fast
-% phase 2
-% Describe the study we look at. / The Data
-%COPD trial
-
-
 % What about these three papers?
 %\cite{barnes_integrating_2010}
 %\cite{donohue_oncedaily_2010}
@@ -307,7 +301,7 @@ We start by providing some more details on the study design considered (Sections
 
 \subsection{Two-stage design with treatment selection}
 \label{ssec:two_stage_design_with_treatment_selection}
-Here we consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\beta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \beta_k=0$ against the alternative  $H_{1,k}: \beta_k>0$ (larger $\beta_k$ being better). For the purpose of treatments selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise p-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher_adaptive_1999}  % Lehmacher and Wassmer https://doi.org/10.1111/j.0006-341X.1999.01286.x.
+Here we consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\beta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \beta_k=0$ against the alternative  $H_{1,k}: \beta_k>0$ (larger $\beta_k$ being better). For the purpose of treatments selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise p-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher_adaptive_1999}
 %FIXME Show function
 
 \subsection{Selection rules}
@@ -677,14 +671,14 @@ Figure~\ref{fig:plot_boxplot_valid_y} shows the estimated power values $y_{\text
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y.pdf}
 \caption{%
-  Box plots of performance (power) values on independent replicates of the best solutions for the four optimizers, the different effect sets, and different numbers of $n_{\text{treat}}$. %FIXME rename n_cases in plot
+  Box plots of performance (power) values on independent replicates of the best solutions for the four optimizers, the different effect sets, and different numbers of $n_{\text{treat}}$.
   }
 \label{fig:plot_boxplot_valid_y}
 \end{figure}
 
 The plots show that \emph{MBO} generally gives results that are comparable to those obtained with the (exhaustive) \emph{Grid} method, for all effects sets. 
 Only in some cases \emph{Grid} has a slight advantage (\emph{effect: linear}, $n_{\text{treat}} = 2000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 2000$).
-Below we will see that these scenarios have in common that the optimal configuration is close to the border of the search space. %FIXME Make sure that this is mentioned for figure 4!
+Below we will see that these scenarios have in common that the optimal configuration is close to the border of the search space. 
 In other cases \emph{MBO} yields slightly better results (\emph{effect: paper}, $n_{\text{treat}} = 2000$; \emph{effect: paper2}, $n_{\text{treat}} = 500$; \emph{effect: sigmoid}, $n_{\text{treat}} = 500$).
 Across all scenarios, \emph{MBO} and \emph{Grid} perform similar, even though \emph{MBO} due to its evaluation budget is allowed only 116 evaluations in contrast to the 1350 evaluations for \emph{Grid}, with a resolution of 25 points per dimension. 
 The difference in the number of evaluations is clearly reflected in the average runtime of the optimization methods given in Table~\ref{tab:table_time}.
@@ -700,7 +694,7 @@ The \emph{Grid} optimization selected the best outcome "optimistically" from all
 Accordingly, we assume that for the mentioned scenarios the noise was so high, that \emph{Gird} was misguided by overoptimistic outcomes when selecting the final configuration as optimization result.
 The independent validation $y_{\text{valid}}$ represents the unbiased performance of this final configuration, and the overoptimism becomes apparent.
 In these scenarios \emph{MBO} performs better, since the final configuration is determined based on the mean prediction of the surrogate of \emph{MBO}, as explained in Section~\ref{ssec:best_point}.
-Below we will study on a single scenario if a reduced noise due to a higher value of \texttt{nsim} decreases the effect of the overly optimistic selection of \emph{Grid}. %FIXME: n_treat 500, paper 2 would be more interesting or n_treat 1000 and linear)
+Below we will study on a single scenario if a reduced noise due to a higher value of \texttt{nsim} decreases the effect of the overly optimistic selection of \emph{Grid}.
 
 If \emph{MBO} was not able to find a better solution then \emph{Grid}, then also \emph{MBO Grid} cannot yield better results as it just takes the configuration on the Grid that is closest to the configuration found by \emph{MBO}.
 An increase in performance of \emph{MBO Grid} compared to \emph{MBO} is purely due to chance.
@@ -788,7 +782,6 @@ It has to be noted, that this plot reports the best observed outcome so far and 
 So on the left side of Figure~\ref{fig:plot_opt_path_5000}, we see more curves that observed overoptimistic outcomes in comparison the the right side.
 Ideally, the choice of the final point should not be influenced by these overoptimistic observations for \emph{MBO} as explained in Section~\ref{ssec:best_point}, as the final point is determined by the surrogates mean prediction.
 This "bias correction" seems to be effective, as the validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for \emph{MBO} for the low and the high value of $n_\text{sim}$.
-%FIXME: Add Runtime comparision? Maybe boring because it probably is just 5 times the old values
 \begin{figure}[htb]
 \centering
   \begin{minipage}{0.62\textwidth}
