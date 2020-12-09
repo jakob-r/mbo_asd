@@ -76,7 +76,7 @@ select_labels_colors = #http://paletton.com/#uid=74Z140kqdu7ghF3lowyu1ppwGk7
     "random" = "#000000",
     "threshold rule" = "#C0E62A"
   )
-algorithm_labels = c("mbo" = "MBO", "eval" = "Grid", "mbo grid" = "MBO Grid", "grid" = "Grid", "grid7" = "Grid Small")
+algorithm_labels = c("mbo" = "BO", "eval" = "Grid", "mbo grid" = "BO Grid", "grid" = "Grid", "grid7" = "Grid Small")
 algorithm_labels_color = c("mbo" = "#F04A2B", "eval" = "#099438", "mbo grid" = "#690D86", "grid" = "#099438", "grid7" = "#44CA6D") #https://paletton.com/#uid=6060R0krPwadDMilcBuwcpxDti6
 
 ncases_labels = c(500,1000,2000)
