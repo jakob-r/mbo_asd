@@ -185,7 +185,7 @@ The optimization approach finds competitive setups in a fraction of the time.
 \section{Introduction}
 
 Clinical research and in particular drug development is typically structured into phases, e.g. phases I to IV in drug development. 
-Similar approaches exist for complex interventions, such as the MRC framework for non-pharmacological interventions (ref)%FIXME ref
+Similar approaches exist for complex interventions, such as the MRC framework for non-pharmacological interventions~\citep{campbell_framework_2000}.
 The development phases include elements of learning and confirmation.
 For instance, \citet{sheiner_learning_1997} describe the drug development process as two learning and confirming cycles:
 The first cycle includes learning about the tolerated dose (Phase I) and confirming the efficacy of the selected dose in a selected group of patients (Phase IIa), whereas the second cycle consists of learning about the optimal use in representative patients (Phase IIb) and confirming of an acceptable benefit or risk ratio (Phase III).
@@ -193,7 +193,7 @@ The first cycle includes learning about the tolerated dose (Phase I) and confirm
 Traditionally, separate studies are performed for learning and confirming.
 However, the landscape in clinical research is changing.
 Boundaries between the development phases are increasingly dissolving in multiple aspects.
-Master protocols are a new concept where multiple subgroups and substudies are integrated (ref). %FIXME ref
+Master protocols are a new concept where multiple subgroups and substudies are integrated~\citep{bogin_master_2020}.
 Here, simultaneously, more than one treatment and more than one disease type are investigated within the same overall trial structure.
 Adaptive designs are established, but are being further developed.
 In general, study designs become more flexible, and more principled approaches to decision making using statistical modeling and integrated analyses across studies become popular. 
@@ -205,7 +205,7 @@ Various frameworks and guidance proposals have been developed over the past year
 Method comparison studies are used to give clinicians and biostatisticians guidance when an approach improves currently used methods.  
 Depending on the setting and the purpose of the simulation study, suitable metrics must be chosen to compare alternative designs or analysis strategies. 
 Especially relevant are neutral comparison studies, which are characterized as follows: %FIXME Is there someting missing? (Jakob)
-The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way (ref).
+The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way~\citep{boulesteix_plea_2013}.
 %While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
 A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation). ref %FIXME ref
 CSE was particularly developed to support the overall process of performing simulations of clinical trials, especially for complex designs and analysis strategies.
@@ -304,22 +304,28 @@ Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
 % TODO: Tim
 Traditionally drug development is organized in four phases with individual clinical trials for the separate phases. Seamless designs combine elements from different development phases in a single trial thereby offering the promise of speeding up development times. For instance, seamless phase II/III designs combine the learning about dose-response relationship or subgroup heterogeneity typical for phase II with confirmation of treatment effects in  phase III. If the data of the phase II part are used for confirmatory purposes, then this needs to be accounted for in the testing strategy to maintain the familywise type I error rate in the strong sense. This type of designs are referred to as adaptive seamless designs. A recent overview can be found in \citet{friede_adaptive_2020}.
 
+We start by providing some more details on the study design considered (Sections \ref{ssec:two_stage_design_with_treatment_selection} and \ref{ssec:selection_rules}) and then introduce briefly a framework for optimizing such designs, namely clinical scenario evaluation (CSE) in Section \ref{ssec:clinical_scenario_evaluation_for_asd}. In Section \ref{ssec:simulating_asd} we make some brief comments on the simulation model.
+
 \subsection{Two-stage design with treatment selection}
 \label{ssec:two_stage_design_with_treatment_selection}
-Here we consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\theta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \theta_k=0$ against the alternative  $H_{1,k}: \theta_k>0$ (larger $\theta_k$ being better). Fur this purpose test statistics $Z_{1,k}$ based on data from the first design stage are considered with larger $Z_{1,k}$ indicating more beneficial treatments. In an interim analysis, treatments that are continued into the second stage are selected; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. Based on the data from patients recruited into the second stage, test statistics $Z_{2,k}$ with $k \in \mathcal{S}$ are computed. 
-
-final analysis based on combination test approach with closed test principle
-
-% first stage = interim analysis
-% second stage = final analysis
-% stick to first second stage throughout text but mention interim here?
+Here we consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\theta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \theta_k=0$ against the alternative  $H_{1,k}: \theta_k>0$ (larger $\theta_k$ being better). For the purpose of treatments selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise p-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher99}  % Lehmacher and Wassmer https://doi.org/10.1111/j.0006-341X.1999.01286.x.
+%FIXME Show function
 
 \subsection{Selection rules}
 \label{ssec:selection_rules}
+In practice, the totality of the data would be suggested by a data monitoring committee (DMC) to make a recommendation regarding the treatment selection. However, it is advisable for the sponsor to define a selection rule, although in comparison fairly simplistic, to provide some guidance for the DMC regarding sponsor's preferences. Furthermore, formal selection rules are indispensable to conduct simulation studies, e.g. to explore sample size and power. 
+
+\paragraph{k-Rule} %best k, evtl. anderer Name?
 
 \paragraph{Epsilon Rule}
 
 \paragraph{Threshold Rule}
+
+\subsection{Simulating ASD}
+\label{ssec:simulating_asd}
+R package asd by Nick Parsons
+Test statistics are simulated, not individual participant data
+
 
 \subsection{Clinical scenario evaluation for ASD}
 \label{ssec:clinical_scenario_evaluation_for_asd}
@@ -382,14 +388,6 @@ final analysis based on combination test approach with closed test principle
 \label{fig:friede_refinement_2010_fig2}
 \end{figure}
 
-
-
-\subsection{Simulating ASD}
-\label{ssec:simulating_asd}
-R package asd by Nick Parsons
-Test statistics are simulated, not individual participant data
-
-\clearpage
 
 \section{Model-based Optimization}
 \label{sec:model_based_optimization}
@@ -831,6 +829,14 @@ We conclude with the observation, that \emph{MBO} can find configurations with a
 \label{sec:discussion}
 
 % subsection Summary
+When planning clinical trials, determining patient group sizes and test methods is a crucial task.
+The main goal is to maximize the test power, given a set of treatment and effect sizes under the null hypothesis.
+If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
+Either because large computational resources are required for an exhaustive exploration of all different configurations, or because it involves a tedious manual manual try and error process.
+In this work we applied Model-based Optimization to quickly find a clinical trial setup with high power from a large number of setup options.
+We compared out approach to an exhaustive grid search by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
+MBO was able to find competitive setups in a fraction of the time.
+
 
 % subsection Outlook
 
