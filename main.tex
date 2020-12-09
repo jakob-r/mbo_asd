@@ -132,7 +132,7 @@
 applicable)
 }  %%% semicolon and fullpoint added here for keyword style
 
-\title[Model-based Optimization of Adaptive Seamless Designs]{Optimizing the power of adaptive seamless designs using Bayesian Optimization} %(please use sentence case, e.g. Score tests for exploring complex models)
+\title[Bayesian Optimization of Adaptive Seamless Designs]{Optimizing the power of adaptive seamless designs using Bayesian Optimization} %(please use sentence case, e.g. Score tests for exploring complex models)
 %% Information for the first author.
 \author[Jakob Richter {\it{et al.}}]{Jakob Richter\footnote{Corresponding author: {\sf{e-mail: richter@statistik.tu-dortmund.de}}}\inst{,1}} 
 \address[\inst{1}]{Fakultät Statistik, Technische Universität Dortmund, 44221 Dortmund}
@@ -155,9 +155,9 @@ A common goal is to maximize the test power, given a set of treatment and effect
 From a wide range of possible alternatives we want to select the best plan in a short period of time, to enable quick decisions.
 The standard approach to simulate the power for each single setup can become too time-consuming, when the number of possible setups becomes very large.
 Then, either large computational resources are required or an exhaustive exploration of all possible setups takes a very long time.
-In this work we propose to use Model-based Optimization to quickly find a clinical trial setup with high power from a large number of setups options.
+In this work we propose to use Bayesian Optimization to quickly find a clinical trial setup with high power from a large number of setups options.
 We demonstrate the effectiveness of our approach by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
-We compare the MBO approach with an exhaustive evaluation of all candidate designs.
+We compare the Bayesian Optimization approach with an exhaustive evaluation of all candidate designs.
 The optimization approach finds competitive setups in a fraction of the time.
 \end{abstract}
 
@@ -299,7 +299,6 @@ Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
 \section{Adaptive Seamless Designs}
 \label{sec:adaptive_seamless_designs}
 
-% TODO: Jakob copy contents from paper
 % Is there a condensed version? In Friede et al (2020) it is only explained in detail?
 % TODO: Tim
 Traditionally drug development is organized in four phases with individual clinical trials for the separate phases. Seamless designs combine elements from different development phases in a single trial thereby offering the promise of speeding up development times. For instance, seamless phase II/III designs combine the learning about dose-response relationship or subgroup heterogeneity typical for phase II with confirmation of treatment effects in  phase III. If the data of the phase II part are used for confirmatory purposes, then this needs to be accounted for in the testing strategy to maintain the familywise type I error rate in the strong sense. This type of designs are referred to as adaptive seamless designs. A recent overview can be found in \citet{friede_adaptive_2020}.
@@ -308,7 +307,7 @@ We start by providing some more details on the study design considered (Sections
 
 \subsection{Two-stage design with treatment selection}
 \label{ssec:two_stage_design_with_treatment_selection}
-Here we consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\theta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \theta_k=0$ against the alternative  $H_{1,k}: \theta_k>0$ (larger $\theta_k$ being better). For the purpose of treatments selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise p-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher99}  % Lehmacher and Wassmer https://doi.org/10.1111/j.0006-341X.1999.01286.x.
+Here we consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\beta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \beta_k=0$ against the alternative  $H_{1,k}: \beta_k>0$ (larger $\beta_k$ being better). For the purpose of treatments selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise p-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher_adaptive_1999}  % Lehmacher and Wassmer https://doi.org/10.1111/j.0006-341X.1999.01286.x.
 %FIXME Show function
 
 \subsection{Selection rules}
@@ -382,7 +381,6 @@ Test statistics are simulated, not individual participant data
   \draw[->] (ClinicalScenarios) -- (DesignPerformance);
   \draw[->] (DesignPerformance) -- (Evaluation);
 \end{tikzpicture}
-%FIXME Is this the right paper? Convert to tikz! Tim schickt mir das Original!
 %Friede et al (2010) DIJ, Figure 2 https://link.springer.com/content/pdf/10.1177/009286151004400507.pdf? https://link.springer.com/content/pdf/10.1177/009286151004400607.pdf
 \caption{Application of the refined clinical scenario evaluation framework to adaptive seamless designs in progressive multiple sclerosis.}
 \label{fig:friede_refinement_2010_fig2}
