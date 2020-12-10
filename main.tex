@@ -202,13 +202,13 @@ A related principle on the analysis side is evidence synthesis, which is a way o
 The increasing complexity of both the designs and the analyses of clinical trials has the consequence that the planning of such studies often relies also on computer simulations, especially if no closed form solutions for calculations are available.
 This applies even to usually fairly straightforward tasks as sample size calculations. 
 Various frameworks and guidance proposals have been developed over the past years on how to plan, execute and interpret the results of such simulation studies.
-Method comparison studies are used to give clinicians and biostatisticians guidance when an approach improves currently used methods.  
+Method comparison studies are used to give clinicians and biostatisticians guidance when an approach improves currently used methods~\citep{hanneman_design_2008}.  
 Depending on the setting and the purpose of the simulation study, suitable metrics must be chosen to compare alternative designs or analysis strategies. 
 Especially relevant are neutral comparison studies, which are characterized by~\citet{boulesteix_plea_2013} as follows:
 %FIXME Is there someting missing? (Jakob)
 The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way.
 %While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
-A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation)~\citep{friede_refinement_2010}.
+A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation)~\citep{benda_aspects_2010,friede_refinement_2010}.
 CSE was particularly developed to support the overall process of performing simulations of clinical trials, especially for complex designs and analysis strategies.
 The problem is decomposed into data models, analysis models, and evaluation models that specify the evaluation metrics.
 
@@ -446,7 +446,7 @@ The configuration for which the surrogate estimates the best outcome is then ret
   \hat{\theta}^{\ast} := \operatorname{arg\,max}\limits_{\theta \in \mathcal{D}} \hat{\mu}(\theta),
 \end{equation}
 %To obtain a final outcome $\nu^\ast = f(\theta^\ast)$ that is independent of the optimization process, $f(\theta^\ast)$ is calculated again.
-Using the stochastic outcome $\hat{\nu}^\ast := f(\hat{\theta}^\ast) $ observed during the optimization process would still potentially lead to an overly optimistic result.
+Using the stochastic outcome $f(\hat{\theta}^\ast) $ observed during the optimization process would still potentially lead to an overly optimistic result.
 Therefore an independent calculation of $f(\hat{\theta}^\ast)$ should be conducted to obtain a fair estimate of the true value of the best outcome.
 
 \clearpage
@@ -468,7 +468,8 @@ For the effect set \emph{paper2} the effect sizes for the second stage are doubl
 As further case we consider a \emph{linear} effect set with effect sizes linear increasing from 20\% to 80\% for the first stage and effect sizes divided by 4 for the second stage as well as a \emph{sigmoid} relationship, again with 4 times larger effect sizes for the first stage.
 These sets reflect different realistic situations.
 
-The strategies regarding treatment selection for the second stage in the two-phase trial design, following the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}, and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
+The strategies for treatment selection for the second stage in the two-phase trial design and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
+The strategies follow the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}. 
 The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
 The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. 
 In Table~\ref{tab:search_space} the ranges for these two parameters and for the proportion of patients (ratio $r$) allocated to the second stage are given.
@@ -505,30 +506,38 @@ In Table~\ref{tab:search_space} the ranges for these two parameters and for the 
 
 \subsection{Calculation of the statistical power}
 
-Let $n_{\text{treat}}$ be the total number of treatments in the overall trial, and let $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively. 
+The simulation of the statistical power of the trail design can be formulated as a black-box function as follows:
+\begin{align}
+  \label{eq:bbox}
+  y & = f(n_{\text{stage1}}, n_{\text{stage2}}, \text{selection strategy}, \epsilon, \tau, \text{effect set}) \ ,
+\end{align}
+whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively and \emph{effect set} remains fixed as we are interested in the optimal trail design for a given \emph{effect set}.
+Our main optimization goal is to maximize the statistical power $y$ depending on the trial design. 
+
+However, we are interested in keeping the total number of treatments $n_{\text{treat}}$ constant in the overall trail for a fair comparison of the power of different designs.
+Therefore we introduce the ratio of patients per treatment in stage 1, compared to patients per treatment in both stages
+\begin{align}
+  \label{eq:r}
+ r & = \frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}
+\end{align}
+as a new parameter that will replace $n_{\text{stage1}}$ and $n_{\text{stage2}}$ in~(\ref{eq:bbox}). 
+
+In the following we will explain how we derive the values of $n_{\text{stage1}}$ and $n_{\text{stage2}}$ in dependence of $r$ and $n_{\text{treat}}$ so that we can maximize
+\begin{equation}
+  y = \tilde{f}(r, \text{selection strategy}, \epsilon, \tau, \text{effect set}, n_{\text{treat}})
+\end{equation}
+instead of~(\ref{eq:bbox}), whereas $n_{\text{treat}}$ and \emph{effect set} remain fixed.
+
 Let $k_1$ and $k_2$ denote the number of treatments in stage 1 and stage 2, respectively. 
 Within one stage, the same number of patients are allocated to all different treatments. 
 Then $n_{\text{treat}}$ is given by
 \begin{equation}
   \label{eq:ntreat}
-  n_{\text{treat}} = k_1 \cdot n_{\text{stage1}} + k_2 \cdot n_{\text{stage2}}.
+  n_{\text{treat}} = k_1 \cdot n_{\text{stage1}} + k_2 \cdot n_{\text{stage2}} \ .
 \end{equation}
 In our scenario (as described in Section \ref{subsec:design}) we have $k_1 = 5$ and $k_2 \in \{2, \ldots, 5\}$, where $k_2$ depends on the result of the treatment selection strategy in stage 1.
 The control treatment is included in both stages.
 
-Our main optimization goal is to maximize the statistical power $y$ depending on the trial design. 
-The power can be formulated as a black-box as follows:
-\begin{align}
-  \label{eq:bbox}
-  y & = f(n_{\text{stage1}}, n_{\text{stage2}}, \text{effect set}, \text{selection strategy}, \epsilon, \tau).
-\end{align}
-
-The total number of treatments $n_{\text{treat}}$ should be constant in the simulation study, when comparing the efficiency of different designs.
-We denote the proportion of patients per treatment in stage 1, compared to patients per treatment in both stages, with 
-\begin{align}
-  \label{eq:r}
- r & = \frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}.
-\end{align}
 Given the number of treatments $k_1$ and $k_2$ in the two stages and the total number of patients $n_{\text{treat}}$, optimizing the power with respect to $n_{\text{stage1}}$ and $n_{\text{stage2}}$ is equivalent to optimizing with respect to $r$, since
 \begin{align}
   \label{eq:stagec}
@@ -538,7 +547,7 @@ Given the number of treatments $k_1$ and $k_2$ in the two stages and the total n
   n_{\text{treat}} \cdot \frac{n_{\text{stage1}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} \nonumber \\
   & = n_{\text{treat}}\cdot
   \frac{r}{k_1\cdot
-  r+k_2\cdot (1-r)}, \nonumber \\
+  r+k_2\cdot (1-r)} \ \text{and} \nonumber \\
   n_{\text{stage2}} & =
   n_{\text{treat}}\cdot
   \frac{1-r}{k_1\cdot
@@ -548,6 +557,7 @@ Given the number of treatments $k_1$ and $k_2$ in the two stages and the total n
 %For $k_1 = k_2 = 5$, $c$ would be $n_{\text{treat}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
 These formulas give the numbers of patients per treatment arm in the two stages, if $k_2$ is known. 
 This is only the case for selection strategies 1, 2, and 3.
+
 For the selection strategies \emph{eps} and \emph{thresh}, $k_2$ depends on the outcome of stage 1.
 %choice of the \emph{thresh} or \emph{eps} parameter.
 In these cases, for given values of $n_{\text{stage1}}$ and $\epsilon$ or $\tau$, respectively, we can obtain an estimate $\hat{k}_2$ of $k_2$ with a so-called calibration step.
@@ -569,15 +579,9 @@ with respect to $n_{\text{stage1}}$, where the estimate $\hat{k}_2$ is obtained 
 %$f$ is the simulator black-box from Equation~\ref{eq:bbox}, that gives us the estimated number of $\hat{k}_2$.
 %This number is independent of the simulation of the second stage, so we can set $n_{\text{stage2}}$ to 1.
 %The value of $\hat{k}_2$ that was observed with the minimal outcome of $h$ is then used to calculate $c$ in equation~\ref{eq:ntreatcc}.
-
 The calibration step is necessary to guarantee that the total number of treatments $n_{\text{treat}}$ is (in average) the same, also for the variable selection strategies \emph{eps} and \emph{thresh}.
-Then the black-box from formula (\ref{eq:bbox}) can be reformulated as 
-\begin{equation}
-  y = \tilde{f}(n_{\text{treat}}, r, \text{effect set}, \text{selection strategy}, \epsilon, \tau).
-\end{equation}
-In our simulations, $n_{\text{treat}}$ is considered to be a constant.
 
-Summarizing, in the following we aim to find the clinical design setup, represented by the parameter values for $r$, \emph{effect set}, \emph{Selection strategy}, $\epsilon$ and $\tau$ that yield the highest statistical power, when evaluating $\tilde{f}$.
+Summarizing, in the following we aim to find the clinical design setup, represented by the parameter values for $r$, \emph{effect set}, \emph{Selection strategy}, $\epsilon$ and $\tau$ that yield the highest statistical power, when evaluating~$\tilde{f}$.
 
 \subsection{Optimization strategies}
 
