@@ -93,7 +93,7 @@ tmp = lapply(tmp, function(x) cbind.data.frame(stage = rownames(x), x))
 tmp = rbindlist(tmp, idcol = TRUE)
 setnames(tmp, ".id", "Effect Set")
 setnames(tmp, "stage", "Stage")
-kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation") %>% 
+kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation in the first (early) and second (final) stage") %>% 
   collapse_rows(columns = 1:2, latex_hline = "major") %>% 
   add_header_above(c(" " = 2, "Treatment" = 5)) %>% 
   kable_styling(position = "center") %>% 
@@ -437,14 +437,14 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
   
   g = ggplot(df[dob > 0 & prop.type != "final_eval", ], aes(x = dob, y = cummax_y-best_y, color = algorithm))
   g = g + geom_line(alpha = 0.1, aes(group = paste0(repl)), size = 0.5)
-  g = g + geom_line(data = dfmean, aes(y = cummax_y_mean-best_y), color = colorspace::darken(algorithm_labels_color[["mbo"]], amount = 0.6))
+  g = g + geom_line(data = dfmean, aes(y = cummax_y_mean-best_y), color = colorspace::darken(algorithm_labels_color[["mbo"]], amount = 0.1))
   g = g + facet_grid(.~nsim, scales = "free")
-  g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.6))
+  g = g + geom_hline(yintercept = 0 , color = colorspace::darken(algorithm_labels_color[["grid"]], amount = 0.1))
   g = g + geom_label(data = df_best, aes(label = formatC(best_y, 4)), y = 0, x = 90, vjust = 1.5, show.legend = FALSE)
   g = g + scale_color_manual(labels = algorithm_labels, values = algorithm_labels_color)
   g = g + theme(legend.position = "bottom")
   g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
-  g = g + guides(colour = guide_legend(override.aes = list(size=2)))
+  g = g + guides(colour = guide_legend(override.aes = list(size=1, alpha = 1)))
   g
 })
 
@@ -477,7 +477,7 @@ tmp2 = cbind(tmp2, data.frame("evals" = c(1350,126,116)))
 kable(tmp2, 
   booktabs = TRUE, 
   col.names = c("", as.character(tmp[algorithm == "mbo"]$n_cases), "\\emph{evals}"),
-  caption = "Average runtime in hours, for evaluating one grid and one optimization run of MBO.",
+  caption = "Average runtime in hours, for evaluating one grid and one optimization run of MBO",
   escape = FALSE
 ) %>% 
   add_header_above(c(" " = 1, table(tmp$effect)/3, " " = 1)) %>% 

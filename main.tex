@@ -115,6 +115,9 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{nowidow}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
 
 \begin{document}
 
@@ -524,6 +527,7 @@ as a new parameter that will replace $n_{\text{stage1}}$ and $n_{\text{stage2}}$
 
 In the following we will explain how we derive the values of $n_{\text{stage1}}$ and $n_{\text{stage2}}$ in dependence of $r$ and $n_{\text{treat}}$ so that we can maximize
 \begin{equation}
+  \label{eq:bbox2}
   y = \tilde{f}(r, \text{selection strategy}, \epsilon, \tau, \text{effect set}, n_{\text{treat}})
 \end{equation}
 instead of~(\ref{eq:bbox}), whereas $n_{\text{treat}}$ and \emph{effect set} remain fixed.
@@ -581,11 +585,11 @@ with respect to $n_{\text{stage1}}$, where the estimate $\hat{k}_2$ is obtained 
 %The value of $\hat{k}_2$ that was observed with the minimal outcome of $h$ is then used to calculate $c$ in equation~\ref{eq:ntreatcc}.
 The calibration step is necessary to guarantee that the total number of treatments $n_{\text{treat}}$ is (in average) the same, also for the variable selection strategies \emph{eps} and \emph{thresh}.
 
-Summarizing, in the following we aim to find the clinical design setup, represented by the parameter values for $r$, \emph{effect set}, \emph{Selection strategy}, $\epsilon$ and $\tau$ that yield the highest statistical power, when evaluating~$\tilde{f}$.
+The above procedure gives us the values for $n_{\text{stage1}}$ and $n_{\text{stage2}}$, allowing us in the following to find the optimal clinical trial design for a given \emph{effect set} and number of total treatments, by optimizing the parameter values for $r$, \emph{Selection strategy}, $\epsilon$ and $\tau$ through maximizing $\tilde f$ in~\ref{eq:bbox2}.
 
 \subsection{Optimization strategies}
 
-In the simulation study we compare the ability to two optimization approaches for finding an optimal configuration, on the one hand an exhaustive grid search on the parameter space and on the other hand BO (Bayesian optimization).
+In the simulation study we compare the ability of two optimization approaches for finding an optimal parameter configuration, on the one hand an exhaustive grid search on the parameter space and on the other hand BO (Bayesian optimization).
 For different scenarios we compare the statistical power of the best found clinical trial design.
 We also compare the runtime needed to determine the respective optimization results.
 Next we introduce the two optimization strategies.
@@ -600,13 +604,13 @@ We call this approach \textbf{Grid}.
 Further, we also consider a subset of this grid of 7 points per dimensions, resulting in $4 \cdot 7 + 2 \cdot 7 \cdot 7 = 126$ design configurations, which we will call \textbf{Grid Small}.
 Both grids are evaluated with 20 stochastic replications to estimate the variance of the estimated power.
 
-The best point per evaluated grid is determined by selecting the configuration with the best outcome, i.e.\  the parameter set with the largest power.
+The best point per evaluated grid is determined by selecting the configuration with the best outcome, i.e.\  the concrete trail design with the largest power.
 The corresponding value is generally too optimistic, as the random noise on the estimated value can contribute to the quality of the outcome.
 To account for this optimism and report unbiased performance estimates, for each of the 20 replicate simulations, we identify the best configuration and consider the corresponding 19 outcomes of the other 19 replicate simulations, similar to a cross-validation framework in machine learning applications. 
 %This eliminates the risk of only reporting outcomes that are optimal by chance.
 
 \paragraph{BO (Model-based optimization)}
-For applying BO, we first define how the surrogate model that predicts the outcome of $\tilde{f}$ for unknown values of $\theta$ (parameter sets) is generated.
+For applying BO, we first define how the surrogate model that predicts the outcome of $f$ for unknown values of $\theta$ (parameter configurations) is generated.
 As regression model for the surrogate we choose Kriging (also called Gaussian process regression) and use the implementation in the R-package \texttt{DiceKriging}~\citep{roustant_dicekriging_2012}, because it is known to work well for fairly low dimensional search spaces.
 We configure Kriging to apply the Mattern$\frac{5}{2}$ kernel with an estimated \emph{nugget effect} to account for the noisy response of $f$ and without scaling the input variables to $[0,1]$.
 
@@ -624,11 +628,11 @@ We start BO with an initial design of $16$ randomly sampled points and allow $10
 
 At the end of the optimization procedure, the best configuration is chosen according to the best prediction obtained on the set of evaluated points as explained in Section~\ref{ssec:best_point}.
 Again, overoptimism must be avoided. 
-Thus, the best selected configuration (the best parameter set) is then independently evaluated $20$ times again.
+Thus, the best selected parameter configuration is then independently evaluated $20$ times again.
 
-The whole BO procedure is repeated $20$ times to ensure that a single optimization run was not just lucky in finding the optimum.
+The whole BO procedure is repeated $20$ times to estimate the variance of the optimal found solution.
 
-Additionally we investigate how \emph{BO} performs when it is limited to return configurations that are within the grid.
+Additionally we investigate how \emph{BO} performs when it is limited to return configurations that are within the grid introduced previously.
 Therefore we introduce \textbf{BO Grid}, which executes the optimization exactly as \emph{BO}, but the best configuration is mapped to the closest value on the grid. 
 In other words, for \emph{BO Grid} we conduct the independent evaluation using the configuration within the grid that is closest to the optimal configuration that is proposed by \emph{BO}.
 The comparison of the results of \emph{BO Gird} and \emph{Gird} will allow two possible conclusions:
@@ -657,7 +661,7 @@ For the simulation of clinical trials, the function \texttt{treatsel.sim} of the
   \end{tabular}
 \end{table}
 The vector of treatment numbers for determining power \texttt{ptest} counts rejections of 3 or 4 hypotheses ???.
-Note that the parameter \texttt{nsim} denotes the internal simulation iterations of $\tilde{f}$. 
+Note that the parameter \texttt{nsim} denotes the internal simulation iterations of $f$. 
 The ten additional stochastic repetitions we conduct for the \emph{grid search} and \emph{BO} are additional replicates.
 
 % (TODO Not sure what ptest that means)  %jeweils Elementarhypothese 3, 4 verwerfen, gucken wir gar nicht drauf
@@ -670,19 +674,18 @@ The replicated evaluations give us an unbiased estimate of the performance ($y_{
 
 For this study we consider 12 scenarios.
 The scenarios are generated by combining the four different effect sets (see Table~\ref{tab:table_effect_names}) with the three different numbers of $n_{\text{treat}}$.
-Each optimizer is applied on each scenario.
+Each optimizer is applied on each scenario with 20 stochastic repetitions.
 
 Figure~\ref{fig:plot_boxplot_valid_y} shows the estimated power values $y_{\text{valid}}$ for the best solutions in each scenario.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y.pdf}
 \caption{%
-  Box plots of performance (power) values on independent replicates of the best solutions for the four optimizers, the different effect sets, and different numbers of $n_{\text{treat}}$.
+  Box plots of performance (power) values on independent replicates of the best solutions for the four optimizers, the different effect sets, and different numbers of $n_{\text{treat}}$
   }
 \label{fig:plot_boxplot_valid_y}
 \end{figure}
-
-The plots show that \emph{BO} generally gives results that are comparable to those obtained with the (exhaustive) \emph{Grid} method, for all effects sets. 
+The plots show that \emph{BO} generally gives results that are comparable to those obtained with the (exhaustive) \emph{Grid} method across all scenarios. 
 Only in some cases \emph{Grid} has a slight advantage (\emph{effect: linear}, $n_{\text{treat}} = 2000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 2000$).
 Below we will see that these scenarios have in common that the optimal configuration is close to the border of the search space. 
 In other cases \emph{BO} yields slightly better results (\emph{effect: paper}, $n_{\text{treat}} = 2000$; \emph{effect: paper2}, $n_{\text{treat}} = 500$; \emph{effect: sigmoid}, $n_{\text{treat}} = 500$).
@@ -696,17 +699,17 @@ Comparing the results of \emph{BO Grid} to those of \emph{BO} we mainly see simi
 This indicates, that the resolution of \emph{Grid} is fine enough to achieve performance similar to \emph{BO}.
 
 Comparing \emph{BO Grid} to \emph{Gird} we can observe, that for the scenarios \emph{effect: paper}, $n_{\text{treat}} = 500$ and \emph{effect: paper}, $n_{\text{treat}} = 1000$ \emph{BO Grid} achieves slightly better performance then \emph{Grid}.
-The \emph{Grid} optimization selected the best outcome "optimistically" from all observed outcome and has no notion of the stochasticity of the problem, i.e. in this case the noise on the predicted power. 
+The \emph{Grid} optimization selected the best outcome "optimistically" from all observed outcomes and has no notion of the stochasticity of the problem, i.e. in this case the noise on the predicted power. 
 Accordingly, we assume that for the mentioned scenarios the noise was so high, that \emph{Gird} was misguided by overoptimistic outcomes when selecting the final configuration as optimization result.
 The independent validation $y_{\text{valid}}$ represents the unbiased performance of this final configuration, and the overoptimism becomes apparent.
 In these scenarios \emph{BO} performs better, since the final configuration is determined based on the mean prediction of the surrogate of \emph{BO}, as explained in Section~\ref{ssec:best_point}.
-Below we will study on a single scenario if a reduced noise due to a higher value of \texttt{nsim} decreases the effect of the overly optimistic selection of \emph{Grid}.
+Further below we will study on a single scenario if a reduced noise due to a higher value of \texttt{nsim} decreases the effect of the overly optimistic selection of \emph{Grid}.
 
 If \emph{BO} was not able to find a better solution then \emph{Grid}, then also \emph{BO Grid} cannot yield better results as it just takes the configuration on the Grid that is closest to the configuration found by \emph{BO}.
 An increase in performance of \emph{BO Grid} compared to \emph{BO} is purely due to chance.
 
-To compare \emph{BO} with a grid search that uses approximately the same time (see~\ref{tab:table_time}) and number of evaluations, we consider \emph{Grid Small}.
-Here, a resolution of 7 points per dimension leads to 126 evaluations, close to 116 allowed evaluations of \emph{BO} (see~\ref{tab:table_time}), with only a small advantage for \emph{Grid Small}.
+To compare \emph{BO} with a grid search that uses approximately the same time (see Table~\ref{tab:table_time}) and number of evaluations, we consider \emph{Grid Small}.
+Here, a resolution of 7 points per dimension leads to 126 evaluations, close to 116 allowed evaluations of \emph{BO}, with only a small advantage for \emph{Grid Small}.
 Despite the 10 more allowed evaluations, in the majority of cases the results of \emph{Grid Small} are inferior to the results of \emph{BO} as can be seen in Figure~\ref{fig:plot_boxplot_valid_y}.
 Only for the scenarios (\emph{effect: paper2}, $n_{\text{treat}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$) \emph{Grid Small} has a small advantage over \emph{BO} and \emph{Grid}.
 In the first case, the absolute differences are negligible as all methods lead to a high power.
@@ -717,11 +720,11 @@ In other words, if we are lucky and \emph{Grid Small} covers the optimum we are 
 The advantage of \emph{BO} over \emph{Gird Small} becomes apparent for all scenarios with \emph{effect: linear} and scenario \emph{effect: paper2}, $n_{\text{treat}} = 500$.
 
 Note that between the scenarios the absolute differences of the optimization results are of different practical relevance,
-i.e.\ for scenario (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$), \emph{Grid} is superior to \emph{BO} but the difference is smaller than $0.25\%$.
+i.e.\ for scenario \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$, \emph{Grid} is superior to \emph{BO} but the difference is smaller than $0.25\%$.
 
 %After having looked at the best obtained outcome on our problem scenarios and established the ability of \emph{BO} to find equally good configurations as the much more demanding exhaustive \emph{Grid}
 We now investigate the results in more detail.
-In Figure~\ref{fig:plot_allbest} the observed outcomes during the evaluation of the grid as well as the final configurations found by \emph{BO} are shown, in order to analyze the differences in dependence of the parameters \emph{selection strategy} and \emph{stage ratio} ($r$).
+In Figure~\ref{fig:plot_allbest} the observed outcomes during the evaluation of the grid as well as the final configurations found by \emph{BO} are shown, in order to analyze the differences in dependence of the \emph{selection strategy} and the number of treatments at stage 1 determined by the \emph{stage ratio} ($r$).
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_allbest.pdf}
@@ -734,13 +737,12 @@ In Figure~\ref{fig:plot_allbest} the observed outcomes during the evaluation of 
   }
 \label{fig:plot_allbest}
 \end{figure}
-Note that the \emph{stage ratio} is not drawn directly but the resulting number of treatments in the first stage.
-For the \emph{selection strategies} \emph{epsilon rule} and \emph{threshold rule} only curves representing the $\epsilon$ and $\tau$ values with the best outcome, respectively, are shown.
+For the selection strategies \emph{epsilon rule} and \emph{threshold rule} only curves representing the $\epsilon$ and $\tau$ values with the best outcome, respectively, are shown.
 Note that for the effect sets \emph{linear} and \emph{sigmoid} the curves for selection strategy \emph{1 best} and \emph{eps} are as expected nearly identical.
 As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2. 
 In all scenarios, \emph{BO} identified the peak of all combined curves.
 Within the 20 stochastic repetitions per scenario, \emph{BO} found different configurations, but those had similarly good outcomes.
-That no unique best setting was found across the repetitions can be attributed to the relatively high noise of the simulation and the relatively flat peaks, i.e. different configurations yield similarly good outcomes.
+That no unique best setting was found across the repetitions can be attributed to the relatively high noise of the simulation and the relatively flat peaks, i.e.\ different configurations yield similarly good outcomes.
 In cases in which multiple optimization runs result in different configurations it might be advisable to let a human expert choose the final configuration, also depending on the medical background.
 The curves also show the potential of optimization for the different scenarios.
 If the allowed treatment number is high ($n_{\text{treat}} = 1000$), then nearly all design configurations yield high statistical power and optimization is less necessary.
@@ -750,9 +752,8 @@ Of special interest are the scenarios where the correct choice of the design con
 Note, that the selection strategies \emph{thresh} and \emph{all} never gave powerful designs.
 
 
-%FIXME: Write more about the meaning of the results from a clinical point of view.
+%TODO: Write more about the meaning of the results from a clinical point of view?
 
-%In contrast to Figure~\ref{fig:plot_allbest},
 Figure~\ref{fig:plot_best_x} visualizes in detail which configurations were selected by \emph{BO} and \emph{Grid} and the corresponding values for $y_{\text{valid}}$ (result of the independent validation).
 \begin{figure}[htb]
 \centering
@@ -769,12 +770,13 @@ Here, \emph{BO} was not able to find these values close to the border of the sea
 A common remedy is to log-transform this value.
 
 In other cases \emph{Grid} found varying configurations and \emph{BO} found more stable results that lead to better outcomes (e.g.\ \emph{effect: linear}, $n_{\text{treat}} = 1000$; \emph{effect: paper2}, $n_{\text{treat}} = 500$; \emph{effect: sigmoid}, $n_{\text{treat}} = 500$).
+Here we can assume, that \emph{BO} successfully accounted for the noise.
 A special case is scenario \emph{effect: paper2}, $n_{\text{treat}} = 2000$:
 Here nearly all found configurations yield perfect outcomes.
 
 \subsection{Results for more simulation rounds}
 
-To investigate the effect of the function noise variance ($\sigma^2_n$) on the optimization result we increase the simulation iterations from $n_\text{sim} = 1000$ to $n_\text{sim} = 5000$ for the scenario \emph{effect: paper}, $n_{\text{treat}} = 2000$.
+To investigate the effect of the function noise variance ($\sigma^2$) on the optimization result we increase the simulation iterations from $n_\text{sim} = 1000$ to $n_\text{sim} = 5000$ for the scenario \emph{effect: paper}, $n_{\text{treat}} = 2000$.
 % This is expected to increase the runtime by a factor of 5. % obvious, also not of interest here
 Additionally, we run 100 stochastic replicates instead of the previously 20 to obtain a more precise estimation of the independent validation.
 
@@ -783,17 +785,17 @@ For the exhaustive \emph{Grid}, we expect that the decreased noise leads to less
 Also \emph{BO} should profit from a less noisy objective function as the surrogates predictions will be more precise.
 
 Figure~\ref{fig:plot_opt_path_5000} shows that the lower noise level leads to more stable simulation runs, meaning that each single optimization run leads to a results closer to the mean result.
-Furthermore, the average optimization curve indicates that less iterations can be sufficient to obtain an outcome that is comparable to \emph{Grid},
 It has to be noted, that this plot reports the best observed outcome so far and not the one that is chosen as the final result.
-So on the left side of Figure~\ref{fig:plot_opt_path_5000}, we see more curves that observed overoptimistic outcomes in comparison the the right side.
-Ideally, the choice of the final point should not be influenced by these overoptimistic observations for \emph{BO} as explained in Section~\ref{ssec:best_point}, as the final point is determined by the surrogates mean prediction.
-This "bias correction" seems to be effective, as the validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for \emph{BO} for the low and the high value of $n_\text{sim}$.
+%So on the left side of Figure~\ref{fig:plot_opt_path_5000}, we see more curves that observed overoptimistic outcomes in comparison the the right side.
+%Ideally, the choice of the final point should not be influenced by these overoptimistic observations for \emph{BO} as explained in Section~\ref{ssec:best_point}, as the final point is determined by the surrogates mean prediction.
+Despite the differences of the optimization paths, the median validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for \emph{BO} for the low and the high value of $n_\text{sim}$.
+Therefore we can assume that "bias correction" of \emph{BO} as explained in Section~\ref{ssec:best_point} seems to be effective.
 \begin{figure}[htb]
 \centering
   \begin{minipage}{0.62\textwidth}
     \centering
     \includegraphics[width=\linewidth]{generated/figures/plot_opt_path_5000.pdf}%
-    \captionof{figure}{Optimization progress for \emph{BO}: Best found outcome so far for each iteration in comparison to the best found outcome in the grid search on effect set \emph{paper} and $n_{\text{treat}} = 2000$.}
+    \captionof{figure}{Optimization progress for \emph{BO}: Best found outcome so far for each iteration in comparison to the best found outcome in the grid search on effect set \emph{paper} and $n_{\text{treat}} = 2000$}
     \label{fig:plot_opt_path_5000}
   \end{minipage}\hspace{0.02\textwidth}%
   \begin{minipage}{0.35\textwidth}
@@ -807,7 +809,7 @@ For all methods the IQR displayed in the Box plots is much smaller for $n_\text{
 Also the absolute differences between the methods seem even more negligible.
 This demonstrates, that for the selected scenario all methods can find the optimal configuration if the results are not noisy.
 But as an increased value of $n_\text{sim}$ also increases the runtime linearly, increasing $n_\text{sim}$ is not always a feasible choice if the goal is to find the optimal configuration quickly.
-We conclude with the observation, that \emph{BO} can find configurations with a low number of needed simulations (higher noise) that are close to the optimal found solution with a high number of simulation.
+We conclude with the observation, that \emph{BO} can find configurations with a low number of needed simulations (higher noise) that are close to the optimal found solution with a high number of simulations.
 
 % This is the body text. Please note that cross-references in the body text should be shown as follows:
 % (Miller, 1900), (Miller and Baker, 1900) or if three or more authors (Miller {\it{et al}}., 1900)
@@ -831,22 +833,23 @@ The main goal is to maximize the test power, given a set of treatment and effect
 If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
 Either because large computational resources are required for an exhaustive exploration of all different configurations, or because it involves a tedious manual manual try and error process.
 In this work we applied Bayesian Optimization to quickly find a clinical trial setup with high power from a large number of setup options.
-We compared out approach to an exhaustive grid search by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
-BO was able to find competitive setups in a fraction of the time.
+We compared our approach to an exhaustive grid search by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
+BO was able to find competitive setups in a fraction of the time and was able to cope well with the stochasticity of the simulation.
 
 
 % subsection Outlook
+One drawback of BO that we observed was, that it performed poorly if the optimal values of one parameter are close to the lower border of the search region.
+Therefore we would apply log transformation to such parameter in the future.
 
 Instead of keeping the number of total trials constant, we could apply multi-criteria optimization and include this number as an additional outcome.
 This multi-criteria approach would result in a set of points (Pareto front) that minimize the number of trails as well as maximize the statistical power of the trail design.
 The user could then see for which number of trails the power is above a certain threshold (e.g. $95\%$).
 
-Another way of speeding up the optimization would be to adaptively increase the iterations of the design simulation. 
+Another way of speeding up the optimization would be to adaptively increase the simulation rounds of the trail design evaluation. 
 If few simulations already indicate a bad outcome it might not be promising to evaluate more simulation runs.
 Such procedure can be guided through statistical testing and is already common in machine learning under the terms racing or multi-fidelity optimization.
 
-IDEA: Restricting BO to only evaluate configurations on the grid to avoid evaluating identical / very close configurations.
-IDEA: log transform parameters that have optimal settings close to the border.
+% IDEA: Restricting BO to only evaluate configurations on the grid to avoid evaluating identical / very close configurations.
 
 % \begin{table}[htb]
 % \begin{center}
