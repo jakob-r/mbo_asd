@@ -131,8 +131,7 @@
 %\noindent \hspace*{-4pc}\\
 %\hspace*{-4pc} 
 %{\small\it words)}\\[1pc]
-\noindent\hspace*{-4.2pc} Supporting Information for this article is available from the author or on the WWW under\break \hspace*{-4pc} \underline{http://dx.doi.org/10.1022/bimj.XXXXXXX} (please delete if not
-applicable)
+%\noindent\hspace*{-4.2pc} Supporting Information for this article is available from the author or on the WWW under\break \hspace*{-4pc} \underline{http://dx.doi.org/10.1022/bimj.XXXXXXX} (please delete if not applicable)
 }  %%% semicolon and fullpoint added here for keyword style
 
 \title[Bayesian optimization of Adaptive Seamless Designs]{Improving Adaptive Seamless Designs through Bayesian optimization} %(please use sentence case, e.g. Score tests for exploring complex models)
@@ -153,17 +152,16 @@ applicable)
 
 % max 250 words
 \begin{abstract}
-In this paper we propose to use Bayesian optimization (BO) to improve the efficiency of the selection process of designs in clinical trials.
-BO is a method to optimize expensive black-box functions that uses a regression as a surrogate to guide the search.
+We propose to use Bayesian optimization (BO) to improve the efficiency of the design selection process in clinical trials.
+BO is a method to optimize expensive black-box functions, by using a regression as a surrogate to guide the search.
 In clinical trials, planning test procedures and sample sizes is a crucial task.
-A common goal is to maximize the test power, given a set of treatment and effect sizes under the null hypothesis.
-From a wide range of possible alternatives we want to select the best plan in a short period of time, to enable quick decisions.
-The standard approach to simulate the power for each single setup can become too time-consuming, when the number of possible setups becomes very large.
-Then, either large computational resources are required or an exhaustive exploration of all possible setups takes a very long time.
-In this work we propose to use BO to quickly find a clinical trial setup with high power from a large number of setups options.
+A common goal is to maximize the test power, given a set of treatments and corresponding effect sizes. % under the null hypothesis.
+From a wide range of possible designs we aim to select the best one in a short time to allow quick decisions.
+The standard approach to simulate the power for each single design can become too time-consuming.
+When the number of possible designs becomes very large, either large computational resources are required or an exhaustive exploration of all possible designs takes too long.
+Here, we propose to use BO to quickly find a clinical trial design with high power from a large number of candidate designs.
 We demonstrate the effectiveness of our approach by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
-We compare the BO approach with an exhaustive evaluation of all candidate designs.
-The optimization approach finds competitive setups in a fraction of the time.
+Comparing BO with an exhaustive evaluation of all candidate designs shows that BO finds competitive designs in a fraction of the time.
 \end{abstract}
 
 
@@ -193,7 +191,7 @@ Clinical research and in particular drug development is typically structured int
 Similar approaches exist for complex interventions, such as the MRC framework for non-pharmacological interventions~\citep{campbell_framework_2000}.
 The development phases include elements of learning and confirmation.
 For instance, \citet{sheiner_learning_1997} describe the drug development process as two learning and confirming cycles:
-The first cycle includes learning about the tolerated dose (Phase I) and confirming the efficacy of the selected dose in a selected group of patients (Phase IIa), whereas the second cycle consists of learning about the optimal use in representative patients (Phase IIb) and confirming of an acceptable benefit or risk ratio (Phase III).
+The first cycle includes learning about the tolerated dose (Phase I) and confirming the efficacy of the selected dose in a selected group of patients (Phase IIa), whereas the second cycle consists of learning about the optimal use in representative patients (Phase IIb) and confirming an acceptable benefit or risk ratio (Phase III).
 
 Traditionally, separate studies are performed for learning and confirming.
 However, the landscape in clinical research is changing.
@@ -202,7 +200,7 @@ Master protocols are a new concept where multiple subgroups and substudies are i
 Here, simultaneously, more than one treatment and more than one disease type are investigated within the same overall trial structure.
 Adaptive designs are established, but are being further developed.
 In general, study designs become more flexible, and more principled approaches to decision making using statistical modeling and integrated analyses across studies become popular. 
-A related principle on the analysis side is evidence synthesis, which is a way of combining information from several studies that have examined the same question to come to an overall understanding.
+A~related principle on the analysis side is evidence synthesis, which is a way of combining information from several studies that have examined the same question to come to an overall understanding.
 
 The increasing complexity of both the designs and the analyses of clinical trials has the consequence that the planning of such studies often relies also on computer simulations, especially if no closed form solutions for calculations are available.
 This applies even to usually fairly straightforward tasks as sample size calculations. 
@@ -210,7 +208,6 @@ Various frameworks and guidance proposals have been developed over the past year
 Method comparison studies are used to give clinicians and biostatisticians guidance when an approach improves currently used methods~\citep{hanneman_design_2008}.  
 Depending on the setting and the purpose of the simulation study, suitable metrics must be chosen to compare alternative designs or analysis strategies. 
 Especially relevant are neutral comparison studies, which are characterized by~\citet{boulesteix_plea_2013} as follows:
-%FIXME Is there someting missing? (Jakob)
 The primary goal of the respective article is not to introduce a new promising method, the authors are reasonably neutral, and the evaluation metrics, methods, and data sets are chosen in a rational way.
 %While method comparison studies aim to make statements when one approach might dominate others in terms of the chosen metrics, in designing an individual study or series of studies the objective is to identify a design that is optimal in terms of the metrics chosen in a certain scenario or, more importantly, across a set of scenarios. 
 A comprehensive framework for such an objective assessment of competing strategies for clinical trial designs is CSE (Clinical Scenario Evaluation)~\citep{benda_aspects_2010,friede_refinement_2010}.
@@ -229,13 +226,13 @@ Further, it is crucial that such a design is found in a short time.
 
 BO, often also called Model-based optimization, has been successfully applied to optimize expensive black-boxes in many different scenarios.
 Popular applications include hyper-parameter tuning of machine learning methods~\citep{snoek_practical_2012}, general algorithm configuration~\citep{hutter_sequential_2011}, and many more.
-Various implementations of BO methods are used widely, such as SMAC~\citep{hutter_sequential_2011}, Spearmint~\citep{snoek_practical_2012}, and BoTorch~\citep{balandat_botorch_2020}.
+Various implementations of BO methods are widely used, such as SMAC~\citep{hutter_sequential_2011}, Spearmint~\citep{snoek_practical_2012}, and BoTorch~\citep{balandat_botorch_2020}.
 For this work we use the implementation in the R-package \texttt{mlrMBO}~\citep{bischl_mlrmbo_2017}.
-This implementation has been successfully used to optimize hyper-parameters of machine learning methods on various tasks~\citep{bischl_mlrmbo_2017, wozniak_candle_2018}, and in the biomedical context it has been applied to optimize model-weights~\citep{richter_modelbased_2019,browaeys_nichenet_2020}.
+This implementation has been successfully used to optimize hyper-parameters of machine learning methods on various tasks~\citep{bischl_mlrmbo_2017, wozniak_candle_2018}, and in the biomedical context it has been applied to optimize model weights~\citep{richter_modelbased_2019,browaeys_nichenet_2020}.
 Also, BO is well suited for multi-criteria optimization.
 Different adaptions of BO exist~\citep{horn_modelbased_2015} that return a set of non-dominated points.
 Many of them are implemented in \texttt{mlrMBO} as well.
-However, in this work we restrict ourselves to single-criteria optimization. 
+However, in this work we restrict ourselves to single-criterion optimization. 
 
 The remainder of the manuscript is structured as follows.
 In the next section we present as motivating example an application of adaptive seamless designs for chronic obstructive pulmonary disease (COPD).
@@ -247,17 +244,17 @@ In the last Section~\ref{sec:discussion}, we discuss promising extensions as wel
 \label{sec:motivating_example}
 
 The general idea of this paper is to apply BO for finding a trial design that is optimal with respect to a certain metric.
-As an example, we consider the maximization of the statistical power of a trail design, given a set of parameters to be chosen for the trial design.
+As an example, we consider the maximization of the statistical power of a trial design, given a set of parameters to be chosen for the trial design.
 We compare the computation time as well as the maximal obtained power between the results obtained with BO and with an exhaustive grid search over the space of adjustable parameters.
 The presented optimization approach can also be applied for optimizing other metrics than the power, as long as the metric itself is numeric and the parameters of the trial design are numeric and include none or just few categorical choices.
 
-One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd}~\cite{parsons_software_2011} package and described in Section~\ref{sec:adaptive_seamless_designs}.
+One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd} package~\citep{parsons_software_2011}  and described in Section~\ref{sec:adaptive_seamless_designs}.
 %(What is THE asd paper? peter bauer, meinter kieser, 1999 statistics in medicine, % https://doi.org/10.1002/(SICI)1097-0258(19990730)18:14%3C1833::AID-SIM221%3E3.0.CO;2-3, )  bauer_combining_1999
 % https://doi.org/10.1002/bimj.200510232 bretz_confirmatory_2006 
 % seamless trials (assoziert) 
 %  https://doi.org/10.1002/bimj.200510231 schmidli_confirmatory_2006
 In~\citet{friede_adaptive_2020} the authors present an application of \emph{adaptive seamless designs} for chronic obstructive pulmonary disease (COPD).
-We will use this COPD study to apply BO for finding a trial design with maximal statistical power, given the parameters of the respective design options.
+We use this COPD study to apply BO for finding a trial design with maximal statistical power, given the parameters of the respective design options.
 %within the given scenarios restrictions.
 
 %phase II III klinische studien je in Phase
@@ -267,8 +264,8 @@ We will use this COPD study to apply BO for finding a trial design with maximal 
 
 For the COPD trial, an interim treatment selection was performed. 
 Indacaterol is a drug administered to COPD patients.
-The patients were randomized to four doses of indacaterol (\SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram} and \SI{600}{\micro\gram}), active controls, and placebo control.
-As in \citet{friede_adaptive_2020}, here we ignore the active controls.
+The patients were randomized to four doses of indacaterol (\SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram} and \SI{600}{\micro\gram}), to active controls, and to a placebo control.
+Here, as in \citet{friede_adaptive_2020}, we ignore the active controls.
 The primary outcome of the trial was the percentage of days of poor control over 26 weeks of the COPD patients.
 Since the recruitment took only a short time, another outcome was required for treatment selection, in this case forced expiratory volume in 1 s (FEV1) at 15 days.
 In the original study, the difference in FEV1 compared to placebo at 15 days for the different doses and corresponding confidence intervals were estimated.
@@ -277,8 +274,8 @@ For the final outcome days of poor control, also, from real data the standardize
 These were approximately 0.13, 0.17, 0.23, and 0.20, for the four doses.
 The approximate sample sizes per arm were 100 patients in stage 1 and 300 patients in stage 2.
 
-In the analysis of \citet{friede_adaptive_2020}, the aim was to select two doses of indacaterol at the interim analysis that are passed to stage 2, resulting in a total sample size $5 \cdot 100 + 3 \cdot 300 = 1,400$ patients. 
-In the simulations, a positive correlation between early and final outcomes of 0.4 was assumed.
+In the analysis of \citet{friede_adaptive_2020}, the aim was to select two doses of indacaterol at the interim analysis that are passed to stage 2, resulting in a total sample size of $5 \cdot 100 + 3 \cdot 300 = 1,400$ patients. 
+In the corresponding simulations, a positive correlation between early and final outcomes of $0.4$ was assumed.
 Further, different settings with continuous early and continuous or binary final outcomes and different treatment selection strategies were compared.
 
 
@@ -292,21 +289,18 @@ Further, different settings with continuous early and continuous or binary final
 %\cite{donohue_oncedaily_2010}
 %\cite{cuffe_when_2014}
 
-% FIXME: Do we really take in this Assurance?
-% Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
-
 \section{Adaptive Seamless Designs}
 \label{sec:adaptive_seamless_designs}
 
 % Is there a condensed version? In Friede et al (2020) it is only explained in detail?
 % TODO: Tim
-Traditionally drug development is organized in four phases with individual clinical trials for the separate phases. Seamless designs combine elements from different development phases in a single trial thereby offering the promise of speeding up development times. For instance, seamless phase II/III designs combine the learning about dose-response relationship or subgroup heterogeneity typical for phase II with confirmation of treatment effects in phase III. If the data of the phase II part are used for confirmatory purposes, then this needs to be accounted for in the testing strategy to maintain the familywise type I error rate in the strong sense. This type of designs are referred to as adaptive seamless designs. A recent overview can be found in \citet{friede_adaptive_2020}.
+Traditionally, drug development is organized in four phases with individual clinical trials for the separate phases. Seamless designs combine elements from different development phases in a single trial, thereby offering the promise of speeding the development process. For instance, seamless phase II/III designs combine the learning about dose-response relationship or subgroup heterogeneity typical for phase II with the confirmation of treatment effects in phase III. If the data of the phase II part are used for confirmatory purposes, then this needs to be accounted for in the testing strategy to maintain the familywise type I error rate in the strong sense. These types of designs are called adaptive seamless designs. A recent overview can be found in \citet{friede_adaptive_2020}.
 
-We start by providing some more details on the study design considered (Sections \ref{ssec:two_stage_design_with_treatment_selection} and \ref{ssec:selection_rules}) and then introduce briefly a framework for optimizing such designs, namely clinical scenario evaluation (CSE) in Section \ref{ssec:clinical_scenario_evaluation_for_asd}. %In Section \ref{ssec:simulating_asd} we make some brief comments on the simulation model.
+We start by providing some more details on the study design considered (Sections \ref{ssec:two_stage_design_with_treatment_selection} and \ref{ssec:selection_rules}). Then, in Section \ref{ssec:clinical_scenario_evaluation_for_asd} we briefly introduce a framework for optimizing such designs, namely clinical scenario evaluation (CSE). %In Section \ref{ssec:simulating_asd} we make some brief comments on the simulation model.
 
 \subsection{Two-stage design with treatment selection}
 \label{ssec:two_stage_design_with_treatment_selection}
-Here we consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\beta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \beta_k=0$ against the alternative  $H_{1,k}: \beta_k>0$ (larger $\beta_k$ being better). For the purpose of treatments selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise $p$-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher_adaptive_1999} which is given by
+We consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\beta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \beta_k=0$ against the alternative  $H_{1,k}: \beta_k>0$ (larger $\beta_k$ being better). For the purpose of treatment selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered, with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise $p$-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher_adaptive_1999} which is given by
 \begin{equation}
    w_1 \Phi^{-1}(1-p_{\mathcal{K},1}) + w_2 \Phi^{-1}(1-p_{\mathcal{K},2}) \,
 \end{equation}
@@ -314,15 +308,16 @@ where $\Phi^{-1}(\cdot)$ denotes the quantile function of the standard normal di
 
 \subsection{Selection rules}
 \label{ssec:selection_rules}
-In practice, the totality of the data would be considered by a data monitoring committee (DMC) to make a recommendation regarding the treatment selection. However, it is advisable for the sponsor to define a selection rule, although in comparison fairly simplistic, to provide some guidance for the DMC regarding the sponsor's preferences. Furthermore, formal selection rules are indispensable to conduct simulation studies, e.g. to explore sample size and power. In the following we give some examples of selection rules which have previously been consider and which will feature below.
+In practice, the totality of the data would be considered by a data monitoring committee (DMC) to make a recommendation regarding the treatment selection. However, it is advisable for the sponsor to define a selection rule, although in comparison fairly simplistic, to provide some guidance for the DMC regarding the sponsor's preferences. Furthermore, formal selection rules are indispensable to conduct simulation studies, e.g. to explore sample size and power. In the following we give some examples of selection rules which have previously been considered and which we will feature below.
 
-The treatment selection might consider statistics $Z_{1,k}$ for the final (primary) outcome or statistics $Z_{1,k}^{(E)}$ calculated based on some early outcome. We present the selection rules using $Z_{1,k}^{(E)}$, but of course these would be replaced by $Z_{1,k}$ if the final outcome was used for treatment selection. Furthermore, larger statistics are considered better. 
+The treatment selection might consider statistics $Z_{1,k}$ for the final (primary) outcome or statistics $Z_{1,k}^{(E)}$ calculated based on some early outcome. We present the selection rules using $Z_{1,k}^{(E)}$, but of course these would be replaced by $Z_{1,k}$ if the final outcome was used for treatment selection. Again, larger statistics are considered better. 
 
-\paragraph{$\kappa$-best Rule} Let $Z_{1,(1)}^{(E)}, \dots, Z_{1,(K)}^{(E)}$ denote the ordered statistics with $Z_{1,(1)}^{(E)}$ being the largest and therefore best test statistic. The $\kappa$-best rule then selects the treatments associated with the $\kappa$ largest $Z_{1,k}^{(E)}$, i.e.$Z_{1,(1)}^{(E)}, \dots, Z_{1,(\kappa)}^{(E)}$.
+\paragraph{$\kappa$-best Rule} Let $Z_{1,(1)}^{(E)}, \dots, Z_{1,(K)}^{(E)}$ denote the ordered statistics with $Z_{1,(1)}^{(E)}$ being the largest and therefore best test statistic. The $\kappa$-best rule then selects the treatments associated with the $\kappa$ largest values of the test statistic, %$Z_{1,k}^{(E)}$,
+i.e. $Z_{1,(1)}^{(E)}, \dots, Z_{1,(\kappa)}^{(E)}$.
 
-\paragraph{Epsilon Rule} To our knowledge this rule was first described by \citet{kelly_adaptive_2005} and has since then featured in a number of simulation studies including \citet{friede_comparison_2008, friede_adaptive_2020}. All treatments $k$ with $Z_{1,k}^{(E)} \ge \max_i Z_{1,i}^{(E)} - \epsilon$ with $\epsilon \ge 0$ are selected. With $\epsilon=0$ this rule is equivalent to the $\kappa$-best rule with $\kappa=1$. 
+\paragraph{Epsilon Rule} To our knowledge this rule was first described by \citet{kelly_adaptive_2005} and has since then featured in a number of simulation studies including \citet{friede_comparison_2008} and \citet{friede_adaptive_2020}. All treatments $k$ with $Z_{1,k}^{(E)} \ge \max_i Z_{1,i}^{(E)} - \epsilon$ with $\epsilon \ge 0$ are selected. For $\epsilon=0$ this rule is equivalent to the $\kappa$-best rule with $\kappa=1$. 
 
-\paragraph{Threshold Rule} With this rule all treatments $k$ are selected with $Z_{1,k}^{(E)} \ge \tau$ where $\tau$ is a given threshold.
+\paragraph{Threshold Rule} With this rule all treatments $k$ are selected with $Z_{1,k}^{(E)} \ge \tau$, where $\tau$ is a given threshold. \\
 
 We note that with the $\kappa$-best rule a fixed number of treatments is carried forward into the next stage whereas these are variable with the epsilon rule and the threshold rule.
 
@@ -330,7 +325,7 @@ We note that with the $\kappa$-best rule a fixed number of treatments is carried
 \subsection{Clinical scenario evaluation for ASD}
 \label{ssec:clinical_scenario_evaluation_for_asd}
 
-The clinical scenario evaluation framework was first proposed by \citet{benda_aspects_2010} and subsequently developed further by \citet{friede_refinement_2010}. 
+The clinical scenario evaluation framework was first proposed by \citet{benda_aspects_2010} and subsequently further developed by \citet{friede_refinement_2010}. 
 Figure \ref{fig:friede_refinement_2010_fig2} provides a summary of this framework.
 \begin{figure}[ht]
 \centering
@@ -366,33 +361,41 @@ Figure \ref{fig:friede_refinement_2010_fig2} provides a summary of this framewor
   { Adaptive seamless design
     \begin{itemize}[leftmargin=.3cm, topsep=0cm,itemsep=0cm,partopsep=0cm, parsep=0cm]
       \item Time point of interim analysis
-      \item Treatment selection rules at interim 
-      \item Conventional phase 2/3
+      \item Treatment selection rules at interim
+    \end{itemize}
+    \vspace*{0.5ex}
+    Conventional phase 2/3
+    \begin{itemize}[leftmargin=.3cm, topsep=0cm,itemsep=0cm,partopsep=0cm, parsep=0cm]
       \item Split of resources between phases
-      \item End oh phase futility criteria
+      \item End of phase futility criteria
     \end{itemize}
     \nodepart{second} Combination of options
   };
-  \node[draw,text width = 6.2cm, anchor = south west] (DesignOptions) at (ConstrainedPoints.north west) {\textbf{Design Options}};
+  \node[draw,text width = 6.2cm, anchor = south west] (DesignOptions) at (ConstrainedPoints.north west) {\textbf{Design options}};
   \node[draw, below = 0.5cm of ClinicalScenarios] (DesignPerformance) {
     \textbf{Design performance} \\ e.g.\ statistical power};
-  \node[draw, right = of DesignPerformance, text width = 4cm, node distance = 2cm] (Evaluation) {
+  \node[draw, right = of DesignPerformance, text width = 5cm, node distance = 2cm] (Evaluation) {
     \textbf{Clinical Scenario Evaluation}\\
     Design performance measures evaluated across a wide range of clinical scenarios};
-  \draw[->] (HistoricalDataPoints) -- (ClinicalScenarios);
-  \draw[->] (UnknownPoints) -- (ClinicalScenarios);
-  \draw[->] (CombinationPoints.223) -- (ClinicalScenarios);
-  \draw[->] (ConstrainedPoints) -- (ClinicalScenarios);
-  \draw[->] (ClinicalScenarios) -- (DesignPerformance);
-  \draw[->] (DesignPerformance) -- (Evaluation);
+  \draw[thick,->] (HistoricalDataPoints) -- (ClinicalScenarios);
+  \draw[thick,->] (UnknownPoints) -- (ClinicalScenarios);
+  \draw[thick,->] (CombinationPoints.223) -- (ClinicalScenarios);
+  \draw[thick,->] (ConstrainedPoints) -- (ClinicalScenarios);
+  \draw[thick,->] (ClinicalScenarios) -- (DesignPerformance);
+  \draw[thick,->] (DesignPerformance) -- (Evaluation);
 \end{tikzpicture}
 %Friede et al (2010) DIJ, Figure 2 https://link.springer.com/content/pdf/10.1177/009286151004400507.pdf? https://link.springer.com/content/pdf/10.1177/009286151004400607.pdf
-\caption{Application of the refined clinical scenario evaluation framework to adaptive seamless designs in progressive multiple sclerosis (Figure adapted from \citet{friede_refinement_2010}).}
+\caption{Application of the refined clinical scenario evaluation framework to adaptive seamless designs in progressive multiple sclerosis (Figure adapted from Figure~2 in \citet{friede_refinement_2010}).}
 \label{fig:friede_refinement_2010_fig2}
 \end{figure}
-A clinical scenario evaluation is defined by the following three elements: (i) disease-specific features; (ii) design options; and (iii) design performance measures. The design specific features describe distributional assumptions on the early and final outcomes including variances, correlations and treatment effect sizes. Here, those that can be estimated from data of previous clinical trials and those that are simply unknown. Considering adaptive seamless design, the design options include the time point of the interim analysis and the treatment selection rule, which can in principle both be chosen without any restrictions. In contrast, some other design options such as the number of treatments and the total sample size are constrained by the environment and infrastructure available. The performance measures (sometimes also referred to as metrics) are in the context with adaptive seamless designs e.g. power or sample size distributions.
+A clinical scenario evaluation is defined by the following three elements: (i) disease-specific features; (ii) design options; and (iii) design performance measures.
+The disease-specific features describe distributional assumptions on the early and final outcomes including variances, correlations and treatment effect sizes.
+Here, some can be estimated from data of previous clinical trials and some are simply unknown. Considering adaptive seamless designs, the design options include the time point of the interim analysis and the treatment selection rule, which can in principle both be chosen without any restrictions.
+In contrast, some other design options such as the number of treatments and the total sample size are constrained by the environment and infrastructure available.
+The performance measures (sometimes also referred to as metrics) in the context with adaptive seamless designs are, e.g., power or sample size distributions.
 %\paragraph{Simulating ASD}
 %\label{ssec:simulating_asd}
+
 The evaluation of some performance measures requires Monte Carlo simulations, since no closed form solutions are available. 
 The R-package \texttt{asd} by~\citet{parsons_software_2011} can be used for such simulations.
 As it generates test statistics it is generally more efficient in comparison to simulating individual participant data.
@@ -404,9 +407,9 @@ It features selection at interim based on early as well as final outcomes.
 \section{Bayesian Optimization}
 \label{sec:bayesian_optimization}
 
-Bayesian optimization (BO)~\citep{jones_taxonomy_2001}, also known as Model-based Optimization (MBO), is a state-of-the-art~\citep{shahriari_taking_2016} technique for expensive black-box optimization problems.
+Bayesian optimization (BO)~\citep{jones_taxonomy_2001}, also known as Model-based Optimization (MBO), is a state-of-the-art technique for expensive black-box optimization problems~\citep{shahriari_taking_2016}.
 In comparison to other black-box optimization methods, like Genetic Algorithms or Simulated Annealing, BO is especially suitable when evaluating a configuration (e.g.\ running a simulation with certain parameters, here denoted by $\theta$) is very time consuming.
-As then it becomes infeasible to evaluate the black-box for thousands of configurations.
+In this situation it becomes infeasible to evaluate the black-box for thousands of configurations.
 
 \subsection{General principle}
 BO solves an optimization problem within a bounded search space $\Theta$:
@@ -470,7 +473,7 @@ Therefore an independent calculation of $f(\hat{\theta}^\ast)$ should be conduct
 \section{Simulation Study}
 \label{sec:simulation_study}
 
-The goal of this simulation study is to investigate the potential benefit of BO for effectively finding a clinical trial design that maximizes a metric.
+The goal of this simulation study is to investigate the potential benefit of BO for efficiently finding a clinical trial design that maximizes a given metric.
 The analysis is motivated by the clinical example with COPD patients introduced in Section~\ref{sec:motivating_example}, with treatment selection in the first of two stages.
 In the first stage five arms (defined by the control and four different administered doses) are considered, and in the second stage only a selected subset of arms is kept for further evaluation. 
 The metric to be optimized is the statistical power, where a positive outcome means a trial arm with true effect is detected as significant effect.
@@ -486,7 +489,7 @@ These sets reflect different realistic situations.
 
 The strategies for treatment selection for the second stage in the two-phase trial design and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
 The strategies follow the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}. 
-The strategies 1, 2, 3, and \emph{all} select the $k$ best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
+The $\kappa$-best strategies select the  1, 2, 3 or 4 best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
 The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. 
 In Table~\ref{tab:search_space} the ranges for these two parameters and for the proportion of patients (ratio $r$) allocated to the second stage are given.
 \begin{table}[h]
@@ -521,15 +524,15 @@ In Table~\ref{tab:search_space} the ranges for these two parameters and for the 
 
 \subsection{Calculation of the statistical power}
 
-The simulation of the statistical power of the trail design can be formulated as a black-box function as follows:
+The simulation of the statistical power of the trial design can be formulated as a black-box function as follows:
 \begin{align}
   \label{eq:bbox}
   y & = f(n_{\text{stage1}}, n_{\text{stage2}}, \text{selection strategy}, \epsilon, \tau, \text{effect set}) \ ,
 \end{align}
-whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively and \emph{effect set} remains fixed as we are interested in the optimal trail design for a given \emph{effect set}.
+whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively and \emph{effect set} remains fixed as we are interested in the optimal trial design for a given \emph{effect set}.
 Our main optimization goal is to maximize the statistical power $y$ depending on the trial design. 
 
-However, we are interested in keeping the total number of treatments $n_{\text{treat}}$ constant in the overall trail for a fair comparison of the power of different designs.
+However, we are interested in keeping the total number of treatments $n_{\text{treat}}$ constant in the overall trial for a fair comparison of the power of different designs.
 Therefore we introduce the ratio of patients per treatment in stage 1, compared to patients per treatment in both stages
 \begin{align}
   \label{eq:r}
@@ -616,7 +619,7 @@ with in a total $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations 
 Using a subset of this grid with $k=7$ points per dimension, resulting in $4 \cdot 7 + 2 \cdot 7 \cdot 7 = 126$ design configurations, we call the method \textbf{Grid Small}.
 Both grids are evaluated with 20 stochastic replications to estimate the variance of the estimated power.
 
-The best point per evaluated grid is determined by selecting the configuration with the best outcome, i.e.\  the concrete trail design with the largest power.
+The best point per evaluated grid is determined by selecting the configuration with the best outcome, i.e.\  the concrete trial design with the largest power.
 The corresponding value is generally too optimistic, as the random noise on the estimated value can contribute to the quality of the outcome.
 To account for this optimism and report unbiased performance estimates, for each of the 20 replicate simulations, we identify the best configuration and consider the corresponding 19 outcomes of the other 19 replicate simulations, similar to a cross-validation framework in machine learning applications. 
 %This eliminates the risk of only reporting outcomes that are optimal by chance.
@@ -757,7 +760,7 @@ Figure~\ref{fig:plot_allbest} shows the observed outcomes for all evaluations on
 \label{fig:plot_allbest}
 \end{figure}
 For the selection strategies \emph{epsilon rule} and \emph{threshold rule} only curves representing the $\epsilon$ and $\tau$ values with the best outcome, respectively, are shown.
-Note that for the effect sets \emph{linear} and \emph{sigmoid} the curves for selection strategy \emph{1 best} and \emph{eps} are as expected nearly identical.
+Note that for the effect sets \emph{linear} and \emph{sigmoid} the curves for selection strategy \emph{1 best} and \emph{eps} are nearly identical.
 As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2. corresponding to large values on the x-axis.
 
 In all scenarios, \emph{BO} identified the peak of all combined curves.
@@ -851,27 +854,36 @@ In summary, \emph{BO} can find configurations with a small number of required si
 
 % subsection Summary
 Bayesian optimization (BO) is a state-of-the art optimizer that can be used for parameter optimization in a wide range of applications.
-Here, we propose, for the first time, to optimize the power of adaptive designs using BO.
-In clinical trials, determining the test methods and sample sizes is a key step in the planning.
-One main goal is to maximize the test power, given a set of treatment and effect sizes under the null hypothesis.
+Here, we propose, for the first time, to optimize the power of adaptive seamless designs using BO.
+In clinical trials, determining the test methods and sample sizes is a key step in the planning process.
+One main goal is to maximize the test power, given a set of treatments with corresponding effect sizes. % under the null hypothesis.
 If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
 Either large computational resources are required for an exhaustive investigation of all the different configurations, or a tedious manual try-and-error process is required.
 
-In this paper we applied Bayesian optimization (BO) to quickly find a clinical trial setup with high power from a large number of configuration options.
-We compared our approach to an exhaustive grid search by optimizing the power of adaptive seamless designs for different sets of treatment effect sizes.
-BO was able to find competitive setups in a fraction of the time and was able to cope well with the stochasticity of the simulation.
+%% FIXME: Do we really take in this Assurance?
+% Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
+% could be also applied for subgroup selection?
+% https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8797
+
+In this paper we analyzed if BO can quickly find an adaptive seamless design with high power, more efficiently than an exhaustive grid search.
+For various sets of treatment effect sizes, BO was able to find competitive designs in a fraction of the time.
+In contrast to grid search, BO was able to account for stochasticity in the metric that should be optimized.
+%In addition to results in other research fields, our results underline that BO is a powerful method for finding optimal configurations for problems that fit the black-box definition.
+Therefore, the application of BO to clinical trial design selection in general seems promising. The same concept could be applied for subgroup selection in adaptive enrichment designs, which make use of interim data in selecting the target population for the remainder of the trial~\citep{burnett_adaptive_2020}.
+
 % subsection Outlook
 Only in cases in which the optimal values of one parameter are close to the lower border, we sometimes observed poor performance of BO.
-Here, a possible improvement can be to apply a log transformation to such parameters in the future.
-% could be also applied for subgroup selection
-% https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8797
-Instead of keeping the number of total trials constant, we could apply multi-criteria optimization and include this number as an additional outcome.
-This multi-criteria approach would result in a set of points (Pareto front) that minimize the number of trials and at the same time maximize the statistical power of the trail design.
+Here, a possible improvement can be to apply a log transformation to such parameters. % in the future.
+Further, instead of keeping the number of treatments constant, we could apply multi-criteria optimization and include this number as an additional outcome.
+This multi-criteria approach would result in a set of points (a Pareto front) that minimize the number of treatments and at the same time maximize the statistical power of the trial design.
 The user could then see for which number of trials the power is above a certain threshold (e.g. $95\%$).
-
 Another way to speed up the optimization would be to iteratively increase the number of simulation rounds of the trial design evaluation. 
 If few simulations already indicate a bad outcome for a configuration then additional simulation rounds are not necessary.
 Such a procedure can be guided by statistical testing and is already common in machine learning under the terms \emph{racing} or \emph{multi-fidelity optimization}.
+
+In this work we assumed the effect sizes to be fixed. % under the null hypothesis.
+In~\citet{stallard_optimal_2009} the authors propose a Bayesian approach, where the effect sizes follow a prior, to calculate the expected trial performance.
+This requires a more expensive simulation making the optimization of a clinical trial design according to such metric an excellent candidate for BO.
 
 % IDEA: Restricting BO to only evaluate configurations on the grid to avoid evaluating identical / very close configurations.
 
