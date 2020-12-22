@@ -132,7 +132,7 @@
 %\hspace*{-4pc} 
 %{\small\it words)}\\[1pc]
 %\noindent\hspace*{-4.2pc} Supporting Information for this article is available from the author or on the WWW under\break \hspace*{-4pc} \underline{http://dx.doi.org/10.1022/bimj.XXXXXXX} (please delete if not applicable)
-}  %%% semicolon and fullpoint added here for keyword style
+} %%% semicolon and fullpoint added here for keyword style
 
 \title[Bayesian optimization of Adaptive Seamless Designs]{Improving Adaptive Seamless Designs through Bayesian optimization} %(please use sentence case, e.g. Score tests for exploring complex models)
 %% Information for the first author.
@@ -167,7 +167,7 @@ Comparing BO with an exhaustive evaluation of all candidate designs shows that B
 
 
 %% maketitle must follow the abstract.
-\maketitle                   % Produces the title.
+\maketitle % Produces the title.
 
 %% If there is not enough space inside the running head
 %% for all authors including the title you may provide
@@ -199,7 +199,7 @@ Boundaries between the development phases are increasingly dissolving in multipl
 Master protocols are a new concept where multiple subgroups and substudies are integrated~\citep{bogin_master_2020}.
 Here, simultaneously, more than one treatment and more than one disease type are investigated within the same overall trial structure.
 Adaptive designs are established, but are being further developed.
-In general, study designs become more flexible, and more principled approaches to decision making using statistical modeling and integrated analyses across studies become popular. 
+In general, study designs become more flexible, and more principled approaches to decision-making using statistical modeling and integrated analyses across studies become popular. 
 A~related principle on the analysis side is evidence synthesis, which is a way of combining information from several studies that have examined the same question to come to an overall understanding.
 
 The increasing complexity of both the designs and the analyses of clinical trials has the consequence that the planning of such studies often relies also on computer simulations, especially if no closed form solutions for calculations are available.
@@ -224,7 +224,7 @@ Further, it is crucial that such a design is found in a short time.
 %subsub Clinical 
 % TODO: Tim
 
-BO, often also called Model-based optimization, has been successfully applied to optimize expensive black-boxes in many different scenarios.
+BO, often also called Model-based optimization, has been successfully applied to optimize expensive black-boxes in many scenarios.
 Popular applications include hyper-parameter tuning of machine learning methods~\citep{snoek_practical_2012}, general algorithm configuration~\citep{hutter_sequential_2011}, and many more.
 Various implementations of BO methods are widely used, such as SMAC~\citep{hutter_sequential_2011}, Spearmint~\citep{snoek_practical_2012}, and BoTorch~\citep{balandat_botorch_2020}.
 For this work we use the implementation in the R-package \texttt{mlrMBO}~\citep{bischl_mlrmbo_2017}.
@@ -248,7 +248,7 @@ As an example, we consider the maximization of the statistical power of a trial 
 We compare the computation time as well as the maximal obtained power between the results obtained with BO and with an exhaustive grid search over the space of adjustable parameters.
 The presented optimization approach can also be applied for optimizing other metrics than the power, as long as the metric itself is numeric and the parameters of the trial design are numeric and include none or just few categorical choices.
 
-One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd} package~\citep{parsons_software_2011}  and described in Section~\ref{sec:adaptive_seamless_designs}.
+One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd} package~\citep{parsons_software_2011} and described in Section~\ref{sec:adaptive_seamless_designs}.
 %(What is THE asd paper? peter bauer, meinter kieser, 1999 statistics in medicine, % https://doi.org/10.1002/(SICI)1097-0258(19990730)18:14%3C1833::AID-SIM221%3E3.0.CO;2-3, )  bauer_combining_1999
 % https://doi.org/10.1002/bimj.200510232 bretz_confirmatory_2006 
 % seamless trials (assoziert) 
@@ -269,7 +269,7 @@ Here, as in \citet{friede_adaptive_2020}, we ignore the active controls.
 The primary outcome of the trial was the percentage of days of poor control over 26 weeks of the COPD patients.
 Since the recruitment took only a short time, another outcome was required for treatment selection, in this case forced expiratory volume in 1 s (FEV1) at 15 days.
 In the original study, the difference in FEV1 compared to placebo at 15 days for the different doses and corresponding confidence intervals were estimated.
-From these, standardized effect sizes were estimated as approximately 0.68, 0.82, 0.95, and 0.91 for the four  indacaterol doses \SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram}, and \SI{600}{\micro\gram}, respectively.
+From these, standardized effect sizes were estimated as approximately 0.68, 0.82, 0.95, and 0.91 for the four indacaterol doses \SI{75}{\micro\gram}, \SI{150}{\micro\gram}, \SI{300}{\micro\gram}, and \SI{600}{\micro\gram}, respectively.
 For the final outcome days of poor control, also, from real data the standardized effect sizes were estimated.
 These were approximately 0.13, 0.17, 0.23, and 0.20, for the four doses.
 The approximate sample sizes per arm were 100 patients in stage 1 and 300 patients in stage 2.
@@ -294,13 +294,13 @@ Further, different settings with continuous early and continuous or binary final
 
 % Is there a condensed version? In Friede et al (2020) it is only explained in detail?
 % TODO: Tim
-Traditionally, drug development is organized in four phases with individual clinical trials for the separate phases. Seamless designs combine elements from different development phases in a single trial, thereby offering the promise of speeding the development process. For instance, seamless phase II/III designs combine the learning about dose-response relationship or subgroup heterogeneity typical for phase II with the confirmation of treatment effects in phase III. If the data of the phase II part are used for confirmatory purposes, then this needs to be accounted for in the testing strategy to maintain the familywise type I error rate in the strong sense. These types of designs are called adaptive seamless designs. A recent overview can be found in \citet{friede_adaptive_2020}.
+Traditionally, drug development is organized in four phases with individual clinical trials for the separate phases. Seamless designs combine elements from different development phases in a single trial, thereby offering the promise of speeding the development process. For instance, seamless phase II/III designs combine the learning about dose-response relationship or subgroup heterogeneity typical for phase II with the confirmation of treatment effects in phase III. If the data of the phase II part are used for confirmatory purposes, then this needs to be accounted for in the testing strategy to maintain the family-wise type I error rate in the strong sense. These types of designs are called adaptive seamless designs. A recent overview can be found in \citet{friede_adaptive_2020}.
 
 We start by providing some more details on the study design considered (Sections \ref{ssec:two_stage_design_with_treatment_selection} and \ref{ssec:selection_rules}). Then, in Section \ref{ssec:clinical_scenario_evaluation_for_asd} we briefly introduce a framework for optimizing such designs, namely clinical scenario evaluation (CSE). %In Section \ref{ssec:simulating_asd} we make some brief comments on the simulation model.
 
 \subsection{Two-stage design with treatment selection}
 \label{ssec:two_stage_design_with_treatment_selection}
-We consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\beta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \beta_k=0$ against the alternative  $H_{1,k}: \beta_k>0$ (larger $\beta_k$ being better). For the purpose of treatment selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered, with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise $p$-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher_adaptive_1999} which is given by
+We consider a particular type of adaptive seamless designs, namely two-stage designs with treatment (or more specifically dose) selection. The trial starts in stage 1 with $K$ experimental treatments or doses of one experimental treatment which are compared to a common control. Interest is in assessing the treatment effects $\beta_k$ with $k=1,\dots, K$ comparing experimental treatment $k$ vs. control and testing the null hypotheses $H_{0,k}: \beta_k=0$ against the alternative $H_{1,k}: \beta_k>0$ (larger $\beta_k$ being better). For the purpose of treatment selection, test statistics $Z_{1,k}$ based on data from the first design stage are considered, with larger $Z_{1,k}$ indicating more beneficial treatments. These can use data on the primary outcome used for testing or any other outcome that is available at the time of the interim analysis. In practical applications, early outcomes are often used to inform interim decisions, since the primary endpoint might take a longer time to observe. In the interim analysis, treatments are selected for continuation into the second stage; the set of selected treatments is denoted by $\mathcal{S}$. The selection rules used here are described in Section \ref{ssec:selection_rules}. In the final analysis, the closed test principle is applied to account for the multiple hypotheses. The intersection hypotheses are tested by combining stagewise $p$-values for the respective intersection hypotheses using a prespecified combination function. Here we use the inverse normal combination function~\citep{lehmacher_adaptive_1999} which is given by
 \begin{equation}
    w_1 \Phi^{-1}(1-p_{\mathcal{K},1}) + w_2 \Phi^{-1}(1-p_{\mathcal{K},2}) \,
 \end{equation}
@@ -398,7 +398,7 @@ The performance measures (sometimes also referred to as metrics) in the context 
 
 The evaluation of some performance measures requires Monte Carlo simulations, since no closed form solutions are available. 
 The R-package \texttt{asd} by~\citet{parsons_software_2011} can be used for such simulations.
-As it generates test statistics it is generally more efficient in comparison to simulating individual participant data.
+As it generates test statistics, it is generally more efficient in comparison to simulating individual participant data.
 The simulation model was described in more detail by \citet{friede_adaptive_2020}. 
 It features selection at interim based on early as well as final outcomes.
 
@@ -408,7 +408,7 @@ It features selection at interim based on early as well as final outcomes.
 \label{sec:bayesian_optimization}
 
 Bayesian optimization (BO)~\citep{jones_taxonomy_2001}, also known as Model-based Optimization (MBO), is a state-of-the-art technique for expensive black-box optimization problems~\citep{shahriari_taking_2016}.
-In comparison to other black-box optimization methods, like Genetic Algorithms or Simulated Annealing, BO is especially suitable when evaluating a configuration (e.g.\ running a simulation with certain parameters, here denoted by $\theta$) is very time consuming.
+In comparison to other black-box optimization methods, like Genetic Algorithms or Simulated Annealing, BO is especially suitable when evaluating a configuration (e.g.\ running a simulation with certain parameters, here denoted by $\theta$) is very time-consuming.
 In this situation it becomes infeasible to evaluate the black-box for thousands of configurations.
 
 \subsection{General principle}
@@ -424,7 +424,7 @@ First, an initial design of already evaluated configurations is needed.
 Then, iteratively, the BO algorithm fits the surrogate on the previous evaluations, proposes a new configuration $\theta$ and evaluates it on $f$.
 The steps are repeated until a budget is exhausted.
 
-The proposal of a new configuration $\theta$ is obtained by maximizing a so called acquisition function.
+The proposal of a new configuration $\theta$ is obtained by maximizing a so-called acquisition function.
 The acquisition function guides the search to promising new regions in the search space $\Theta$ by using the mean prediction $\hat{\mu}(\theta)$ as well as the uncertainty quantification $s^2(\theta)$ of the surrogate.
 It balances between exploration of not yet evaluated regions in $\Theta$ and exploitation.
 The acquisition function achieves exploration by assigning high values to areas where the surrogate predicts a high uncertainty.
@@ -468,7 +468,7 @@ The configuration for which the surrogate estimates the best outcome is then ret
 \end{equation}
 %To obtain a final outcome $\nu^\ast = f(\theta^\ast)$ that is independent of the optimization process, $f(\theta^\ast)$ is calculated again.
 Using the stochastic outcome $f(\hat{\theta}^\ast) $ observed during the optimization process would still potentially lead to an overly optimistic result.
-Therefore an independent calculation of $f(\hat{\theta}^\ast)$ should be conducted to obtain a fair estimate of the true value of the best outcome.
+Therefore, an independent calculation of $f(\hat{\theta}^\ast)$ should be conducted to obtain a fair estimate of the true value of the best outcome.
 
 \section{Simulation Study}
 \label{sec:simulation_study}
@@ -489,7 +489,7 @@ These sets reflect different realistic situations.
 
 The strategies for treatment selection for the second stage in the two-phase trial design and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
 The strategies follow the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}. 
-The $\kappa$-best strategies select the  1, 2, 3 or 4 best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
+The $\kappa$-best strategies select the 1, 2, 3 or 4 best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
 The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. 
 In Table~\ref{tab:search_space} the ranges for these two parameters and for the proportion of patients (ratio $r$) allocated to the second stage are given.
 \begin{table}[h]
@@ -533,7 +533,7 @@ whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients a
 Our main optimization goal is to maximize the statistical power $y$ depending on the trial design. 
 
 However, we are interested in keeping the total number of treatments $n_{\text{treat}}$ constant in the overall trial for a fair comparison of the power of different designs.
-Therefore we introduce the ratio of patients per treatment in stage 1, compared to patients per treatment in both stages
+Therefore, we introduce the ratio of patients per treatment in stage 1, compared to patients per treatment in both stages
 \begin{align}
   \label{eq:r}
  r & = \frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}
@@ -619,7 +619,7 @@ with in a total $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations 
 Using a subset of this grid with $k=7$ points per dimension, resulting in $4 \cdot 7 + 2 \cdot 7 \cdot 7 = 126$ design configurations, we call the method \textbf{Grid Small}.
 Both grids are evaluated with 20 stochastic replications to estimate the variance of the estimated power.
 
-The best point per evaluated grid is determined by selecting the configuration with the best outcome, i.e.\  the concrete trial design with the largest power.
+The best point per evaluated grid is determined by selecting the configuration with the best outcome, i.e.\ the concrete trial design with the largest power.
 The corresponding value is generally too optimistic, as the random noise on the estimated value can contribute to the quality of the outcome.
 To account for this optimism and report unbiased performance estimates, for each of the 20 replicate simulations, we identify the best configuration and consider the corresponding 19 outcomes of the other 19 replicate simulations, similar to a cross-validation framework in machine learning applications. 
 %This eliminates the risk of only reporting outcomes that are optimal by chance.
@@ -647,12 +647,12 @@ Thus, the best selected parameter configuration is then independently evaluated 
 
 The whole BO procedure is repeated $20$ times to estimate the variance of the optimal solution found.
 
-Additionally we investigate how \emph{BO} performs when it is limited to return configurations that are within the grid introduced previously.
-Therefore we introduce \textbf{BO Grid}, which executes the optimization exactly as \emph{BO}, but the best configuration is mapped to the closest value on the grid. 
+Additionally, we investigate how \emph{BO} performs when it is limited to return configurations that are within the grid introduced previously.
+Therefore, we introduce \textbf{BO Grid}, which executes the optimization exactly as \emph{BO}, but the best configuration is mapped to the closest value on the grid. 
 In other words, for \emph{BO Grid} we conduct the independent evaluation using the configuration within the grid that is closest to the optimal configuration that is proposed by \emph{BO}.
 The comparison of the results of \emph{BO Gird} and \emph{Gird} will allow two possible conclusions:
-First, if \emph{BO Grid} is worse then \emph{BO}, we can assume that the resolution of \emph{Grid} is not high enough to find an optimal configuration.
-Second, if \emph{BO Grid} is better then \emph{Grid}, it shows that \emph{Grid} did not select the optimal configuration, due to noise.
+First, if \emph{BO Grid} is worse than \emph{BO}, we can assume that the resolution of \emph{Grid} is not high enough to find an optimal configuration.
+Second, if \emph{BO Grid} is better than \emph{Grid}, it shows that \emph{Grid} did not select the optimal configuration, due to noise.
 Summing up, there are two factors that can prevent \emph{Grid} from finding the optimal configuration: lack of resolution and noise of the outcome.
 
 \subsection{Implementation}
@@ -723,7 +723,7 @@ In such scenarios \emph{BO} performs better, since the final configuration is de
 Further below we will study on a single scenario if a reduced noise due to a higher number of simulations \texttt{nsim} decreases the effect of the overoptimistic selection of \emph{Grid}.
 
 In cases in which \emph{BO} was not able to find a better solution then \emph{Grid}, also \emph{BO Grid} cannot yield better results as it just selects the configuration on the Grid that is closest to the configuration found by \emph{BO}.
-Therefore any increase in performance of \emph{BO Grid} compared to \emph{BO} is purely due to chance.
+Therefore, any increase in performance of \emph{BO Grid} compared to \emph{BO} is purely due to chance.
 
 To compare \emph{BO} with a grid search that takes approximately the same time (see Table~\ref{tab:table_time}) and number of evaluations, we consider \emph{Grid Small}.
 Here, a resolution of 7 points per dimension leads to 126 evaluations, close to 116 allowed evaluations of \emph{BO}, with only a small advantage for \emph{Grid Small}.
@@ -761,7 +761,7 @@ Figure~\ref{fig:plot_allbest} shows the observed outcomes for all evaluations on
 \end{figure}
 For the selection strategies \emph{epsilon rule} and \emph{threshold rule} only curves representing the $\epsilon$ and $\tau$ values with the best outcome, respectively, are shown.
 Note that for the effect sets \emph{linear} and \emph{sigmoid} the curves for selection strategy \emph{1 best} and \emph{eps} are nearly identical.
-As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2. corresponding to large values on the x-axis.
+As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2.
 
 In all scenarios, \emph{BO} identified the peak of all combined curves.
 Within the 20 stochastic repetitions per scenario, \emph{BO} found different configurations, but all had similar high power.
@@ -781,7 +781,7 @@ Note, that the selection strategies \emph{thresh} and \emph{all} never selected 
 Figure~\ref{fig:plot_best_x} visualizes in detail which configurations were selected by \emph{BO} and \emph{Grid} and the corresponding values for $y_{\text{valid}}$ (result of the independent validation).
 The optimal values for $\epsilon$ and $\theta$ are not shown.
 For some scenarios most runs of \emph{Grid} returned the same optimal configurations (e.g.\ for \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$).
-In such cases the signal to noise ratio was sufficiently high to reliably find the best configuration.
+In such cases the signal-to-noise ratio was sufficiently high to reliably find the best configuration.
 In some scenarios \emph{Grid} was superior to \emph{BO}, as could be seen in the previously shown Box plots in Figure~\ref{fig:plot_boxplot_valid_y}.
 Furthermore, for all scenarios with \emph{effect: sigmoid} and the scenarios \emph{effect: linear}, $n_{\text{treat}} = 500)$ and \emph{effect: paper}, $n_{\text{treat}} = 500)$, small values of $r$ lead to an optimal outcome.
 Here, \emph{BO} was not able to find these values close to the border of the search space.
@@ -806,7 +806,7 @@ To investigate the effect of the function noise variance ($\sigma^2$) on the opt
 Additionally, we run the algorithms 100 times instead of the previously used 20, in order to obtain more precise estimates for the power values in the independent validation.
 
 We expect that increasing $n_\text{sim}$ decreases the variance of the power values of the identified design configurations.
-For the exhaustive \emph{Grid}, we expect that the decreased noise leads to less selections of overly optimistic outcomes.
+For the exhaustive \emph{Grid}, we expect that the decreased noise leads to fewer selections of overly optimistic outcomes.
 \emph{BO} should profit as well from a less noisy objective function since the predictions of the surrogate function will be more precise.
 
 Figure~\ref{fig:plot_opt_path_5000} shows that indeed the lower noise level leads to more stable simulation runs, meaning that single optimization runs lead to results closer to the mean result.
@@ -814,7 +814,7 @@ It has to be noted that this plot reports the best observed outcome so far and n
 %So on the left side of Figure~\ref{fig:plot_opt_path_5000}, we see more curves that observed overoptimistic outcomes in comparison the the right side.
 %Ideally, the choice of the final point should not be influenced by these overoptimistic observations for \emph{BO} as explained in Section~\ref{ssec:best_point}, as the final point is determined by the surrogates mean prediction.
 Despite the differences of the optimization paths, the median validation error reported in Figure~\ref{fig:plot_boxplot_valid_y_5000} is nearly identical for \emph{BO} for the low and the high value of $n_\text{sim}$.
-Therefore we can assume that "bias correction" of \emph{BO} as explained in Section~\ref{ssec:best_point} seems to be effective.
+Therefore, we can assume that "bias correction" of \emph{BO} as explained in Section~\ref{ssec:best_point} seems to be effective.
 \begin{figure}[htb]
 \centering
   \begin{minipage}{0.62\textwidth}
@@ -831,7 +831,7 @@ Therefore we can assume that "bias correction" of \emph{BO} as explained in Sect
   \end{minipage}
 \end{figure}
 For all methods the IQR displayed in the Box plots is much smaller for $n_\text{sim} = 5000$, indicating that the solutions that are found vary less between the 100 stochastic replications.
-Also the absolute differences between the methods are even smaller now.
+Also, the absolute differences between the methods are even smaller now.
 This demonstrates that for the selected scenario all methods can find the optimal configuration if the results are not noisy.
 However, an increased value of $n_\text{sim}$ also increases the runtime linearly, which conflicts the goal is to find the optimal configuration quickly.
 In summary, \emph{BO} can find configurations with a small number of required simulations (higher noise) that are nearly as good as the optimal solution which is identified with a large number of simulations.
@@ -858,7 +858,7 @@ Here, we propose, for the first time, to optimize the power of adaptive seamless
 In clinical trials, determining the test methods and sample sizes is a key step in the planning process.
 One main goal is to maximize the test power, given a set of treatments with corresponding effect sizes. % under the null hypothesis.
 If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
-Either large computational resources are required for an exhaustive investigation of all the different configurations, or a tedious manual try-and-error process is required.
+Either large computational resources are required for an exhaustive investigation of all the different configurations, or a tedious manual trial-and-error process is required.
 
 %% FIXME: Do we really take in this Assurance?
 % Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
