@@ -930,36 +930,38 @@ This work was partly supported by Deutsche Forschungsgemeinschaft (DFG) within t
 \bibliographystyle{biometrical}
 \bibliography{literature,literature_zotero}
 
-\newpage
-\phantom{aaaa}
-%%%%%%%%%% Merge with supplemental materials %%%%%%%%%%
-\clearpage
-\begin{center}
-\textbf{\large Supplemental Materials: \newtitle}
-\end{center}
-\FloatBarrier
-%%%%%%%%%% Merge with supplemental materials %%%%%%%%%%
-%%%%%%%%%% Prefix a "S" to all equations, figures, tables and reset the counter %%%%%%%%%%
-\setcounter{equation}{0}
-\setcounter{figure}{0}
-\setcounter{table}{0}
-\setcounter{page}{1}
-\makeatletter
-\renewcommand{\theequation}{S\arabic{equation}}
-\renewcommand{\thefigure}{S\arabic{figure}}
-\renewcommand{\thetable}{S\arabic{table}}
-\renewcommand{\bibnumfmt}[1]{[S#1]}
-%%%%%%%%%% Prefix a "S" to all equations, figures, tables and reset the counter %%%%%%%%%%
+% \newpage
+% \phantom{aaaa}
 
-\input{generated/tables/table_best.tex}
 
-\begin{figure}[htb]
-\centering
-\includegraphics[width=\linewidth]{generated/figures/plot_opt_path.pdf}
-\caption{%
-  Optimization curves of each optimization run and the mean of all runs drawn as a black line.
-  }
-\label{fig:plot_opt_path} 
-\end{figure}
+% %%%%%%%%%% Merge with supplemental materials %%%%%%%%%%
+% \clearpage
+% \begin{center}
+% \textbf{\large Supplemental Materials: \newtitle}
+% \end{center}
+% \FloatBarrier
+% %%%%%%%%%% Merge with supplemental materials %%%%%%%%%%
+% %%%%%%%%%% Prefix a "S" to all equations, figures, tables and reset the counter %%%%%%%%%%
+% \setcounter{equation}{0}
+% \setcounter{figure}{0}
+% \setcounter{table}{0}
+% \setcounter{page}{1}
+% \makeatletter
+% \renewcommand{\theequation}{S\arabic{equation}}
+% \renewcommand{\thefigure}{S\arabic{figure}}
+% \renewcommand{\thetable}{S\arabic{table}}
+% \renewcommand{\bibnumfmt}[1]{[S#1]}
+% %%%%%%%%%% Prefix a "S" to all equations, figures, tables and reset the counter %%%%%%%%%%
+
+% \input{generated/tables/table_best.tex}
+
+% \begin{figure}[htb]
+% \centering
+% \includegraphics[width=\linewidth]{generated/figures/plot_opt_path.pdf}
+% \caption{%
+%   Optimization curves of each optimization run and the mean of all runs drawn as a black line.
+%   }
+% \label{fig:plot_opt_path} 
+% \end{figure}
 
 \end{document}
