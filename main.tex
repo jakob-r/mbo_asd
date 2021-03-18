@@ -155,7 +155,7 @@
 We propose to use Bayesian optimization (BO) to improve the efficiency of the design selection process in clinical trials.
 BO is a method to optimize expensive black-box functions, by using a regression as a surrogate to guide the search.
 In clinical trials, planning test procedures and sample sizes is a crucial task.
-A common goal is to maximize the test power, given a set of treatments and corresponding effect sizes. % under the null hypothesis.
+A common goal is to maximize the test power, given a set of treatments and corresponding effect sizes. % under the null hypothesis. #FIXME and number of patients?
 From a wide range of possible designs we aim to select the best one in a short time to allow quick decisions.
 The standard approach to simulate the power for each single design can become too time-consuming.
 When the number of possible designs becomes very large, either large computational resources are required or an exhaustive exploration of all possible designs takes too long.
@@ -218,7 +218,7 @@ Here, we propose to use a formal approach to optimization of the clinical trial 
 This set of candidate designs can be regarded as a multi-dimensional search space, including potentially many real-valued and categorical parameters.
 The vast space of possible designs makes the optimization computationally demanding.
 In the following, we demonstrate that the so-called \emph{Bayesian optimization} (BO) framework~\citep{jones_taxonomy_2001} can be successfully applied to select a clinical trial design.
-As evaluation metric we consider the specific case that the statistical power of the clinical trial design should be maximized, for given effect sizes and number of treatments.
+As evaluation metric we consider the specific case that the statistical power of the clinical trial design should be maximized, for given effect sizes and number of patients.
 Further, it is crucial that such a design is found in a short time.
 %\subsection{Related work}
 %subsub Clinical 
@@ -742,7 +742,7 @@ To compare \emph{BO} with a grid search that takes approximately the same time (
 Here, a resolution of 7 points per dimension leads to 126 evaluations, close to 116 allowed evaluations of \emph{BO}, with only a small advantage for \emph{Grid Small}.
 Despite the 10 more evaluations allowed, in the majority of cases \emph{BO} is superior to \emph{Grid Small}, see~Figure~\ref{fig:plot_boxplot_valid_y}.
 The advantage is particularly apparent for all scenarios with effect set \emph{effect: linear} and for scenario \emph{effect: paper2}, $n_{\text{treat}} = 500$.
-Only for the scenarios (\emph{effect: paper2}, $n_{\text{treat}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$) \emph{Grid Small} has a small advantage over \emph{BO} and \emph{Grid}.
+Only for the scenarios (\emph{effect: paper2}, $n_{\text{treat}} = 1000$), (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{treat}} = 2000$) \emph{Grid Small} has a small advantage over \emph{BO} and \emph{Grid}.
 In the first case, the absolute differences are negligible and all methods lead to a high power.
 For the second case, we will later show that the optimal configuration is close to the border of the search space.
 
@@ -750,7 +750,7 @@ As stated above, the high resolution of the exhaustive \emph{Grid} probably lead
 These points are not included in the more coarse grid used by \emph{Grid Small}.
 In other words, if a configuration close to the optimum is included in the grid used by \emph{Grid Small}, then it is more likely to select it with less overoptimism, as the number of candidates in the region is smaller.
 
-Note that between the scenarios the absolute differences of the optimization results are of different practical relevance. For example, for scenario \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$ \emph{Grid} is superior to \emph{BO}, but the difference is smaller than $0.25\%$.
+Note that between the scenarios the absolute differences of the optimization results are of different practical relevance. For example, for scenario \emph{effect: sigmoid}, $n_{\text{treat}} = 2000$ \emph{Grid} is superior to \emph{BO}, but the difference is smaller than $0.25\%$.
 
 %After having looked at the best obtained outcome on our problem scenarios and established the ability of \emph{BO} to find equally good configurations as the much more demanding exhaustive \emph{Grid}
 
@@ -774,7 +774,7 @@ Figure~\ref{fig:plot_allbest} shows the observed outcomes for all evaluations on
 \end{figure}
 For the selection strategies \emph{epsilon rule} and \emph{threshold rule} only curves representing the $\epsilon$ and $\tau$ values with the best outcome, respectively, are shown.
 Note that for the effect sets \emph{linear} and \emph{sigmoid} the curves for selection strategy \emph{1 best} and \emph{eps} are nearly identical.
-As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2.
+As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2 (i.e.\ $r=1$).
 
 In all scenarios, \emph{BO} identified the peak of all combined curves.
 Within the 20 stochastic repetitions per scenario, \emph{BO} found different configurations, but all had similar high power.
@@ -808,7 +808,7 @@ Here nearly all found configurations yield perfect outcomes.
 \begin{figure}[htb]
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_best_x.pdf}
-\caption{Best $x$-values found with \emph{Grid} and \emph{BO} runs, i.e. corresponding values for $y_{\text{valid}}$ and ratio $r$ for the selected configurations}
+\caption{Best configurations found with \emph{Grid} and \emph{BO} runs, i.e. corresponding $y_{\text{valid}}$ values for the ratio $r$ for the selected configurations. For the epsilon rule, $\epsilon$ and for the threshold rule $\tau$ are not displayed.}
 \label{fig:plot_best_x}
 \end{figure}
 
