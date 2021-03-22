@@ -155,7 +155,7 @@
 We propose to use Bayesian optimization (BO) to improve the efficiency of the design selection process in clinical trials.
 BO is a method to optimize expensive black-box functions, by using a regression as a surrogate to guide the search.
 In clinical trials, planning test procedures and sample sizes is a crucial task.
-A common goal is to maximize the test power, given a set of treatments and corresponding effect sizes. % under the null hypothesis. #FIXME and number of samples?
+A common goal is to maximize the test power, given a set of treatments, corresponding effect sizes, and a total number of samples.
 From a wide range of possible designs we aim to select the best one in a short time to allow quick decisions.
 The standard approach to simulate the power for each single design can become too time-consuming.
 When the number of possible designs becomes very large, either large computational resources are required or an exhaustive exploration of all possible designs takes too long.
@@ -481,6 +481,7 @@ The goal of this simulation study is to investigate the potential benefit of BO 
 The analysis is motivated by the clinical example with COPD patients introduced in Section~\ref{sec:motivating_example}, with treatment selection in the first of two stages.
 In the first stage five arms (defined by the control and four different administered doses) are considered, and in the second stage only a selected subset of arms is kept for further evaluation. 
 The metric to be optimized is the statistical power, where a positive outcome means a trial arm with true effect is detected as significant effect.
+Depending on the application the power can be calculated as the rate of rightfully rejecting any, all, or a subset of the elementary hypotheses~\citet{senn_power_2007}.
 
 \subsection{Clinical trial design and parameters}
 \label{subsec:design}
@@ -672,12 +673,14 @@ Summing up, there are two factors that can prevent \emph{Grid} from finding the 
 The algorithms used in this study are implemented in R.
 For the Bayesian optimization, the R-package \texttt{mlrMBO}~\citep{bischl_mlrmbo_2017} is used.
 For the simulation of clinical trials, the function \texttt{treatsel.sim} of the R-package \texttt{asd}~\citep{parsons_software_2011} is used, with parameter values given in Table~\ref{tab:par_implement}.
-The vector of treatment numbers for determining power \texttt{ptest} counts rejections of 3 or 4 hypotheses. %???
+%The vector of treatment numbers for determining power \texttt{ptest} counts rejections of treat3 or 4 hypotheses. %???
+The vector of treatment numbers \texttt{ptest} determines the hypotheses for which rejections are counted towards the power.
+Here, the rejection of one or both of the hypotheses that treatment 3 or 4 has no significant effect against the control determines the power, as in~\citet{friede_adaptive_2020}.
+
 Note that the parameter \texttt{nsim} denotes the internal simulation iterations of $f$. 
 The 20 additional stochastic repetitions we conduct for the \emph{grid search} and \emph{BO} are additional replicates.
 
-% (TODO Not sure what ptest that means)  %jeweils Elementarhypothese 3, 4 verwerfen, gucken wir gar nicht drauf
-%FIXME: Ist mir immer noch nicht klar / nicht mehr klar?
+% (TODO Not sure what ptest that means)  %jeweils Elementarhypothese 3, 4 verwerfen, genau da gucken wir drauf!
 
 \begin{table}[h]
   \caption{Parameter choices for the R function \texttt{treatsel.sim}}
@@ -689,8 +692,8 @@ The 20 additional stochastic repetitions we conduct for the \emph{grid search} a
   \hline
   Number of simulation iterations & \texttt{nsim} & $1000$ \\
   Correlation between early and final outcomes & \texttt{corr} & $0.4$ \\
-  One-sided significance level & \texttt{level} & $0.025$ \\ %FIXME: @Tim: One sided?
-  % Vector of treatment numbers for determining power & \texttt{ptest} & $(3,4)$ \\
+  One-sided significance level & \texttt{level} & $0.025$ \\
+  Vector of treatment numbers for determining power & \texttt{ptest} & $(3,4)$ \\
   \hline
   \end{tabular}
 \end{table}
@@ -869,7 +872,7 @@ In summary, \emph{BO} can find configurations with a small number of required si
 Bayesian optimization (BO) is a state-of-the art optimizer that can be used for parameter optimization in a wide range of applications.
 Here, we propose, for the first time, to optimize the power of adaptive seamless designs using BO.
 In clinical trials, determining the test methods and sample sizes is a key step in the planning process.
-One main goal is to maximize the test power, given a set of treatments with corresponding effect sizes. % under the null hypothesis. %FIXME sample size
+One main goal is to maximize the test power, given a set of treatments with corresponding effect sizes and a fixed number of samples.
 If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
 Either large computational resources are required for an exhaustive investigation of all the different configurations, or a tedious manual trial-and-error process is required.
 
@@ -879,7 +882,7 @@ Either large computational resources are required for an exhaustive investigatio
 % https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8797
 
 In this paper we analyzed if BO can quickly find an adaptive seamless design with high power, more efficiently than an exhaustive grid search.
-For various sets of treatment effect sizes, BO was able to find competitive designs in a fraction of the time. %FIXME and samples?
+For various sets of treatment effect sizes and total sample sizes, BO was able to find competitive designs in a fraction of the time.
 In contrast to grid search, BO was able to account for stochasticity in the metric that should be optimized.
 %In addition to results in other research fields, our results underline that BO is a powerful method for finding optimal configurations for problems that fit the black-box definition.
 Therefore, the application of BO to clinical trial design selection in general seems promising. The same concept could be applied for subgroup selection in adaptive enrichment designs, which make use of interim data in selecting the target population for the remainder of the trial~\citep{burnett_adaptive_2020}.
