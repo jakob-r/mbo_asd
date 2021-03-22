@@ -288,7 +288,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + geom_point(aes(size = algorithm, shape = algorithm), alpha = 0.15, shape = 16)
   g = g + scale_color_manual(values = select_labels_colors)
   g = g + scale_size_manual(labels = algorithm_labels[c("mbo" ,"eval")], values = c("mbo" = 2, "eval" = 0.5))
-  g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_bquote(cols = {n[treat]==.(n_cases)}))
+  g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_bquote(cols = {n[total]==.(n_cases)}))
   g = g + labs(x = expression(k[1] %.% n[stage1]))
   g = g + theme(legend.position = "bottom")
   g
@@ -313,7 +313,7 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   g = g + labs(x = expression(r), y = expression(y[valid]))
   g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
   #grid headlines
-  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[treat]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
+  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[total]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
   row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
@@ -357,7 +357,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
   g = g + guides(colour = guide_legend(override.aes = list(size=2)))
   #grid headlines
-  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[treat]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
+  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[total]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
   row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
@@ -389,7 +389,7 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.9, expr 
   #   paste(value, variable)
   # }
   
-  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(.(effect), n[treat]==.(n_cases))}))
+  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(.(effect), n[total]==.(n_cases))}))
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)

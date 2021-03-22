@@ -15,16 +15,17 @@ We especially that Reviewer 1 for the thoughtful and in-depth feedback.
 >
 > Reference: Senn S, Bretz F (2007) Power and sample size when multiple endpoints are considered. Pharmaceutical Statistics, 6(3), 161-170.
 
---> Tim Friede,
---> Checken, was gemacht wurde, dann klarstellen
+As in the original paper (Friede et. al. 2020) we count the rejections of any of the hypotheses 3 or 4 towards the power.
+We made this more clear throughout the paper and clarified that it is up to the user to determine the method how the power is calculated.
 
 >2) There is some inconsistent notation:
 >
 >a) It seems that n_treat is varyingly defined as the “total number of treatments” (p. 8, l. 29 and p. 9, l. 20), “total number of patients” (p. 8, l. 48 and p. 9, l. 14) and “allowed treatment number” (p. 12, l. 50 and p. 12, l. 51).
 
-n_treat is the number of total treatments. 
-If the patients are different in in both stages (i.e. each patient is only treated once), both numbers are the same.
-However, we corrected the wording to avoid confusions. #FIXME
+We improved our wording, so that the number of treatment arms cannot longer be confused with the individual number of treatments of each patient.
+Therefore, n_total replaces n_treat and defines the total sample size (formerly “total number of treatments”).
+If the patients are different in in both stages (i.e. each patient is only treated once) the total number of patients is would be the same as the total sample size.
+However, we only us "total sample size" phrase to avoid confusions.
 
 > b) On p. 3 k is introduced as the running index for treatments (k = 1, …, K) but later on p. 9 k is the resolution of the search grid.
 
