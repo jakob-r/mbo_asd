@@ -155,7 +155,7 @@
 We propose to use Bayesian optimization (BO) to improve the efficiency of the design selection process in clinical trials.
 BO is a method to optimize expensive black-box functions, by using a regression as a surrogate to guide the search.
 In clinical trials, planning test procedures and sample sizes is a crucial task.
-A common goal is to maximize the test power, given a set of treatments and corresponding effect sizes. % under the null hypothesis. #FIXME and number of patients?
+A common goal is to maximize the test power, given a set of treatments and corresponding effect sizes. % under the null hypothesis. #FIXME and number of samples?
 From a wide range of possible designs we aim to select the best one in a short time to allow quick decisions.
 The standard approach to simulate the power for each single design can become too time-consuming.
 When the number of possible designs becomes very large, either large computational resources are required or an exhaustive exploration of all possible designs takes too long.
@@ -218,7 +218,7 @@ Here, we propose to use a formal approach to optimization of the clinical trial 
 This set of candidate designs can be regarded as a multi-dimensional search space, including potentially many real-valued and categorical parameters.
 The vast space of possible designs makes the optimization computationally demanding.
 In the following, we demonstrate that the so-called \emph{Bayesian optimization} (BO) framework~\citep{jones_taxonomy_2001} can be successfully applied to select a clinical trial design.
-As evaluation metric we consider the specific case that the statistical power of the clinical trial design should be maximized, for given effect sizes and number of patients.
+As evaluation metric we consider the specific case that the statistical power of the clinical trial design should be maximized, for given effect sizes and a fixed total sample size.
 Further, it is crucial that such a design is found in a short time.
 %\subsection{Related work}
 %subsub Clinical 
@@ -392,13 +392,13 @@ A clinical scenario evaluation is defined by the following three elements: (i) d
 The disease-specific features describe distributional assumptions on the early and final outcomes including variances, correlations and treatment effect sizes.
 Here, some can be estimated from data of previous clinical trials and some are simply unknown. Considering adaptive seamless designs, the design options include the time point of the interim analysis and the treatment selection rule, which can in principle both be chosen without any restrictions.
 In contrast, some other design options such as the number of treatments and the total sample size are constrained by the environment and infrastructure available.
-The performance measures (sometimes also referred to as metrics) in the context with adaptive seamless designs are, e.g., power or sample size distributions.
+The performance measures (sometimes also referred to as metrics) in the context with adaptive seamless designs are, e.g., power, sample size distributions or duration of the study.
 %\paragraph{Simulating ASD}
 %\label{ssec:simulating_asd}
 
 The evaluation of some performance measures requires Monte Carlo simulations, since no closed form solutions are available. 
 The R-package \texttt{asd} by~\citet{parsons_software_2011} can be used for such simulations.
-As it generates test statistics, it is generally more efficient in comparison to simulating individual participant data.
+As it generates test statistics, following multivariate normal distributions, it is applicable to a wide range of outcomes, at least approximately, and generally more efficient in comparison to simulating individual participant data.
 The simulation model was described in more detail by \citet{friede_adaptive_2020}. 
 It features selection at interim based on early as well as final outcomes.
 
@@ -432,7 +432,7 @@ Exploitation is achieved by assigning high values to areas of $\theta$ where the
 For deterministic functions the expected improvement~\citep{jones_efficient_1998} is arguably the most popular acquisition function.
 
 The expected improvement, as well as other acquisition functions, are derived under the assumption that at each point $\theta \in \Theta$ the posterior of the function outcome follows a normal distribution.
-The standard Gaussian process regression, that is often used as surrogate, models the posterior as a Gaussian with the parameters \hat{\mu} and \sigma^2 under the assumption that $f$ is a realization of a Gaussian process.
+The standard Gaussian process regression, that is often used as surrogate, models the posterior as a Gaussian with the parameters $\hat{\mu}$ and $\sigma^2$ under the assumption that $f$ is a realization of a Gaussian process.
 In practice, this assumption often cannot be verified.
 However, benchmarks show that the approach nevertheless works reliable for many practical problems~\citep{bischl_mlrmbo_2017,snoek_practical_2012}.
 
@@ -495,7 +495,7 @@ The strategies for treatment selection for the second stage in the two-phase tri
 The strategies follow the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}. 
 The $\kappa$-best strategies select the 1, 2, 3 or 4 best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
 The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. 
-In Table~\ref{tab:search_space} the ranges for these two parameters and for the proportion of patients (ratio $r$) allocated to the second stage are given.
+In Table~\ref{tab:search_space} the ranges for these two parameters and for the proportion of the total samples (ratio $r$) allocated to the second stage are given.
 \begin{table}[h]
   \caption{Overview of selection strategies to determine which trial arms are kept for second stage}
   \label{tab:selection_strategies}
@@ -533,60 +533,60 @@ The simulation of the statistical power of the trial design can be formulated as
   \label{eq:bbox}
   y & = f(n_{\text{stage1}}, n_{\text{stage2}}, \text{selection strategy}, \epsilon, \tau, \text{effect set}) \ ,
 \end{align}
-whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients allocated to each treatment in stage 1 and stage 2 of the trial, respectively and \emph{effect set} remains fixed as we are interested in the optimal trial design for a given \emph{effect set}.
+whereas $n_{\text{stage1}}$ and $n_{\text{stage2}}$ be the numbers of patients (samples) allocated to each treatment in stage 1 and stage 2 of the trial, respectively and \emph{effect set} remains fixed as we are interested in the optimal trial design for a given \emph{effect set}.
 Our main optimization goal is to maximize the statistical power $y$ depending on the trial design. 
 
-However, we are interested in keeping the total number of treatments $n_{\text{treat}}$ constant in the overall trial for a fair comparison of the power of different designs.
-Therefore, we introduce the ratio of patients per treatment in stage 1, compared to patients per treatment in both stages
+However, we are interested in keeping the total sample size $n_{\text{total}}$ constant in the overall trial for a fair comparison of the power of different designs.
+Therefore, we introduce the ratio of patients (samples) per treatment in stage 1, compared to patients per treatment in both stages
 \begin{align}
   \label{eq:r}
  r & = \frac{n_{\text{stage1}}}{n_{\text{stage1}}+n_{\text{stage2}}}
 \end{align}
 as a new parameter that will replace $n_{\text{stage1}}$ and $n_{\text{stage2}}$ in~(\ref{eq:bbox}). 
 
-In the following we will explain how we derive the values of $n_{\text{stage1}}$ and $n_{\text{stage2}}$ in dependence of $r$ and $n_{\text{treat}}$ so that we can maximize
+In the following we will explain how we derive the values of $n_{\text{stage1}}$ and $n_{\text{stage2}}$ in dependence of $r$ and $n_{\text{total}}$ so that we can maximize
 \begin{equation}
   \label{eq:bbox2}
-  y = \tilde{f}(r, \text{selection strategy}, \epsilon, \tau, \text{effect set}, n_{\text{treat}})
+  y = \tilde{f}(r, \text{selection strategy}, \epsilon, \tau, \text{effect set}, n_{\text{total}})
 \end{equation}
-instead of~(\ref{eq:bbox}), whereas $n_{\text{treat}}$ and \emph{effect set} remain fixed.
+instead of~(\ref{eq:bbox}), whereas $n_{\text{total}}$ and \emph{effect set} remain fixed.
 
 Let $k_1$ and $k_2$ denote the number of treatments in stage 1 and stage 2, respectively. 
 Within one stage, the same number of patients are allocated to all different treatments. 
-Then $n_{\text{treat}}$ is given by
+Then $n_{\text{total}}$ is given by
 \begin{equation}
   \label{eq:ntreat}
-  n_{\text{treat}} = k_1 \cdot n_{\text{stage1}} + k_2 \cdot n_{\text{stage2}} \ .
+  n_{\text{total}} = k_1 \cdot n_{\text{stage1}} + k_2 \cdot n_{\text{stage2}} \ .
 \end{equation}
 In our scenario (as described in Section \ref{subsec:design}) we have $k_1 = 5$ and $k_2 \in \{2, \ldots, 5\}$, where $k_2$ depends on the result of the treatment selection strategy in stage 1.
 The control treatment is included in both stages.
 
-Given the number of treatments $k_1$ and $k_2$ in the two stages and the total number of treatments $n_{\text{treat}}$, optimizing the power with respect to $n_{\text{stage1}}$ and $n_{\text{stage2}}$ is equivalent to optimizing with respect to $r$, since
+Given the number of treatments $k_1$ and $k_2$ in the two stages and the total sample size $n_{\text{total}}$, optimizing the power with respect to $n_{\text{stage1}}$ and $n_{\text{stage2}}$ is equivalent to optimizing with respect to $r$, since
 \begin{align}
   \label{eq:stagec}
   %\begin{split}
   n_{\text{stage1}} & = 
-  n_{\text{stage1}}\cdot \frac{n_{\text{treat}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} = 
-  n_{\text{treat}} \cdot \frac{n_{\text{stage1}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} \nonumber \\
-  & = n_{\text{treat}}\cdot
+  n_{\text{stage1}}\cdot \frac{n_{\text{total}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} = 
+  n_{\text{total}} \cdot \frac{n_{\text{stage1}}}{k_1\cdot n_{\text{stage1}}+k_2\cdot n_{\text{stage2}}} \nonumber \\
+  & = n_{\text{total}}\cdot
   \frac{r}{k_1\cdot
   r+k_2\cdot (1-r)} \ \text{and} \nonumber \\
   n_{\text{stage2}} & =
-  n_{\text{treat}}\cdot
+  n_{\text{total}}\cdot
   \frac{1-r}{k_1\cdot
   r+k_2\cdot (1-r)}.
   %\end{split}
 \end{align}
-%For $k_1 = k_2 = 5$, $c$ would be $n_{\text{treat}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
-These formulas give the numbers of patients per treatment arm in the two stages, if $k_2$ is known. 
+%For $k_1 = k_2 = 5$, $c$ would be $n_{\text{total}} \cdot \frac{1}{5}$ because for each arm we can distribute $\frac{1}{5}$ of the treatments across stage 1 and stage 2.
+These formulas give the numbers of patients (samples) per treatment arm in the two stages, if $k_2$ is known. 
 This is only the case for selection strategies 1, 2, and 3.
 
 For the selection strategies \emph{eps} and \emph{thresh}, $k_2$ depends on the outcome of stage 1.
 %choice of the \emph{thresh} or \emph{eps} parameter.
 In these cases, for given values of $n_{\text{stage1}}$ and $\epsilon$ or $\tau$, respectively, we can obtain an estimate $\hat{k}_2$ of $k_2$ with a so-called calibration step.
-For a set of values for $n_{\text{stage1}}$ in the interval $\left[ \lceil 0.01 \cdot \frac{n_{\text{treat}}}{k_1} \rceil, \lceil \frac{n_{\text{treat}}}{k_1} \rceil \right]$, we simulate stage 1 of the trial multiple times.
+For a set of values for $n_{\text{stage1}}$ in the interval $\left[ \lceil 0.01 \cdot \frac{n_{\text{total}}}{k_1} \rceil, \lceil \frac{n_{\text{total}}}{k_1} \rceil \right]$, we simulate stage 1 of the trial multiple times.
 We calculate $n_{\text{stage2}} = (1-r)/r\cdot n_{\text{stage1}}$ from formula (\ref{eq:r}) and $\hat{k}_2$ as the average of the resulting values of $k_2$ for all simulations with a fixed value for $n_{\text{stage1}}$.
-Then we select the value of $n_{\text{stage1}}$ such that the corresponding number of total treatments is closest to $n_{\text{treat}}$.
+Then we select the value of $n_{\text{stage1}}$ such that the corresponding total sample size is closest to $n_{\text{total}}$.
 More precisely, we minimize
 \begin{align}
   \label{eq:targettreat}
@@ -594,7 +594,7 @@ More precisely, we minimize
   h(n_{\text{stage1}}) &:= \left( \Big(k_1 \cdot n_{\text{stage1}} + \hat{k}_2 \cdot %\underbrace{
   \frac{1-r}{r} \cdot n_{\text{stage1}}
   %}_{=n_{\text{stage2}}}
-  \Big) - n_{\text{treat}} \right)^2
+  \Big) - n_{\text{total}} \right)^2
 %  \hat{k}_2 &= f(n_{\text{stage1}}, 1, \text{effect set}, \text{Selection strategy}, \text{Epsilon}, \text{Threshold})_{k_2}
   \end{split}
 \end{align}
@@ -602,9 +602,9 @@ with respect to $n_{\text{stage1}}$, where the estimate $\hat{k}_2$ is obtained 
 %$f$ is the simulator black-box from Equation~\ref{eq:bbox}, that gives us the estimated number of $\hat{k}_2$.
 %This number is independent of the simulation of the second stage, so we can set $n_{\text{stage2}}$ to 1.
 %The value of $\hat{k}_2$ that was observed with the minimal outcome of $h$ is then used to calculate $c$ in equation~\ref{eq:ntreatcc}.
-The calibration step is necessary to guarantee that the total number of treatments $n_{\text{treat}}$ is (on average) the same, also for the variable selection strategies \emph{eps} and \emph{thresh}.
+The calibration step is necessary to guarantee that the total sample size $n_{\text{total}}$ is (on average) the same, also for the variable selection strategies \emph{eps} and \emph{thresh}.
 
-The above procedure gives us the values for $n_{\text{stage1}}$ and $n_{\text{stage2}}$, allowing us in the following to find the optimal clinical trial design for a given \emph{effect set} and number of total treatments, by optimizing the parameter values for $r$, \emph{Selection strategy}, $\epsilon$ and $\tau$ through maximizing $\tilde f$ in~(\ref{eq:bbox2}).
+The above procedure gives us the values for $n_{\text{stage1}}$ and $n_{\text{stage2}}$, allowing us in the following to find the optimal clinical trial design for a given \emph{effect set} and a fixed total sample size, by optimizing the parameter values for $r$, \emph{Selection strategy}, $\epsilon$ and $\tau$ through maximizing $\tilde f$ in~(\ref{eq:bbox2}).
 
 \subsection{Optimization strategies}
 
@@ -689,8 +689,8 @@ The 20 additional stochastic repetitions we conduct for the \emph{grid search} a
   \hline
   Number of simulation iterations & \texttt{nsim} & $1000$ \\
   Correlation between early and final outcomes & \texttt{corr} & $0.4$ \\
-  Test level & \texttt{level} & $0.025$ \\ %FIXME: @Tim: One sided?
-  Vector of treatment numbers for determining power & \texttt{ptest} & $(3,4)$ \\
+  One-sided significance level & \texttt{level} & $0.025$ \\ %FIXME: @Tim: One sided?
+  % Vector of treatment numbers for determining power & \texttt{ptest} & $(3,4)$ \\
   \hline
   \end{tabular}
 \end{table}
@@ -702,7 +702,7 @@ We focus our comparison on independent, replicated evaluations of the configurat
 The evaluations provide unbiased estimates of the performance ($y_{\text{valid}}$) of all optimizers.
 
 For this study we consider 12 scenarios.
-The scenarios are generated by combining the four different effect sets (see Table~\ref{tab:table_effect_names}) with the three different numbers for $n_{\text{treat}}$.
+The scenarios are generated by combining the four different effect sets (see Table~\ref{tab:table_effect_names}) with the three different numbers for $n_{\text{total}}$.
 Each optimizer is applied on each scenario with 20 stochastic repetitions.
 
 Figure~\ref{fig:plot_boxplot_valid_y} shows the estimated power values $y_{\text{valid}}$ for the best solutions in each scenario.
@@ -710,14 +710,14 @@ Figure~\ref{fig:plot_boxplot_valid_y} shows the estimated power values $y_{\text
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y.pdf}
 \caption{%
-  Box plots of performance (power) values on independent replicates of the best solutions for the four optimizers, the different effect sets, and different numbers of $n_{\text{treat}}$ (500, 1000, 2000)
+  Box plots of performance (power) values on independent replicates of the best solutions for the four optimizers, the different effect sets, and different numbers of $n_{\text{total}}$ (500, 1000, 2000)
   }
 \label{fig:plot_boxplot_valid_y}
 \end{figure}
 The plots show that \emph{BO} generally gives results that are comparable to those obtained with the (exhaustive) \emph{Grid} method across all scenarios. 
-Only in some cases \emph{Grid} has a slight advantage (\emph{effect: linear}, $n_{\text{treat}} = 2000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 2000$).
+Only in some cases \emph{Grid} has a slight advantage (\emph{effect: linear}, $n_{\text{total}} = 2000$; \emph{effect: sigmoid}, $n_{\text{total}} = 1000$; \emph{effect: sigmoid}, $n_{\text{total}} = 2000$).
 Below we will see that these scenarios have in common that the optimal configuration is close to the border of the search space. 
-In other cases \emph{BO} yields slightly better results (\emph{effect: paper}, $n_{\text{treat}} = 2000$; \emph{effect: paper2}, $n_{\text{treat}} = 500$; \emph{effect: sigmoid}, $n_{\text{treat}} = 500$).
+In other cases \emph{BO} yields slightly better results (\emph{effect: paper}, $n_{\text{total}} = 2000$; \emph{effect: paper2}, $n_{\text{total}} = 500$; \emph{effect: sigmoid}, $n_{\text{total}} = 500$).
 Across all scenarios, \emph{BO} and \emph{Grid} perform similarly, although due to its evaluation budget, \emph{BO} is allowed only 116 evaluations as opposed to the 1350 evaluations for \emph{Grid}, when using a resolution of 25 points per dimension.
 The difference in the number of evaluations is clearly reflected in the average runtime of the optimization methods given in Table~\ref{tab:table_time}.
 Runtimes were measured on a single core of a compute node with 2 Intel Xeon E5-2697v2 (2.70 GHz) with 12 Cores each and 512 GB of RAM in an non-exclusive usage of the node.
@@ -728,7 +728,7 @@ For \emph{BO Grid}, only solutions on the grid that was evaluated by \emph{Grid}
 Comparing the results of \emph{BO Grid} to those of \emph{BO} we mainly see similar performances for both.
 This indicates that the resolution of \emph{Grid} is fine enough to achieve similar performance to \emph{BO}.
 
-Comparing \emph{BO Grid} to \emph{Grid}, we observe that for the scenarios \emph{effect: paper}, $n_{\text{treat}} = 500$ and \emph{effect: paper}, $n_{\text{treat}} = 1000$, \emph{BO Grid} achieves slightly better performance than \emph{Grid}.
+Comparing \emph{BO Grid} to \emph{Grid}, we observe that for the scenarios \emph{effect: paper}, $n_{\text{total}} = 500$ and \emph{effect: paper}, $n_{\text{total}} = 1000$, \emph{BO Grid} achieves slightly better performance than \emph{Grid}.
 This suggests that the \emph{Grid} optimization selects the best outcome "optimistically" from all observed outcomes and does not take into account the stochasticity of the problem, i.e. in this case the noise on the predicted power. 
 Accordingly, we assume that for the mentioned scenarios the noise was so high, that \emph{Grid} was misguided by too optimistic outcomes when selecting the final configuration as optimization result.
 In our evaluation, the independent validation $y_{\text{valid}}$ represents the unbiased performance of this final configuration, and the overoptimism becomes apparent.
@@ -741,8 +741,8 @@ Therefore, any increase in performance of \emph{BO Grid} compared to \emph{BO} i
 To compare \emph{BO} with a grid search that takes approximately the same time (see Table~\ref{tab:table_time}) and number of evaluations, we consider \emph{Grid Small}.
 Here, a resolution of 7 points per dimension leads to 126 evaluations, close to 116 allowed evaluations of \emph{BO}, with only a small advantage for \emph{Grid Small}.
 Despite the 10 more evaluations allowed, in the majority of cases \emph{BO} is superior to \emph{Grid Small}, see~Figure~\ref{fig:plot_boxplot_valid_y}.
-The advantage is particularly apparent for all scenarios with effect set \emph{effect: linear} and for scenario \emph{effect: paper2}, $n_{\text{treat}} = 500$.
-Only for the scenarios (\emph{effect: paper2}, $n_{\text{treat}} = 1000$), (\emph{effect: sigmoid}, $n_{\text{treat}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{treat}} = 2000$) \emph{Grid Small} has a small advantage over \emph{BO} and \emph{Grid}.
+The advantage is particularly apparent for all scenarios with effect set \emph{effect: linear} and for scenario \emph{effect: paper2}, $n_{\text{total}} = 500$.
+Only for the scenarios (\emph{effect: paper2}, $n_{\text{total}} = 1000$), (\emph{effect: sigmoid}, $n_{\text{total}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{total}} = 2000$) \emph{Grid Small} has a small advantage over \emph{BO} and \emph{Grid}.
 In the first case, the absolute differences are negligible and all methods lead to a high power.
 For the second case, we will later show that the optimal configuration is close to the border of the search space.
 
@@ -750,14 +750,14 @@ As stated above, the high resolution of the exhaustive \emph{Grid} probably lead
 These points are not included in the more coarse grid used by \emph{Grid Small}.
 In other words, if a configuration close to the optimum is included in the grid used by \emph{Grid Small}, then it is more likely to select it with less overoptimism, as the number of candidates in the region is smaller.
 
-Note that between the scenarios the absolute differences of the optimization results are of different practical relevance. For example, for scenario \emph{effect: sigmoid}, $n_{\text{treat}} = 2000$ \emph{Grid} is superior to \emph{BO}, but the difference is smaller than $0.25\%$.
+Note that between the scenarios the absolute differences of the optimization results are of different practical relevance. For example, for scenario \emph{effect: sigmoid}, $n_{\text{total}} = 2000$ \emph{Grid} is superior to \emph{BO}, but the difference is smaller than $0.25\%$.
 
 %After having looked at the best obtained outcome on our problem scenarios and established the ability of \emph{BO} to find equally good configurations as the much more demanding exhaustive \emph{Grid}
 
 \subsection{Detailed analysis of identified configurations}
 
 We now investigate the results in more detail.
-We analyze the differences depending on the \emph{selection strategy} and the number of treatments at stage 1, as determined by the \emph{stage ratio} ($r$).
+We analyze the differences depending on the \emph{selection strategy} and the number of samples at stage 1, as determined by the \emph{stage ratio} ($r$).
 Figure~\ref{fig:plot_allbest} shows the observed outcomes for all evaluations on the grid and the final configurations found by \emph{BO}.
 \begin{figure}[htb]
 \centering
@@ -774,7 +774,7 @@ Figure~\ref{fig:plot_allbest} shows the observed outcomes for all evaluations on
 \end{figure}
 For the selection strategies \emph{epsilon rule} and \emph{threshold rule} only curves representing the $\epsilon$ and $\tau$ values with the best outcome, respectively, are shown.
 Note that for the effect sets \emph{linear} and \emph{sigmoid} the curves for selection strategy \emph{1 best} and \emph{eps} are nearly identical.
-As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2 (i.e.\ $r=1$).
+As intuitively anticipated, in almost all scenarios the worst results were obtained if all available samples are used in stage 1 and none in stage 2 (i.e.\ $r=1$).
 
 In all scenarios, \emph{BO} identified the peak of all combined curves.
 Within the 20 stochastic repetitions per scenario, \emph{BO} found different configurations, but all had similar high power.
@@ -782,10 +782,10 @@ The fact that no unique best setting was found across the repetitions can be att
 In cases in which multiple optimization runs result in different configurations it might be advisable to let a human expert choose the final configuration, also depending on the medical background.
 
 The curves also show the potential of optimization for the different scenarios.
-If the number of overall treatments is high ($n_{\text{treat}} = 1000$), then nearly all design configurations yield high statistical power and optimization is less important.
-If the number of overall treatments is too small ($n_{\text{treat}} = 500$), then no configuration yields a practically usable design.
-In this situation, a fast optimization helps to determine if a desired treatment number can actually yield sufficiently powerful designs.
-Of special interest are the scenarios where the correct choice of the design configuration can make a difference between a design with acceptable power and a design with too low power, e.g. for the scenarios (\emph{effect: linear}, $n_{\text{treat}} = 1000$; \emph{effect: linear}, $n_{\text{treat}} = 2000$, \emph{effect: paper}, $n_{\text{treat}} = 1000$; \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$).
+If the total sample size is high ($n_{\text{total}} = 1000$), then nearly all design configurations yield high statistical power and optimization is less important.
+If the total sample size is too small ($n_{\text{total}} = 500$), then no configuration yields a practically usable design.
+In this situation, a fast optimization helps to determine if a desired total sample size can actually yield sufficiently powerful designs.
+Of special interest are the scenarios where the correct choice of the design configuration can make a difference between a design with acceptable power and a design with too low power, e.g. for the scenarios (\emph{effect: linear}, $n_{\text{total}} = 1000$; \emph{effect: linear}, $n_{\text{total}} = 2000$, \emph{effect: paper}, $n_{\text{total}} = 1000$; \emph{effect: sigmoid}, $n_{\text{total}} = 1000$).
 Note, that the selection strategies \emph{thresh} and \emph{all} never selected powerful designs.
 
 
@@ -793,16 +793,16 @@ Note, that the selection strategies \emph{thresh} and \emph{all} never selected 
 
 Figure~\ref{fig:plot_best_x} visualizes in detail which configurations were selected by \emph{BO} and \emph{Grid} and the corresponding values for $y_{\text{valid}}$ (result of the independent validation).
 The optimal values for $\epsilon$ and $\theta$ are not shown.
-For some scenarios most runs of \emph{Grid} returned the same optimal configurations (e.g.\ for \emph{effect: sigmoid}, $n_{\text{treat}} = 1000$).
+For some scenarios most runs of \emph{Grid} returned the same optimal configurations (e.g.\ for \emph{effect: sigmoid}, $n_{\text{total}} = 1000$).
 In such cases the signal-to-noise ratio was sufficiently high to reliably find the best configuration.
 In some scenarios \emph{Grid} was superior to \emph{BO}, as could be seen in the previously shown Box plots in Figure~\ref{fig:plot_boxplot_valid_y}.
-Furthermore, for all scenarios with \emph{effect: sigmoid} and the scenarios \emph{effect: linear}, $n_{\text{treat}} = 500$ and \emph{effect: paper}, $n_{\text{treat}} = 500$, small values of $r$ lead to an optimal outcome.
+Furthermore, for all scenarios with \emph{effect: sigmoid} and the scenarios \emph{effect: linear}, $n_{\text{total}} = 500$ and \emph{effect: paper}, $n_{\text{total}} = 500$, small values of $r$ lead to an optimal outcome.
 Here, \emph{BO} was not able to find these values close to the border of the search space.
 A common remedy for this problem is to log-transform the values of~$r$.
 
-In other cases \emph{Grid} found different configurations in different runs, while \emph{BO} lead to more stable results, also with higher power values (e.g.\ \emph{effect: linear}, $n_{\text{treat}} = 1000$; \emph{effect: paper2}, $n_{\text{treat}} = 500$; \emph{effect: sigmoid}, $n_{\text{treat}} = 500$).
+In other cases \emph{Grid} found different configurations in different runs, while \emph{BO} lead to more stable results, also with higher power values (e.g.\ \emph{effect: linear}, $n_{\text{total}} = 1000$; \emph{effect: paper2}, $n_{\text{total}} = 500$; \emph{effect: sigmoid}, $n_{\text{total}} = 500$).
 Here we can assume, that \emph{BO} successfully accounted for the noise.
-A special case is scenario \emph{effect: paper2}, $n_{\text{treat}} = 2000$:
+A special case is scenario \emph{effect: paper2}, $n_{\text{total}} = 2000$:
 Here nearly all found configurations yield perfect outcomes.
 
 \begin{figure}[htb]
@@ -814,7 +814,7 @@ Here nearly all found configurations yield perfect outcomes.
 
 \subsection{Results for more simulation rounds}
 
-To investigate the effect of the function noise variance ($\sigma^2$) on the optimization result we increase the simulation iterations from $n_\text{sim} = 1000$ to $n_\text{sim} = 5000$, restricting to the scenario \emph{effect: paper}, $n_{\text{treat}} = 2000$.
+To investigate the effect of the function noise variance ($\sigma^2$) on the optimization result we increase the simulation iterations from $n_\text{sim} = 1000$ to $n_\text{sim} = 5000$, restricting to the scenario \emph{effect: paper}, $n_{\text{total}} = 2000$.
 % This is expected to increase the runtime by a factor of 5. % obvious, also not of interest here
 Additionally, we run the algorithms 100 times instead of the previously used 20, in order to obtain more precise estimates for the power values in the independent validation.
 
@@ -833,13 +833,13 @@ Therefore, we can assume that "bias correction" of \emph{BO} as explained in Sec
   \begin{minipage}{0.62\textwidth}
     \centering
     \includegraphics[width=\linewidth]{generated/figures/plot_opt_path_5000.pdf}%
-    \captionof{figure}{Optimization progress for \emph{BO}: Best outcome found so far for each iteration, in comparison to the best outcome found in the grid search, for effect set \emph{paper} and $n_{\text{treat}} = 2000$}
+    \captionof{figure}{Optimization progress for \emph{BO}: Best outcome found so far for each iteration, in comparison to the best outcome found in the grid search, for effect set \emph{paper} and $n_{\text{total}} = 2000$}
     \label{fig:plot_opt_path_5000}
   \end{minipage}\hspace{0.02\textwidth}%
   \begin{minipage}{0.35\textwidth}
     \centering
     \includegraphics[width=\linewidth]{generated/figures/plot_boxplot_valid_y_5000.pdf}%
-    \captionof{figure}{Validated performance of all optimization strategies on effect set \emph{paper} and $n_{\text{treat}} = 2000$ with 100 stochastic repetitions and different values for \texttt{nsim}}
+    \captionof{figure}{Validated performance of all optimization strategies on effect set \emph{paper} and $n_{\text{total}} = 2000$ with 100 stochastic repetitions and different values for \texttt{nsim}}
     \label{fig:plot_boxplot_valid_y_5000}
   \end{minipage}
 \end{figure}
@@ -869,7 +869,7 @@ In summary, \emph{BO} can find configurations with a small number of required si
 Bayesian optimization (BO) is a state-of-the art optimizer that can be used for parameter optimization in a wide range of applications.
 Here, we propose, for the first time, to optimize the power of adaptive seamless designs using BO.
 In clinical trials, determining the test methods and sample sizes is a key step in the planning process.
-One main goal is to maximize the test power, given a set of treatments with corresponding effect sizes. % under the null hypothesis.
+One main goal is to maximize the test power, given a set of treatments with corresponding effect sizes. % under the null hypothesis. %FIXME sample size
 If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
 Either large computational resources are required for an exhaustive investigation of all the different configurations, or a tedious manual trial-and-error process is required.
 
@@ -879,7 +879,7 @@ Either large computational resources are required for an exhaustive investigatio
 % https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8797
 
 In this paper we analyzed if BO can quickly find an adaptive seamless design with high power, more efficiently than an exhaustive grid search.
-For various sets of treatment effect sizes, BO was able to find competitive designs in a fraction of the time.
+For various sets of treatment effect sizes, BO was able to find competitive designs in a fraction of the time. %FIXME and samples?
 In contrast to grid search, BO was able to account for stochasticity in the metric that should be optimized.
 %In addition to results in other research fields, our results underline that BO is a powerful method for finding optimal configurations for problems that fit the black-box definition.
 Therefore, the application of BO to clinical trial design selection in general seems promising. The same concept could be applied for subgroup selection in adaptive enrichment designs, which make use of interim data in selecting the target population for the remainder of the trial~\citep{burnett_adaptive_2020}.
@@ -887,8 +887,8 @@ Therefore, the application of BO to clinical trial design selection in general s
 % subsection Outlook
 Only in cases in which the optimal values of one parameter are close to the lower border, we sometimes observed poor performance of BO.
 Here, a possible improvement can be to apply a log transformation to such parameters. % in the future.
-Further, instead of keeping the number of treatments constant, we could apply multi-criteria optimization and include this number as an additional outcome.
-This multi-criteria approach would result in a set of points (a Pareto front) that minimize the number of treatments and at the same time maximize the statistical power of the trial design.
+Further, instead of keeping the total sample size constant, we could apply multi-criteria optimization and include this number as an additional outcome.
+This multi-criteria approach would result in a set of points (a Pareto front) that minimizes the total sample size and at the same time maximize the statistical power of the trial design.
 The user could then see for which number of trials the power is above a certain threshold (e.g. $95\%$).
 Another way to speed up the optimization would be to iteratively increase the number of simulation rounds of the trial design evaluation. 
 If few simulations already indicate a bad outcome for a configuration then additional simulation rounds are not necessary.

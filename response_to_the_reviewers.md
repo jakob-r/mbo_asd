@@ -15,7 +15,8 @@ We especially that Reviewer 1 for the thoughtful and in-depth feedback.
 >
 > Reference: Senn S, Bretz F (2007) Power and sample size when multiple endpoints are considered. Pharmaceutical Statistics, 6(3), 161-170.
 
---> Tim Friede
+--> Tim Friede,
+--> Checken, was gemacht wurde, dann klarstellen
 
 >2) There is some inconsistent notation:
 >
@@ -37,9 +38,8 @@ We added a short explanation.
 
 >p. 3 ff.: This may be implicitly clear but it should also be said explicitly that in the motivating example and throughout the remainder of the paper a normality assumption is made for all outcome data.
 
---> Tim? Gibt es diese assumption bei dir?
---> Mbo Teil habe ich übernommen.
-We clarified the assumptions in chapter 4 and 5.
+There is no normality assumption for the single outcome data but for the test statistics Z_i,j a multivariate normal distribution is assumed which will hold approximately if the sample size is sufficiently large. 
+We clarified the assumptions at the very end of chapter 3.
 
 >p. 9: How were the values for the resolution of Grid and Grid Small (k=25 and k=7) selected?
 
@@ -55,7 +55,7 @@ Thanks, for spotting that mistake. Indeed we use 20 stochastic repetitions.
 
 > p. 10: It should be clarified whether the test level of 0.025 is one-sided.
 
---> Tim
+We use a one-sided test and added this information in the table.
 
 > p. 11: Whilst I appreciate that the focus is on relative improvements in runtime, the authors should at least briefly describe the hardware setup with which these runtimes were achieved, to provide some context for the absolute runtimes.
 
@@ -66,6 +66,7 @@ We added the requested information.
 --> can I remove (effect: paper2, n_treat = 1000)?
 While we agree, that for (effect: sigmoid, n_treat = 2000) Grid small has an advantage over BO, and changed the text accordingly, we don't see that advantage for (effect: paper, n_treat = 1000).
 Here, the median of both methods lays within the box of the other method so we cannot say that one mehtod has an advantage over the other.
+Thanks for bringing that up. We revised the list of cases where Grid Small is in advantage.
 
 > p. 12: It says: “For example, for scenario effect: sigmoid, n_treat = 1000 Grid is superior to BO, but the difference is smaller than 0.25%.” This isn’t true for n_treat = 1000 where the difference between Grid and BO is around 2%, but rather for n_treat = 2000.
 
@@ -73,17 +74,21 @@ Thank you for spotting that mistake.
 
 > p. 12: Apologies but I’m struggling to understand the following sentence: “As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2.” How can none of the treatments be used in stage 2 when on p. 8 it is specified that the number of treatments in stage 2 must always be between 2 and 5?
 
-If r=1, then all treatments are done in stage 1. The number of FIXME: How do we name treatments and "individual patients".
+If r=1, then all treatments are done in stage 1. The number of FIXME: formulation total sample size
 
 > p. 13: It is stated that: “Note, that the selection strategies thresh and all never selected powerful designs.” Why is that? Presumably, the former is true because the range of numerical values used for the threshold was chosen too narrow, whilst the latter shouldn’t be surprising at all, as it is the only non-adaptive design in the mix.
 
---> Maybe threshold is disadvantageous because it looks at the absolute values, which is not that adaptive even with optimization 
+Maybe threshold is disadvantageous because it looks at the absolute values, which is not that adaptive even with optimization.  
+In our analysis of the results we saw that the optimal thresh values are not close to the border.
+This indicates that the ranges are wide enough.
 
 > p. 14: What are the x-values referred to in the caption of Figure 4? No x is introduced in the notation, and Figure 4 itself plots y-values against r-values.
 
 Thanks for spotting this mistake. It is supposed to say theta-values which r is a component of. We clearified the caption.
 
 > p. 16: The citation of the technical report by Bischl et al. should include a URL if possible.
+
+FIXME
 
 ### Typos
 
@@ -126,9 +131,10 @@ Done.
 > The authors propose to use Bayesian optimization (BO) to improve the efficiency of the design selection process in clinical trials. A set of parameters to be chose for the design optimization based on the power. The idea seem novel and could be a useful approach. However, there are several major issues and limitations of proposed methods: for example, power is often only part of measure of choosing design, other factors like study duration, and # of pts are also important. Also, the black-box function relay too much of the various parametric assumption of parameters, which need to be carefully decided to be more related to true clinical trial needs. Overall, I have the following comments for the authors.
 
 We agree that the power is only one measure of choosing a design.
-Therefore, the idea behind our method is that you are able to quickly find out which power you can achieve given the other fixed factors like number of patients or number of treatments #FIXME.
+Therefore, the idea behind our method is that you are able to quickly find out which power you can achieve given the other fixed factors like total sample size or number of treatments #FIXME.
 Quickly obtaining the best possible performance for a specific design choice will also help decision makers to decide how to choose the design.
 --> Tim Friede (assumption of parameters, true clinical trial needs)
+--> We added in the outlook:  (chater) length of the study
 
 ### Major comments:
 
@@ -137,6 +143,8 @@ Quickly obtaining the best possible performance for a specific design choice wil
 In the table the effects for the second stage (final) are smaller then for the fist stage (early) which is in line with most realistic scenarios.
 --> Often Realisitic scenario, also for the motivating example: First stage, second stage ...
 --> Tim
+Early outcome overoptimistic and therefore higher.
+This is a typical scenario.
 
 > In page 8 table 2, the selection of “espilon” and “threshold” used in the arm selection should be based on the clinical meaningful cut, I am not sure how practical that they are part of parameters to be optimized? The authors should also evaluate with different setting.
 
