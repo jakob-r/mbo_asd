@@ -745,15 +745,15 @@ To compare \emph{BO} with a grid search that takes approximately the same time (
 Here, a resolution of 7 points per dimension leads to 126 evaluations, close to 116 allowed evaluations of \emph{BO}, with only a small advantage for \emph{Grid Small}.
 Despite the 10 more evaluations allowed, in the majority of cases \emph{BO} is superior to \emph{Grid Small}, see~Figure~\ref{fig:plot_boxplot_valid_y}.
 The advantage is particularly apparent for all scenarios with effect set \emph{effect: linear} and for scenario \emph{effect: paper2}, $n_{\text{total}} = 500$.
-Only for the scenarios (\emph{effect: paper2}, $n_{\text{total}} = 1000$), (\emph{effect: sigmoid}, $n_{\text{total}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{total}} = 2000$) \emph{Grid Small} has a small advantage over \emph{BO} and \emph{Grid}.
-In the first case, the absolute differences are negligible and all methods lead to a high power.
-For the second case, we will later show that the optimal configuration is close to the border of the search space.
+Only for the scenarios (\emph{effect: sigmoid}, $n_{\text{total}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{total}} = 2000$) \emph{Grid Small} has a notable advantage over \emph{BO} and \emph{Grid}.
+In the second case, the absolute differences are negligible and all methods lead to a high power.
+Also for this case, we will later show that the optimal configuration is close to the border of the search space.
 
 As stated above, the high resolution of the exhaustive \emph{Grid} probably leads to the selection of slightly suboptimal configurations close to the optimum due to stochasticity.
 These points are not included in the more coarse grid used by \emph{Grid Small}.
 In other words, if a configuration close to the optimum is included in the grid used by \emph{Grid Small}, then it is more likely to select it with less overoptimism, as the number of candidates in the region is smaller.
 
-Note that between the scenarios the absolute differences of the optimization results are of different practical relevance. For example, for scenario \emph{effect: sigmoid}, $n_{\text{total}} = 2000$ \emph{Grid} is superior to \emph{BO}, but the difference is smaller than $0.25\%$.
+Note that between the scenarios the absolute differences of the optimization results are of different practical relevance. For example, for scenario \emph{effect: sigmoid}, $n_{\text{total}} = 2000$ \emph{Grid} and \emph{Grid Small} are superior to \emph{BO}, but the difference is smaller than $0.5\%$.
 
 %After having looked at the best obtained outcome on our problem scenarios and established the ability of \emph{BO} to find equally good configurations as the much more demanding exhaustive \emph{Grid}
 
