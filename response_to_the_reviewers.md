@@ -86,7 +86,7 @@ We assume that the threshold selection is disadvantageous because it looks at th
 
 > p. 14: What are the x-values referred to in the caption of Figure 4? No x is introduced in the notation, and Figure 4 itself plots y-values against r-values.
 
-Thanks for spotting this mistake. It is supposed to say theta-values which r is a component of. We clearified the caption.
+Thanks for spotting this mistake. It is supposed to say theta-values which r is a component of. We clarified the caption.
 
 > p. 16: The citation of the technical report by Bischl et al. should include a URL if possible.
 
@@ -127,7 +127,7 @@ If we included the number of patients in the optimization, the optimizer will pr
 This is also indicated in our results, as we tried different values of n_total which equals the number of patients. 
 Here, a higher number always resulted in a higher power.
 As mentioned in the paper, the idea is to run this optimization for different patient sizes, and then to decide which number of patients is required.
-This brings us to the future goal that we mentioned in the discussion: We can include n_total as another parameter and outcome in a multi-criteria optimisation setting.
+This brings us to the future goal that we mentioned in the discussion: We can include n_total as another parameter and outcome in a multi-criteria optimization setting.
 
 > In page 10 table 4, the number of simulation iteration is only 1000, which does not seem sufficient for complex optimization methods proposed by authors. I would suggest at least 5000 should be needed.
 
