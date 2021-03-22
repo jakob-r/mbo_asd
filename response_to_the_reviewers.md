@@ -16,16 +16,16 @@ We especially that Reviewer 1 for the thoughtful and in-depth feedback.
 > Reference: Senn S, Bretz F (2007) Power and sample size when multiple endpoints are considered. Pharmaceutical Statistics, 6(3), 161-170.
 
 As in the original paper (Friede et. al. 2020) we count the rejections of any of the hypotheses 3 or 4 towards the power.
-We made this more clear throughout the paper and clarified that it is up to the user to determine the method how the power is calculated.
+We made this more clear throughout the paper and clarified that it is up to the user to determine the method of how the power is calculated.
 
 >2) There is some inconsistent notation:
 >
 >a) It seems that n_treat is varyingly defined as the “total number of treatments” (p. 8, l. 29 and p. 9, l. 20), “total number of patients” (p. 8, l. 48 and p. 9, l. 14) and “allowed treatment number” (p. 12, l. 50 and p. 12, l. 51).
 
 We improved our wording, so that the number of treatment arms cannot longer be confused with the individual number of treatments of each patient.
-Therefore, n_total replaces n_treat and defines the total sample size (formerly “total number of treatments”).
+Therefore, the total sample size (formerly “total number of treatments”) is denoted as n_total (formerly n_treat)
 If the patients are different in in both stages (i.e. each patient is only treated once) the total number of patients is would be the same as the total sample size.
-However, we only us "total sample size" phrase to avoid confusions.
+However, we only use the phrase "total sample size" to avoid confusions.
 
 > b) On p. 3 k is introduced as the running index for treatments (k = 1, …, K) but later on p. 9 k is the resolution of the search grid.
 
@@ -64,10 +64,9 @@ We added the requested information.
 
 > p. 12: It is stated that: “Only for the scenarios (effect: paper2, n_treat = 1000) and (effect: sigmoid, n_treat = 1000) Grid Small has a small advantage over BO and Grid.” I think it should be added that Grid Small also has an advantage over BO for (effect: paper, n_treat = 1000) and certainly for (effect: sigmoid, n_treat = 2000).
 
---> can I remove (effect: paper2, n_treat = 1000)?
-While we agree, that for (effect: sigmoid, n_treat = 2000) Grid small has an advantage over BO, and changed the text accordingly, we don't see that advantage for (effect: paper, n_treat = 1000).
-Here, the median of both methods lays within the box of the other method so we cannot say that one mehtod has an advantage over the other.
-Thanks for bringing that up. We revised the list of cases where Grid Small is in advantage.
+Thanks for bringing that up. We revised the list of cases where Grid Small shows a notable advantage.
+An advantage is not notable if the median of both methods lays within the box of the other method.
+Therefore, we don't see an advantage for (effect: paper, n_treat = 1000).
 
 > p. 12: It says: “For example, for scenario effect: sigmoid, n_treat = 1000 Grid is superior to BO, but the difference is smaller than 0.25%.” This isn’t true for n_treat = 1000 where the difference between Grid and BO is around 2%, but rather for n_treat = 2000.
 
@@ -75,13 +74,15 @@ Thank you for spotting that mistake.
 
 > p. 12: Apologies but I’m struggling to understand the following sentence: “As intuitively anticipated, in almost all scenarios the worst results were obtained if all available treatments are used in stage 1 and none in stage 2.” How can none of the treatments be used in stage 2 when on p. 8 it is specified that the number of treatments in stage 2 must always be between 2 and 5?
 
-If r=1, then all treatments are done in stage 1. The number of FIXME: formulation total sample size
+If r=1, then all samples of the total number of allowed samples are done in stage 1. 
+Therefore no more treatments can be done in stage 2.
+We improved the wording to make this more clear.
 
 > p. 13: It is stated that: “Note, that the selection strategies thresh and all never selected powerful designs.” Why is that? Presumably, the former is true because the range of numerical values used for the threshold was chosen too narrow, whilst the latter shouldn’t be surprising at all, as it is the only non-adaptive design in the mix.
 
-Maybe threshold is disadvantageous because it looks at the absolute values, which is not that adaptive even with optimization.  
-In our analysis of the results we saw that the optimal thresh values are not close to the border.
+In the analysis of the results we saw that the optimal threshold values are not close to the border.
 This indicates that the ranges are wide enough.
+We assume that the threshold selection is disadvantageous because it looks at the absolute values, which is not that adaptive even with optimization.  
 
 > p. 14: What are the x-values referred to in the caption of Figure 4? No x is introduced in the notation, and Figure 4 itself plots y-values against r-values.
 
@@ -89,41 +90,11 @@ Thanks for spotting this mistake. It is supposed to say theta-values which r is 
 
 > p. 16: The citation of the technical report by Bischl et al. should include a URL if possible.
 
-FIXME
+We added the arxiv id.
 
 ### Typos
 
-> p. 9, l. 20: “in average”, which should read “on average”
-
-Done.
-
-> p. 9, l. 24: “in 8”, which should read “in (8)”
-
-Done.
-
-> p. 9, l. 53 and > p. 10, l. 14: “Mattern”, which should be spelt “Matérn”
-
-Done.
-
-> p. 10, l. 28: “Gird”
-
-Done.
-
-> p. 10, l. 39: “???”
-
-Done.
-
-> p. 12, l. 19: “Gris”
-
-Done.
-
-> p. 13, l. 48f.: remove closing bracket from “500)”
-
-Done.
-
-> p. 14, l. 55: “which conflicts the goal is to find the optimal” (grammar)
-
-Done.
+We corrected all spotted typos. Thank you.
 
 ## Reviewer: 2
 
@@ -132,32 +103,31 @@ Done.
 > The authors propose to use Bayesian optimization (BO) to improve the efficiency of the design selection process in clinical trials. A set of parameters to be chose for the design optimization based on the power. The idea seem novel and could be a useful approach. However, there are several major issues and limitations of proposed methods: for example, power is often only part of measure of choosing design, other factors like study duration, and # of pts are also important. Also, the black-box function relay too much of the various parametric assumption of parameters, which need to be carefully decided to be more related to true clinical trial needs. Overall, I have the following comments for the authors.
 
 We agree that the power is only one measure of choosing a design.
-Therefore, the idea behind our method is that you are able to quickly find out which power you can achieve given the other fixed factors like total sample size or number of treatments #FIXME.
+Therefore, the idea behind our method is that you are able to quickly find out which power you can achieve given the other fixed factors such as total sample size (and therefore the number of patients).
 Quickly obtaining the best possible performance for a specific design choice will also help decision makers to decide how to choose the design.
---> Tim Friede (assumption of parameters, true clinical trial needs)
---> We added in the outlook:  (chater) length of the study
+We added study duration as a possible limitation in our conclusion and made sure that the limitations of our approach are mentioned more clearly.
+Assuming certain parameters under the null hypothesis is a standard approach.
+However, we see that a more Bayesian approach is certainly interesting, as we already stated in the last paragraph of the discussion.
 
 ### Major comments:
 
 > In page 7 table 1, the effect size scenarios presented seem always assume 2nd stage effect size are higher than stage 1? The authors should also evaluate the vice visa situation, and consistent effect size case in simulation.
 
 In the table the effects for the second stage (final) are smaller then for the fist stage (early) which is in line with most realistic scenarios.
---> Often Realisitic scenario, also for the motivating example: First stage, second stage ...
---> Tim
-Early outcome overoptimistic and therefore higher.
-This is a typical scenario.
+Typically the early outcome is overoptimistic and therefore higher.
+This is a realistic scenario.
 
 > In page 8 table 2, the selection of “espilon” and “threshold” used in the arm selection should be based on the clinical meaningful cut, I am not sure how practical that they are part of parameters to be optimized? The authors should also evaluate with different setting.
 
---> Argument: Given a simulation setting we optimize the parameters eps and thr. This is independent of the application but of course the clinical application can give hints which simulation settings are adequate
+Given a simulation setting we optimize the parameters eps and thr. This is independent of the application but of course the clinical application can give hints which simulation settings are adequate.
 
 > In section 5.2, the authors keep the total number of pts fixed, which seem not appropriate in practice, as overall power relying several factors, e.g. # of pts, the interim selection rule, stage 1 and stage 2 ratio. Often # of pts is also key goal of optimal design evaluation. I will strongly suggest # of pts should be a parameter in the black-box function, instead of fixing it to a constant value.
 
-If we include the number of patients in the optimization, the optimizer will propose to choose the maximal number of patients because this gives the maximal performance.
-This can be seen as we tried different values of n_treat which equals the number of patients. 
+If we included the number of patients in the optimization, the optimizer will propose to choose the maximal number of patients because this gives the maximal performance.
+This is also indicated in our results, as we tried different values of n_total which equals the number of patients. 
 Here, a higher number always resulted in a higher power.
 As mentioned in the paper, the idea is to run this optimization for different patient sizes, and then to decide which number of patients is required.
-This brings us to the future goal that we mentioned in the discussion: We can include n_treat as another parameter in a multi-criteria setting, where the result would be a Pareto set.
+This brings us to the future goal that we mentioned in the discussion: We can include n_total as another parameter and outcome in a multi-criteria optimisation setting.
 
 > In page 10 table 4, the number of simulation iteration is only 1000, which does not seem sufficient for complex optimization methods proposed by authors. I would suggest at least 5000 should be needed.
 
@@ -173,10 +143,8 @@ However, we think that the relative speed up between the methods adds a meaningf
 
 > Page 13, BO has issue to find optimal value when one parameters closer to the borders of search space. This is concerning and confirm the limitation of using too many assumptions for optimization, e.g. appropriate parameters range. I am not sure taking log-transform could solve this problem, could authors elaborate more details on this.  Additional simulation is necessary to confirm this.   
 
---> We actually mentioned the log transformation ourselfes.
-As we mentioned in the final Discussion section of the paper we see this as a matter for a future benchmark to further improve the performance of BO.
-The aim of this paper was benchmark the BO approach in a basic setting without the prior knowledge, that small values of r are of higher importance.
-
+As we mentioned in the final discussion section of the paper, we see this as a matter for a future benchmark to further improve the performance of BO.
+The aim of this paper was to benchmark BO in a basic setting without the prior knowledge, that small values of r are of higher importance.
 
 > Given authors used COPD trial as motivating example, I would strongly suggest to add section of case study for the illustration of proposed methods.
 
