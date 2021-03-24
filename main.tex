@@ -432,7 +432,7 @@ Exploitation is achieved by assigning high values to areas of $\theta$ where the
 For deterministic functions the expected improvement~\citep{jones_efficient_1998} is arguably the most popular acquisition function.
 
 The expected improvement, as well as other acquisition functions, are derived under the assumption that at each point $\theta \in \Theta$ the posterior of the function outcome follows a normal distribution.
-The standard Gaussian process regression, that is often used as surrogate, models the posterior as a Gaussian with the parameters $\hat{\mu}$ and $\sigma^2$ under the assumption that $f$ is a realization of a Gaussian process.
+The standard Gaussian process regression, that is often used as surrogate, models the posterior as a Gaussian with the parameters $\hat{\mu}$ and $s^2(\theta)$ under the assumption that $f$ is a realization of a Gaussian process.
 In practice, this assumption often cannot be verified.
 However, benchmarks show that the approach nevertheless works reliable for many practical problems~\citep{bischl_mlrmbo_2017,snoek_practical_2012}.
 
@@ -651,7 +651,7 @@ Note, that this trick only works because we did not scale the input variables to
 With the above steps we ensure that the input for the Kriging is purely numeric.
 
 As an acquisition function we choose the $\operatorname{AEI}$ as explained in Section~\ref{sec:bayesian_optimization}.
-We start BO with an initial design of $16$ randomly sampled points, following an established rule-of-thumb of $4$ points per dimension, which is also well in line with the recommendation of using around $10\%$ of your budget for the initial design~\cite{bossek_initial_2020}.
+We start BO with an initial design of $16$ randomly sampled points, following an established rule-of-thumb of $4$ points per dimension, which is also well in line with the recommendation of using around $10\%$ of the budget for the initial design~\cite{bossek_initial_2020}.
 We allow $100$ further iterations, summing up to a total budget of $116$ evaluated configurations of the simulator $\tilde{f}$.
 
 At the end of the optimization procedure, the best configuration is chosen according to the best prediction obtained on the set of evaluated points as explained in Section~\ref{ssec:best_point}.
@@ -826,6 +826,7 @@ For the exhaustive \emph{Grid}, we expect that the decreased noise leads to fewe
 \emph{BO} should profit as well from a less noisy objective function since the predictions of the surrogate function will be more precise.
 
 Figure~\ref{fig:plot_opt_path_5000} shows that indeed the lower noise level leads to more stable simulation runs, meaning that single optimization runs lead to results closer to the mean result.
+Both curves indicate, that more iterations of \emph{BO} would not yield substantially better outcomes as the progress is stagnating after 80 iterations.
 It has to be noted that this plot reports the best observed outcome so far and not the one that is chosen as final result.
 %So on the left side of Figure~\ref{fig:plot_opt_path_5000}, we see more curves that observed overoptimistic outcomes in comparison the the right side.
 %Ideally, the choice of the final point should not be influenced by these overoptimistic observations for \emph{BO} as explained in Section~\ref{ssec:best_point}, as the final point is determined by the surrogates mean prediction.
