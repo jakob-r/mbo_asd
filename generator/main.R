@@ -90,10 +90,11 @@ names(effect_labels) = effect_labels = c("linear", "paper", "paper2", "sigmoid")
 ## ----table_effect_names-------------------------------------------------------
 tmp = lapply(EFFECTS, do.call, what = rbind)
 tmp = lapply(tmp, function(x) cbind.data.frame(stage = rownames(x), x))
+tmp = lapply(tmp, function(x) {colnames(x) = c("stage", seq_len(ncol(x)-1)-1); x}) # colnames start at 0
 tmp = rbindlist(tmp, idcol = TRUE)
 setnames(tmp, ".id", "Effect Set")
 setnames(tmp, "stage", "Stage")
-kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation in the first (early) and second (final) stage") %>% 
+kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation in the first (early) and second (final) stage", label = "table_effect_names") %>% 
   collapse_rows(columns = 1:2, latex_hline = "major") %>% 
   add_header_above(c(" " = 2, "Treatment" = 5)) %>% 
   kable_styling(position = "center") %>% 
@@ -458,7 +459,7 @@ df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, 
 res_ave_mbo = get_res_mbo()[, list(mean_y = mean(y)), by = algo.par.names.meta]
 df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, select = algorithm)], fill = TRUE)
 setkey(df, effect, n_cases, mean_y)
-knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = FALSE, digits = 3) %>% # linesep = c(rep("",4), "\\addlinespace") 
+knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = FALSE, digits = 3, label = "table_best") %>% # linesep = c(rep("",4), "\\addlinespace") 
   kable_styling(position = "center", font_size = FNT_SMALL) %>% 
   collapse_rows(1:2, latex_hline = "custom", custom_latex_hline = 1:2) %>% 
   kable_to_text("table_best")
@@ -478,7 +479,8 @@ kable(tmp2,
   booktabs = TRUE, 
   col.names = c("", as.character(tmp[algorithm == "mbo"]$n_cases), "\\emph{evals}"),
   caption = "Average runtime in hours, for evaluating one grid and one optimization run of MBO",
-  escape = FALSE
+  escape = FALSE,
+  label = "table_time"
 ) %>% 
   add_header_above(c(" " = 1, table(tmp$effect)/3, " " = 1)) %>% 
   kable_styling(position = "center", latex_options = "scale_down") %>% 

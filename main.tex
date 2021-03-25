@@ -680,8 +680,6 @@ Here, the rejection of one or both of the hypotheses that treatment 3 or 4 has n
 Note that the parameter \texttt{nsim} denotes the internal simulation iterations of $f$. 
 The 20 additional stochastic repetitions we conduct for the \emph{grid search} and \emph{BO} are additional replicates.
 
-% (TODO Not sure what ptest that means)  %jeweils Elementarhypothese 3, 4 verwerfen, genau da gucken wir drauf!
-
 \begin{table}[h]
   \caption{Parameter choices for the R function \texttt{treatsel.sim}}
   \label{tab:par_implement}
@@ -877,11 +875,6 @@ One main goal is to maximize the test power, given a set of treatments with corr
 If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
 Either large computational resources are required for an exhaustive investigation of all the different configurations, or a tedious manual trial-and-error process is required.
 
-%% FIXME: Do we really take in this Assurance?
-% Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
-% could be also applied for subgroup selection?
-% https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8797
-
 In this paper we analyzed if BO can quickly find an adaptive seamless design with high power, more efficiently than an exhaustive grid search.
 For various sets of treatment effect sizes and total sample sizes, BO was able to find competitive designs in a fraction of the time.
 In contrast to grid search, BO was able to account for stochasticity in the metric that should be optimized.
@@ -897,6 +890,10 @@ The user could then see for which number of trials the power is above a certain 
 Another way to speed up the optimization would be to iteratively increase the number of simulation rounds of the trial design evaluation. 
 If few simulations already indicate a bad outcome for a configuration then additional simulation rounds are not necessary.
 Such a procedure can be guided by statistical testing and is already common in machine learning under the terms \emph{racing} or \emph{multi-fidelity optimization}.
+
+% Assurance: \cite{stallard_optimal_2009} in diskussion abhandeln
+% could be also applied for subgroup selection?
+% https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8797
 
 In this work we assumed the effect sizes to be fixed. % under the null hypothesis.
 In~\citet{stallard_optimal_2009} the authors propose a Bayesian approach, where the effect sizes follow a prior, to calculate the expected trial performance.
