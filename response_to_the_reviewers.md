@@ -1,6 +1,6 @@
 ---
-title: Test
-author: Author Name
+title: Response to the Reviewers
+author: Jakob Richter
 header-includes: |
   \usepackage{framed}
   \newlength{\leftbarwidth}
@@ -40,7 +40,7 @@ This is a well organised and written manuscript, describing a very thorough inve
 Reference: Senn S, Bretz F (2007) Power and sample size when multiple endpoints are considered. Pharmaceutical Statistics, 6(3), 161-170.
 
 > As in the original paper (Friede et. al. 2020) in which our motivating example was introduced, we count the rejections of any of the hypotheses 3 or 4 for calculating the power.
-> We now clearly state this in the paper and also clarify that there are different options and it is up to the user to determine the method of how the power is calculated.
+> We now clearly state this in the paper and also clarify that there are different options, and it is up to the user to determine the method of how the power is calculated.
 
 2) There is some inconsistent notation:
 
@@ -76,7 +76,7 @@ p. 10: Similarly, how was the number of randomly sampled points (16) for the ini
 
 p. 10: In section 5.4 ten additional stochastic simulations are mentions, which seems in conflict with the 20 additional stochastic simulations mentioned in other parts of the manuscript.
 
-> Thanks, for spotting that mistake. Indeed we use 20 stochastic repetitions.
+> Thanks, for spotting that mistake. Indeed, we use 20 stochastic repetitions.
 
 p. 10: It should be clarified whether the test level of 0.025 is one-sided.
 
@@ -137,7 +137,7 @@ The authors propose to use Bayesian optimization (BO) to improve the efficiency 
 
 In page 7 table 1, the effect size scenarios presented seem always assume 2nd stage effect size are higher than stage 1? The authors should also evaluate the vice visa situation, and consistent effect size case in simulation.
 
-> In the table the effects for the second stage (final) are indeed smaller then for the fist stage (early).
+> In the table the effects for the second stage (final) are indeed smaller than for the fist stage (early).
 > This is a realistic scenario, as often the early outcome is overoptimistic and therefore higher.
 
 In page 8 table 2, the selection of “espilon” and “threshold” used in the arm selection should be based on the clinical meaningful cut, I am not sure how practical that they are part of parameters to be optimized? The authors should also evaluate with different setting.

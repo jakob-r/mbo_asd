@@ -229,15 +229,17 @@ Popular applications include hyper-parameter tuning of machine learning methods~
 Various implementations of BO methods are widely used, such as SMAC~\citep{hutter_sequential_2011}, Spearmint~\citep{snoek_practical_2012}, and BoTorch~\citep{balandat_botorch_2020}.
 For this work we use the implementation in the R-package \texttt{mlrMBO}~\citep{bischl_mlrmbo_2017}.
 This implementation has been successfully used to optimize hyper-parameters of machine learning methods on various tasks~\citep{bischl_mlrmbo_2017, wozniak_candle_2018}, and in the biomedical context it has been applied to optimize model weights~\citep{richter_modelbased_2019,browaeys_nichenet_2020}.
-Also, BO is well suited for multi-criteria optimization.
+Also, BO is well suited for multi-objective optimization.
 Different adaptions of BO exist~\citep{horn_modelbased_2015} that return a set of non-dominated points.
 Many of them are implemented in \texttt{mlrMBO} as well.
-However, in this work we restrict ourselves to single-criterion optimization. 
+However, in this work we restrict ourselves to single-objective optimization. 
+
+Independently of this work, \citet{wilson_efficient_2021} successfully applied multi-objective BO to minimize the number of participants and the number of clusters in a cluster randomized controlled trial under the restriction that the power is above a given threshold.
 
 The remainder of the manuscript is structured as follows.
 In the next section we present as motivating example an application of adaptive seamless designs for chronic obstructive pulmonary disease (COPD).
 In the sections~\ref{sec:adaptive_seamless_designs} and~\ref{sec:bayesian_optimization}, we explain the background on adaptive seamless designs (asd) and Bayesian optimization (BO), respectively.
-In section~\ref{sec:simulation_study}, we present a simulation study that is closely related to the motivating example and in which the suitability of BO for optimizing trial designs is demonstrated.
+In Section~\ref{sec:simulation_study}, we present a simulation study that is closely related to the motivating example and in which the suitability of BO for optimizing trial designs is demonstrated.
 In the last Section~\ref{sec:discussion}, we discuss promising extensions as well as limitations of the approach.
 
 \section{Motivating Example}
@@ -721,7 +723,7 @@ Below we will see that these scenarios have in common that the optimal configura
 In other cases \emph{BO} yields slightly better results (\emph{effect: paper}, $n_{\text{total}} = 2000$; \emph{effect: paper2}, $n_{\text{total}} = 500$; \emph{effect: sigmoid}, $n_{\text{total}} = 500$).
 Across all scenarios, \emph{BO} and \emph{Grid} perform similarly, although due to its evaluation budget, \emph{BO} is allowed only 116 evaluations as opposed to the 1350 evaluations for \emph{Grid}, when using a resolution of 25 points per dimension.
 The difference in the number of evaluations is clearly reflected in the average runtime of the optimization methods given in Table~\ref{tab:table_time}.
-Runtimes were measured on a single core of a compute node with 2 Intel Xeon E5-2697v2 (2.70 GHz) with 12 Cores each and 512 GB of RAM in an non-exclusive usage of the node.
+Runtimes were measured on a single core of a compute node with 2 Intel Xeon E5-2697v2 (2.70 GHz) with 12 Cores each and 512 GB of RAM in a non-exclusive usage of the node.
 \emph{BO} is approximately 20 times faster.
 \input{generated/tables/table_time.tex}
 
@@ -741,11 +743,11 @@ Therefore, any increase in performance of \emph{BO Grid} compared to \emph{BO} i
 
 To compare \emph{BO} with a grid search that takes approximately the same time (see Table~\ref{tab:table_time}) and number of evaluations, we consider \emph{Grid Small}.
 Here, a resolution of 7 points per dimension leads to 126 evaluations, close to 116 allowed evaluations of \emph{BO}, with only a small advantage for \emph{Grid Small}.
-Despite the 10 more evaluations allowed, in the majority of cases \emph{BO} is superior to \emph{Grid Small}, see~Figure~\ref{fig:plot_boxplot_valid_y}.
+Despite the 10 more evaluations allowed, in the majority of cases \emph{BO} is superior to \emph{Grid Small}, see Figure~\ref{fig:plot_boxplot_valid_y}.
 The advantage is particularly apparent for all scenarios with effect set \emph{effect: linear} and for scenario \emph{effect: paper2}, $n_{\text{total}} = 500$.
 Only for the scenarios (\emph{effect: sigmoid}, $n_{\text{total}} = 1000$) and (\emph{effect: sigmoid}, $n_{\text{total}} = 2000$) \emph{Grid Small} has a notable advantage over \emph{BO} and \emph{Grid}.
 In the second case, the absolute differences are negligible and all methods lead to a high power.
-Also for this case, we will later show that the optimal configuration is close to the border of the search space.
+Also, for this case we will later show that the optimal configuration is close to the border of the search space.
 
 As stated above, the high resolution of the exhaustive \emph{Grid} probably leads to the selection of slightly suboptimal configurations close to the optimum due to stochasticity.
 These points are not included in the more coarse grid used by \emph{Grid Small}.
@@ -884,8 +886,8 @@ Therefore, the application of BO to clinical trial design selection in general s
 % subsection Outlook
 Only in cases in which the optimal values of one parameter are close to the lower border, we sometimes observed poor performance of BO.
 Here, a possible improvement can be to apply a log transformation to such parameters. % in the future.
-Further, instead of keeping the total sample size constant, we could apply multi-criteria optimization and include this number as an additional outcome.
-This multi-criteria approach would result in a set of points (a Pareto front) that minimizes the total sample size and at the same time maximize the statistical power of the trial design.
+Further, instead of keeping the total sample size constant, we could apply multi-objective optimization and include this number as an additional outcome.
+This multi-objective approach would result in a set of points (a Pareto front) that minimizes the total sample size and at the same time maximize the statistical power of the trial design.
 The user could then see for which number of trials the power is above a certain threshold (e.g. $95\%$).
 Another way to speed up the optimization would be to iteratively increase the number of simulation rounds of the trial design evaluation. 
 If few simulations already indicate a bad outcome for a configuration then additional simulation rounds are not necessary.
