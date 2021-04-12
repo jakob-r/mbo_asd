@@ -233,8 +233,7 @@ Also, BO is well suited for multi-objective optimization.
 Different adaptions of BO exist~\citep{horn_modelbased_2015} that return a set of non-dominated points.
 Many of them are implemented in \texttt{mlrMBO} as well.
 However, in this work we restrict ourselves to single-objective optimization. 
-
-Independently of this work, \citet{wilson_efficient_2021} successfully applied multi-objective BO to minimize the number of participants and the number of clusters in a cluster randomized controlled trial under the restriction that the power is above a given threshold.
+Independently of this work, for instance, \citet{wilson_efficient_2021} successfully applied multi-objective BO to minimize the number of participants and the number of clusters in a cluster randomized controlled trial under the restriction that the power is above a given threshold.
 
 The remainder of the manuscript is structured as follows.
 In the next section we present as motivating example an application of adaptive seamless designs for chronic obstructive pulmonary disease (COPD).
@@ -250,7 +249,7 @@ As an example, we consider the maximization of the statistical power of a trial 
 We compare the computation time as well as the maximal obtained power between the results obtained with BO and with an exhaustive grid search over the space of adjustable parameters.
 The presented optimization approach can also be applied for optimizing other metrics than the power, as long as the metric itself is numeric and the parameters of the trial design are numeric and include none or just few categorical choices.
 
-One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd} package~\citep{parsons_software_2011} and described in Section~\ref{sec:adaptive_seamless_designs}.
+One specific trial design that falls into this category are \emph{adaptive seamless designs}~\citep{barnes_integrating_2010} as implemented in the \texttt{asd} package~\citep{parsons_package_2012} and described in Section~\ref{sec:adaptive_seamless_designs}.
 %(What is THE asd paper? peter bauer, meinter kieser, 1999 statistics in medicine, % https://doi.org/10.1002/(SICI)1097-0258(19990730)18:14%3C1833::AID-SIM221%3E3.0.CO;2-3, )  bauer_combining_1999
 % https://doi.org/10.1002/bimj.200510232 bretz_confirmatory_2006 
 % seamless trials (assoziert) 
@@ -399,7 +398,7 @@ The performance measures (sometimes also referred to as metrics) in the context 
 %\label{ssec:simulating_asd}
 
 The evaluation of some performance measures requires Monte Carlo simulations, since no closed form solutions are available. 
-The R-package \texttt{asd} by~\citet{parsons_software_2011} can be used for such simulations.
+The R-package \texttt{asd} by~\citet{parsons_package_2012} can be used for such simulations.
 As it generates test statistics, following multivariate normal distributions, it is applicable to a wide range of outcomes, at least approximately, and generally more efficient in comparison to simulating individual participant data.
 The simulation model was described in more detail by \citet{friede_adaptive_2020}. 
 It features selection at interim based on early as well as final outcomes.
@@ -433,7 +432,7 @@ The acquisition function achieves exploration by assigning high values to areas 
 Exploitation is achieved by assigning high values to areas of $\theta$ where the surrogate predicts a high outcome of $f$.
 For deterministic functions the expected improvement~\citep{jones_efficient_1998} is arguably the most popular acquisition function.
 
-The expected improvement, as well as other acquisition functions, are derived under the assumption that at each point $\theta \in \Theta$ the posterior of the function outcome follows a normal distribution.
+The expected improvement as well as other acquisition functions are derived under the assumption that at each point $\theta \in \Theta$ the posterior of the function outcome follows a normal distribution.
 The standard Gaussian process regression, that is often used as surrogate, models the posterior as a Gaussian with the parameters $\hat{\mu}$ and $s^2(\theta)$ under the assumption that $f$ is a realization of a Gaussian process.
 In practice, this assumption often cannot be verified.
 However, benchmarks show that the approach nevertheless works reliable for many practical problems~\citep{bischl_mlrmbo_2017,snoek_practical_2012}.
@@ -483,7 +482,7 @@ The goal of this simulation study is to investigate the potential benefit of BO 
 The analysis is motivated by the clinical example with COPD patients introduced in Section~\ref{sec:motivating_example}, with treatment selection in the first of two stages.
 In the first stage five arms (defined by the control and four different administered doses) are considered, and in the second stage only a selected subset of arms is kept for further evaluation. 
 The metric to be optimized is the statistical power, where a positive outcome means a trial arm with true effect is detected as significant effect.
-Depending on the application the power can be calculated as the rate of rightfully rejecting any, all, or a subset of the elementary hypotheses~\citet{senn_power_2007}.
+Depending on the application the power can be calculated as the proportion of correctly rejecting any, all, or a subset of the elementary hypotheses~\citep{senn_power_2007}.
 
 \subsection{Clinical trial design and parameters}
 \label{subsec:design}
@@ -626,7 +625,7 @@ with a total of $4 \cdot 25 + 2 \cdot 25 \cdot 25 = 1350$ design configurations 
 We chose $l=25$ generously to obtain an estimate of the optimum that should be close to the true optimum.
 Previous studies used half the resolution to assess the behavior of similar problems~\citep{friede_adaptive_2020}.
 We define \textbf{Grid Small} to be a subset of this grid with $l=7$ points per dimension, resulting in $4 \cdot 7 + 2 \cdot 7 \cdot 7 = 126$.
-This gives a number of evaluations that can be easily carried out in practice.
+This results in a number of evaluations that can be easily carried out in practice.
 
 Both grids are evaluated with 20 stochastic replications to estimate the variance of the estimated power.
 
@@ -653,7 +652,7 @@ Note, that this trick only works because we did not scale the input variables to
 With the above steps we ensure that the input for the Kriging is purely numeric.
 
 As an acquisition function we choose the $\operatorname{AEI}$ as explained in Section~\ref{sec:bayesian_optimization}.
-We start BO with an initial design of $16$ randomly sampled points, following an established rule-of-thumb of $4$ points per dimension, which is also well in line with the recommendation of using around $10\%$ of the budget for the initial design~\cite{bossek_initial_2020}.
+We start BO with an initial design of $16$ randomly sampled points, following an established rule-of-thumb of $4$ points per dimension, which is also well in line with the recommendation of using around $10\%$ of the budget for the initial design~\citep{bossek_initial_2020}.
 We allow $100$ further iterations, summing up to a total budget of $116$ evaluated configurations of the simulator $\tilde{f}$.
 
 At the end of the optimization procedure, the best configuration is chosen according to the best prediction obtained on the set of evaluated points as explained in Section~\ref{ssec:best_point}.
@@ -674,10 +673,10 @@ Summing up, there are two factors that can prevent \emph{Grid} from finding the 
 
 The algorithms used in this study are implemented in R.
 For the Bayesian optimization, the R-package \texttt{mlrMBO}~\citep{bischl_mlrmbo_2017} is used.
-For the simulation of clinical trials, the function \texttt{treatsel.sim} of the R-package \texttt{asd}~\citep{parsons_software_2011} is used, with parameter values given in Table~\ref{tab:par_implement}.
+For the simulation of clinical trials, the function \texttt{treatsel.sim} of the R-package \texttt{asd}~\citep{parsons_package_2012} is used, with parameter values given in Table~\ref{tab:par_implement}.
 %The vector of treatment numbers for determining power \texttt{ptest} counts rejections of treat3 or 4 hypotheses. %???
 The vector of treatment numbers \texttt{ptest} determines the hypotheses for which rejections are counted towards the power.
-Here, the rejection of one or both of the hypotheses that treatment 3 or 4 has no significant effect against the control determines the power, as in~\citet{friede_adaptive_2020}.
+Here, the rejection of one or both of the hypotheses that treatment 3 or 4 has no effect against the control determines the power, as in~\citet{friede_adaptive_2020}.
 
 Note that the parameter \texttt{nsim} denotes the internal simulation iterations of $f$. 
 The 20 additional stochastic repetitions we conduct for the \emph{grid search} and \emph{BO} are additional replicates.
@@ -826,7 +825,7 @@ For the exhaustive \emph{Grid}, we expect that the decreased noise leads to fewe
 \emph{BO} should profit as well from a less noisy objective function since the predictions of the surrogate function will be more precise.
 
 Figure~\ref{fig:plot_opt_path_5000} shows that indeed the lower noise level leads to more stable simulation runs, meaning that single optimization runs lead to results closer to the mean result.
-Both curves indicate, that more iterations of \emph{BO} would not yield substantially better outcomes as the progress is stagnating after 80 iterations.
+Both curves indicate, that more iterations of \emph{BO} would not yield substantially better outcomes as no substantial improvements are observed after 80 iterations
 It has to be noted that this plot reports the best observed outcome so far and not the one that is chosen as final result.
 %So on the left side of Figure~\ref{fig:plot_opt_path_5000}, we see more curves that observed overoptimistic outcomes in comparison the the right side.
 %Ideally, the choice of the final point should not be influenced by these overoptimistic observations for \emph{BO} as explained in Section~\ref{ssec:best_point}, as the final point is determined by the surrogates mean prediction.
@@ -873,7 +872,8 @@ In summary, \emph{BO} can find configurations with a small number of required si
 Bayesian optimization (BO) is a state-of-the art optimizer that can be used for parameter optimization in a wide range of applications.
 Here, we propose, for the first time, to optimize the power of adaptive seamless designs using BO.
 In clinical trials, determining the test methods and sample sizes is a key step in the planning process.
-One main goal is to maximize the test power, given a set of treatments with corresponding effect sizes and a fixed number of samples.
+For our optimization we chose to maximize the test power, given a set of treatments with corresponding effect sizes and a fixed number of samples.
+%FIXME: TF: Sollten wir hier nochmal explizit auf alternative objectives wie study duration eingehen?
 If determining the test power involves intensive simulations, trying out different treatment design configurations can become a laborious task.
 Either large computational resources are required for an exhaustive investigation of all the different configurations, or a tedious manual trial-and-error process is required.
 
@@ -881,14 +881,18 @@ In this paper we analyzed if BO can quickly find an adaptive seamless design wit
 For various sets of treatment effect sizes and total sample sizes, BO was able to find competitive designs in a fraction of the time.
 In contrast to grid search, BO was able to account for stochasticity in the metric that should be optimized.
 %In addition to results in other research fields, our results underline that BO is a powerful method for finding optimal configurations for problems that fit the black-box definition.
-Therefore, the application of BO to clinical trial design selection in general seems promising. The same concept could be applied for subgroup selection in adaptive enrichment designs, which make use of interim data in selecting the target population for the remainder of the trial~\citep{burnett_adaptive_2020}.
+Therefore, the application of BO to clinical trial design selection in general seems promising. 
+The same concept could be applied for subgroup selection in adaptive enrichment designs, which make use of interim data in selecting the target population for the remainder of the trial~\citep{burnett_adaptive_2020}.
 
 % subsection Outlook
 Only in cases in which the optimal values of one parameter are close to the lower border, we sometimes observed poor performance of BO.
 Here, a possible improvement can be to apply a log transformation to such parameters. % in the future.
-Further, instead of keeping the total sample size constant, we could apply multi-objective optimization and include this number as an additional outcome.
-This multi-objective approach would result in a set of points (a Pareto front) that minimizes the total sample size and at the same time maximize the statistical power of the trial design.
-The user could then see for which number of trials the power is above a certain threshold (e.g. $95\%$).
+We chose to maximize the power for a fixed number of samples.
+Other aspects like study duration or the cost of a trial in general could be of interest either as an additional constraint or an additional outcome.
+Also the number of samples can be included as an additional outcome instead of being fixed.
+Multiple outcomes that are subject to optimization give a (possibly restricted) multi-objective optimization problem.
+The result of which is a set of points (a Pareto front) that maximizes the statistical power and e.g. minimizes the total sample size at the same time.
+The user could then see for which sample size the power is above a certain threshold (e.g. $95\%$).
 Another way to speed up the optimization would be to iteratively increase the number of simulation rounds of the trial design evaluation. 
 If few simulations already indicate a bad outcome for a configuration then additional simulation rounds are not necessary.
 Such a procedure can be guided by statistical testing and is already common in machine learning under the terms \emph{racing} or \emph{multi-fidelity optimization}.
