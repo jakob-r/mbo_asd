@@ -2,13 +2,20 @@ view:
 	open main.pdf
 
 all: plots pdf
-.PHONY: all
+.PHONY: all arxiv
 
 plots:
 	cd generator; Rscript main.R
 
 pdf:
 	latexmk -pdf main.tex
+
+arxiv:
+	## cp main.tex arxiv
+	cp -r generated arxiv
+	rm arxiv/generated/README.txt
+	cp literature_zotero.bib arxiv
+	cd arxiv & latexmk -pdf main.tex	
 
 diff:
 	latexdiff-vc --disable-citation-markup --flatten --git --force -r 0e43d77a834beb75ea01cecf8c5726061867b520 main.tex ## needs manual labour: remove bib and put normal bib command + figure captions
