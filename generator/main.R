@@ -60,10 +60,12 @@ EFFECTS = list(
   # saturation = {x = c(0,5,7,7.8,8)/10; list(early = x, final = x/4)},
   sigmoid = {x = c(0,1,2,7,8)/10; list(early = x, final = x/4)}, #yes
   # paper_mod = list(early = c(0,0.68,0.82,0.93,0.93), final = c(0,0.13,0.17,0.23,0.20)), 
-  paper2 = list(early = c(0,0.68,0.82,0.95,0.91), final = 2*c(0,0.13,0.17,0.23,0.20)) #yes
+  paper2 = list(early = c(0,0.68,0.82,0.95,0.91), final = 2*c(0,0.13,0.17,0.23,0.20)), #yes
   # paper_mod2 = list(early = c(0,0.68,0.82,0.93,0.93), final = 2*c(0,0.13,0.17,0.23,0.20))
+  paper_rev = list(early = c(0,0.13,0.17,0.23,0.20), final = c(0,0.68,0.82,0.95,0.91))
 )
 effect_names = setNames(names(EFFECTS), names(EFFECTS)) #to be populated with better names
+main_effect_names = names(EFFECTS)[1:4]
 
 select_labels = c("0" = "all", "1" = "1 best", "2" = "2 best", "3" = "3 best", "4" = "epsilon rule", "5" = "random", "6" = "threshold rule")
 select_labels_colors = #http://paletton.com/#uid=74Z140kqdu7ghF3lowyu1ppwGk7
@@ -88,7 +90,7 @@ names(effect_labels) = effect_labels = c("linear", "paper", "paper2", "sigmoid")
 
 
 ## ----table_effect_names-------------------------------------------------------
-tmp = lapply(EFFECTS, do.call, what = rbind)
+tmp = lapply(EFFECTS[main_effect_names], do.call, what = rbind)
 tmp = lapply(tmp, function(x) cbind.data.frame(stage = rownames(x), x))
 tmp = lapply(tmp, function(x) {colnames(x) = c("stage", seq_len(ncol(x)-1)-1); x}) # colnames start at 0
 tmp = rbindlist(tmp, idcol = TRUE)
@@ -101,7 +103,7 @@ kable(tmp, booktabs = TRUE, caption = "Effect sizes used for simulation in the f
   kable_to_text("table_effect_names")
 
 ## ----read_data----------------------------------------------------------------
-read_results_uncached = function(select_labels, case = "default") {
+read_results_uncached = function(select_labels, case = "default", effect_names = main_effect_names) {
   if (case == "default") {
     case_selector = quote(nsim == 1000 & repl <= 20)
   } else if (case == "nsim") {
@@ -122,7 +124,7 @@ read_results_uncached = function(select_labels, case = "default") {
   
   res_eval = read_res_eval()
   res_eval = res_eval[,.(job.id, y, stage_1_arms, stage_1_n, stage_2_arms, stage_2_n, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
-  res_eval = res_eval[map_chr(algo.pars, "effect") %in% names(EFFECTS),]
+  res_eval = res_eval[map_chr(algo.pars, "effect") %in% effect_names,]
 
   algo.par.names = c("algorithm", names(res_eval$algo.pars[[1]]))
   algo.par.names.meta = c("algorithm", "effect", "corr", "nsim", "n_cases")
@@ -134,7 +136,7 @@ read_results_uncached = function(select_labels, case = "default") {
 
   res_mbo = read_res_mbo()
   res_mbo = res_mbo[,.(job.id, result, repl, problem, prob.pars, algorithm, algo.pars, time.running)]
-  res_mbo = res_mbo[map_chr(algo.pars, "effect") %in% names(EFFECTS),]
+  res_mbo = res_mbo[map_chr(algo.pars, "effect") %in% effect_names,]
   res_mbo = unnest(res_mbo, cols = c("result", "prob.pars", "algo.pars"))
   res_mbo = res_mbo[eval(case_selector),]
   
@@ -233,31 +235,31 @@ algo.par.names.meta = tmp$algo.par.names.meta
 algo.par.names.optim = tmp$algo.par.names.optim
 max_dob = tmp$max_dob
 
-get_res_grid = function(case = "default") {
-  read_results(select_labels, case)$res_grid
+get_res_grid = function(case = "default", ...) {
+  read_results(select_labels, case, ...)$res_grid
 }
 
-get_res_grid7 = function(case = "default") {
-  read_results(select_labels, case)$res_grid7
+get_res_grid7 = function(case = "default", ...) {
+  read_results(select_labels, case, ...)$res_grid7
 }
 
-get_res_mbo = function(case = "default") {
-  read_results(select_labels, case)$res_mbo
+get_res_mbo = function(case = "default", ...) {
+  read_results(select_labels, case, ...)$res_mbo
 }
 
-get_res_eval = function(case = "default") {
-  read_results(select_labels, case)$res_eval
+get_res_eval = function(case = "default", ...) {
+  read_results(select_labels, case, ...)$res_eval
 }
 
-get_res_mbogrid = function(case = "default") {
-  tmp_mbogrid = get_res_mbo(case = case)
+get_res_mbogrid = function(case = "default", ...) {
+  tmp_mbogrid = get_res_mbo(case = case, ...)
   tmp_mbogrid[, algorithm := "mbo grid"]
   tmp_mbogrid[, y_valid := NULL]
   setnames(tmp_mbogrid, "y_grid", "y_valid")
 }
 
-get_res_eval_average = function(case = "default") {
-  get_res_eval(case = case)[, list(mean_y = mean(y)), by = algo.par.names]
+get_res_eval_average = function(case = "default", ...) {
+  get_res_eval(case = case, ...)[, list(mean_y = mean(y)), by = algo.par.names]
 }
 
 ## ----put_ext_eval_mbo_results, eval = FALSE-----------------------------------
@@ -273,7 +275,6 @@ get_res_eval_average = function(case = "default") {
 ## })]
 ## res_mbo[, y - y_tuning]
 
-
 ## ----plot_allbest, fig.height = 1.5 * FIG_HEIGHT------------------------------
 # find best performing solution for each select methods and across all epsilon and threshold choices
 plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
@@ -285,6 +286,27 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   dfmean = df[, lapply(.SD, mean),by = c(algo.par.names), .SDcols = c("y", "stage_1_arms", "stage_1_n")] #stage_1_n can vary a little
   g = ggplot(df, aes(x = (stage_1_arms * stage_1_n), y = y, color = select, group = paste(select, epsilon, thresh)))
   g = g + geom_point(aes(size = algorithm, shape = algorithm), data = get_res_mbo(), shape = 16)
+  g = g + geom_line(data = dfmean)
+  g = g + geom_point(aes(size = algorithm, shape = algorithm), alpha = 0.15, shape = 16)
+  g = g + scale_color_manual(values = select_labels_colors)
+  g = g + scale_size_manual(labels = algorithm_labels[c("mbo" ,"eval")], values = c("mbo" = 2, "eval" = 0.5))
+  g = g + facet_grid(effect~n_cases, scales = "free", labeller = label_bquote(cols = {n[total]==.(n_cases)}))
+  g = g + labs(x = expression(k[1] %.% n[stage1]))
+  g = g + theme(legend.position = "bottom")
+  g
+})
+
+## ----plot_appendix_allbest_paper_rev------------------------------
+# find best performing solution for each select methods and across all epsilon and threshold choices
+plot_wrapper(name = "plot_appendix_allbest_paper_rev", fig.height = FIG_HEIGHT, expr = {
+  res_ave = get_res_eval_average(effect_names = c("paper", "paper_rev"))
+  res_best = res_ave[, .SD[order(-mean_y)[1], ], by = c("select", algo.par.names.meta)]
+  res_best = res_best[, !c("mean_y", "stage_ratio")]
+  # merge so the plot only contains the best curves (applies for epsilon and threshold rule)
+  df = merge(get_res_eval(effect_names = c("paper", "paper_rev")), res_best, all.x = FALSE, all.y = TRUE, by = colnames(res_best))
+  dfmean = df[, lapply(.SD, mean),by = c(algo.par.names), .SDcols = c("y", "stage_1_arms", "stage_1_n")] #stage_1_n can vary a little
+  g = ggplot(df, aes(x = (stage_1_arms * stage_1_n), y = y, color = select, group = paste(select, epsilon, thresh)))
+  g = g + geom_point(aes(size = algorithm, shape = algorithm), data = get_res_mbo(effect_names = c("paper", "paper_rev")), shape = 16)
   g = g + geom_line(data = dfmean)
   g = g + geom_point(aes(size = algorithm, shape = algorithm), alpha = 0.15, shape = 16)
   g = g + scale_color_manual(values = select_labels_colors)
@@ -327,6 +349,33 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,5,5,3))
 })
 
+## ----plot_appendix_best_x_paper_rev -----------------------------------
+# find best from grid 
+#g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
+plot_wrapper(name = "plot_appendix_best_x_paper_rev", fig.height = FIG_HEIGHT, expr = {
+  tmp = get_res_grid(effect_names = c("paper", "paper_rev"))
+  tmp = rbind(tmp, get_res_mbo(effect_names = c("paper", "paper_rev"))[, colnames(tmp), with = FALSE])
+  g = ggplot(data = tmp, aes(x = stage_ratio, y = y_valid, color = select, shape = algorithm))
+  g = g + geom_point(size = 3)
+  g = g + facet_wrap(effect~n_cases, scales = "free", ncol = 3) # labels not used
+  g = g + scale_x_continuous(expand = expansion(mult = 0.2))
+  g = g + scale_y_continuous(expand = expansion(mult = 0.2))
+  g = g + scale_shape_manual(labels = algorithm_labels, values = c("mbo" = 16, "grid" = 21))
+  g = g + scale_color_manual(labels = select_labels, values = select_labels_colors)
+  g = g + labs(x = expression(r), y = expression(y[valid]))
+  g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
+  #grid headlines
+  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[total]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
+  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
+  layout_mat = matrix(c(
+    1, 2, 3, NA,
+    6, 6, 6,  4,
+    6, 6, 6,  5,
+    6, 6, 6, NA
+  ), byrow = TRUE, ncol = 4)
+  grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,3))
+})
+
 
 ## ----plot_opt_path, fig.height = 1.6 * FIG_HEIGHT-----------------------------
 
@@ -358,8 +407,8 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   g = g + labs(x = "iteration", y = expression(y[iter]*"*" - y[grid]*"*"), color = NULL)
   g = g + guides(colour = guide_legend(override.aes = list(size=2)))
   #grid headlines
-  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[total]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
-  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
+  col_heads = lapply(unique(df$n_cases), function(x) bquote(n[total]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
+  row_heads = levels(factor(df$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
     8, 8, 8,  4,
@@ -371,13 +420,13 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,5,5,1.5))
 })
 
-create_boxplot_df = function(case = "default") {
-  tmp = get_res_grid(case = case)
+create_boxplot_df = function(case = "default", ...) {
+  tmp = get_res_grid(case = case, ...)
   rbind(
     tmp, 
-    get_res_grid7(case = case)[, colnames(tmp), with = FALSE],
-    get_res_mbo(case = case)[, colnames(tmp), with = FALSE], 
-    get_res_mbogrid(case = case)[, colnames(tmp), with = FALSE]
+    get_res_grid7(case = case, ...)[, colnames(tmp), with = FALSE],
+    get_res_mbo(case = case, ...)[, colnames(tmp), with = FALSE], 
+    get_res_mbogrid(case = case, ...)[, colnames(tmp), with = FALSE]
   )
 }
 ## ----plot_boxplot_valid_y-----------------------------------------------------
@@ -406,6 +455,21 @@ plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT *
   tmp = create_boxplot_df(case = "nsim")
   g = ggplot(tmp, aes(x = as.factor(nsim), y = y_valid, color = algorithm, fill = algorithm))
   #g = g + facet_grid(.~nsim, scales = "free", labeller = label_both)
+  darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
+  names(darker_colors) = names(algorithm_labels_color)
+  g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
+  g = g + theme(legend.position = "bottom")
+  g = g + geom_boxplot()
+  g = g + labs(x = expression(n[sim]), y = expression(y[valid]), color = NULL, fill = NULL)
+  g = g + guides(fill=guide_legend(nrow=2,byrow=FALSE))
+  g
+})
+
+## ----plot_appendix_boxplot_paper_rev-----------------------------------------------------
+plot_wrapper(name = "plot_appendix_boxplot_paper_rev", fig.height = FIG_HEIGHT * 0.7, fig.width = FIG_WIDTH, expr = {
+  tmp = create_boxplot_df(case = "default", effect_names = c("paper", "paper_rev"))
+  g = ggplot(tmp, aes(x = as.factor(nsim), y = y_valid, color = algorithm, fill = algorithm))
+  g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(.(effect), n[total]==.(n_cases))}))
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
@@ -520,3 +584,20 @@ kable(tmp2,
 ##   by = c(algo.par.names.meta, "repl"),
 ##   .SDcols = c("y", "repl", algo.par.names, "time.running")]
 
+# --- optimal epsilon values ------
+
+plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, expr = {
+  tmp = get_res_eval_average(effect_names = names(EFFECTS))
+  tmp = tmp[select == "epsilon rule",]
+  tmp[, mean_y := BBmisc::normalize(x = mean_y, method = "range"), by = .(effect, n_cases)]
+  best = tmp[, .SD[mean_y == max(mean_y)], by = .(effect, n_cases)]
+  ggplot(tmp, aes(x = stage_ratio, y = epsilon)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white") + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal ϵ values for epsilon rule", y = "ϵ")
+})
+
+plot_wrapper(name = "plot_appendix_opt_thresh", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, expr = {
+  tmp = get_res_eval_average(effect_names = names(EFFECTS))
+  tmp = tmp[select == "threshold rule",]
+  tmp[, mean_y := BBmisc::normalize(x = mean_y, method = "range"), by = .(effect, n_cases)]
+  best = tmp[, .SD[mean_y == max(mean_y)], by = .(effect, n_cases)]
+  ggplot(tmp, aes(x = stage_ratio, y = thresh)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white") + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal τ values for threshold rule", x = "r", y = expression(tau))
+})
