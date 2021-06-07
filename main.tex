@@ -977,9 +977,23 @@ This work was partly supported by Deutsche Forschungsgemeinschaft (DFG) within t
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_opt_path.pdf}
 \caption{%
-  Optimization progress for \emph{BO}: Best outcome found so far for each iteration, in comparison to the best outcome found in the grid search, for all effect sets.
+  Optimization progress for \emph{BO}: Best outcome found so far for each iteration, in comparison to the best outcome found in the grid search, for all effect sets and all values of $n_{\text{total}}$.
 }
 \label{fig:plot_opt_path} 
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\linewidth]{generated/figures/plot_appendix_opt_epsilon.pdf}%
+\includegraphics[width=0.5\linewidth]{generated/figures/plot_appendix_opt_thresh.pdf}
+\caption{%
+  This figure shows the location of the optimal values of $\varepsilon$ and $\tau$ for their respective rules obtained through the \emph{Grid} search, averaged across the 20 stochastic replications.
+  It indicates that the search space for $r$ and $\varepsilon$ or $\tau$ is big enough but that each should be optimized on a $log$-scale.
+  The color indicates the value of $y$, with \emph{red} beeing good.
+  $y$-values are scaled for each single plot and cannot be compared across experiments.
+  The best points are indicated through a white dot.
+}
+\label{fig:plot_opt_eps_thresh} 
 \end{figure}
 
 \end{document}

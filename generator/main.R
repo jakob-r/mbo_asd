@@ -22,13 +22,15 @@ FIG_HEIGHT = 4.5
 FNT_SMALL = 6
 CACHE = cache_filesystem(path = "memoise")
 
-plot_wrapper_uncached = function(name, fig.height = FIG_HEIGHT, fig.width = FIG_WIDTH, expr) {
+plot_wrapper_uncached = function(name, fig.height = FIG_HEIGHT, fig.width = FIG_WIDTH, expr, crop = TRUE) {
   path = paste0("../generated/figures/", name, ".pdf")
   cairo_pdf(filename = path, width = fig.width, height = fig.height, onefile = TRUE)
   print(eval(expr))
   dev.off()
   #browser()
-  knitr::plot_crop(path)
+  if (crop) {
+    knitr::plot_crop(path)
+  }
 }
 plot_wrapper = memoise(plot_wrapper_uncached, cache = CACHE)
 
@@ -377,11 +379,11 @@ plot_wrapper(name = "plot_appendix_best_x_paper_rev", fig.height = FIG_HEIGHT, e
 })
 
 
-## ----plot_opt_path, fig.height = 1.6 * FIG_HEIGHT-----------------------------
+## ---- plot_opt_path -----------------------------
 
 # calculate y perf of mbo runs
 plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
-  df = get_res_mbo()
+  df = get_res_mbo(effect_names = names(EFFECTS))
   common_names = intersect(colnames(df), colnames(df$opt.path[[1]]))
   data.table::setnames(df, common_names, paste0("opt.", common_names))
   df = tidyr::unnest(df, "opt.path")
@@ -389,7 +391,7 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   df = df[prop.type != "final_eval", cummax_y := cummax(y), by = c(algo.par.names.meta, "repl")]
   
   # calculate theoretical best y from grid
-  res_ave = get_res_eval_average()
+  res_ave = get_res_eval_average(effect_names = names(EFFECTS))
   df_best = res_ave[,.SD[order(-mean_y)[1]], by = c("effect", "n_cases", "algorithm")][,.(effect, n_cases, algorithm, best_y = mean_y)]
   df_best[algorithm == "eval", algorithm := "grid"]
   df = merge(df_best[, -"algorithm"], df, by = c("effect", "n_cases"))
@@ -411,13 +413,14 @@ plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
   row_heads = levels(factor(df$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
   layout_mat = matrix(c(
     1, 2, 3, NA,
-    8, 8, 8,  4,
-    8, 8, 8,  5,
-    8, 8, 8,  6,
-    8, 8, 8,  7,
-    8, 8, 8, NA
+    9, 9, 9,  4,
+    9, 9, 9,  5,
+    9, 9, 9,  6,
+    9, 9, 9,  7,
+    9, 9, 9,  8,
+    9, 9, 9, NA
   ), byrow = TRUE, ncol = 4)
-  grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,5,5,1.5))
+  grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,5,5,5,2.5))
 })
 
 create_boxplot_df = function(case = "default", ...) {
@@ -589,7 +592,7 @@ kable(tmp2,
 
 # --- optimal epsilon values ------
 
-plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, expr = {
+plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, crop = FALSE, expr = {
   tmp = get_res_eval_average(effect_names = names(EFFECTS))
   tmp = tmp[select == "epsilon rule",]
   tmp[, mean_y := BBmisc::normalize(x = mean_y, method = "range"), by = .(effect, n_cases)]
@@ -599,7 +602,7 @@ plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, 
 
 # --- optimal tau values ------
 
-plot_wrapper(name = "plot_appendix_opt_thresh", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, expr = {
+plot_wrapper(name = "plot_appendix_opt_thresh", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, crop = FALSE, expr = {
   tmp = get_res_eval_average(effect_names = names(EFFECTS))
   tmp = tmp[select == "threshold rule",]
   tmp[, mean_y := BBmisc::normalize(x = mean_y, method = "range"), by = .(effect, n_cases)]
