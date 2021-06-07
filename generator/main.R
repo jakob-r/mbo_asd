@@ -468,15 +468,15 @@ plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT *
 ## ----plot_appendix_boxplot_paper_rev-----------------------------------------------------
 plot_wrapper(name = "plot_appendix_boxplot_paper_rev", fig.height = FIG_HEIGHT * 0.7, fig.width = FIG_WIDTH, expr = {
   tmp = create_boxplot_df(case = "default", effect_names = c("paper", "paper_rev"))
-  g = ggplot(tmp, aes(x = as.factor(nsim), y = y_valid, color = algorithm, fill = algorithm))
+  g = ggplot(tmp, aes(x = algorithm, y = y_valid, color = algorithm, fill = algorithm))
   g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(.(effect), n[total]==.(n_cases))}))
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
   names(darker_colors) = names(algorithm_labels_color)
   g = g + scale_fill_manual(labels = algorithm_labels, values = algorithm_labels_color) + scale_color_manual(labels = algorithm_labels, values = darker_colors)
-  g = g + theme(legend.position = "bottom")
+  g = g + scale_x_discrete(labels = algorithm_labels)
   g = g + geom_boxplot()
-  g = g + labs(x = expression(n[sim]), y = expression(y[valid]), color = NULL, fill = NULL)
-  g = g + guides(fill=guide_legend(nrow=2,byrow=FALSE))
+  g = g + labs(x = NULL, y = expression(y[valid]), color = NULL, fill = NULL)
+  g = g + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
   g
 })
 
@@ -517,16 +517,19 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
 ## ----table_best---------------------------------------------------------------
 #best of grid
 #FIXME: calculate time of complete grid, devide through 10
-res_ave = get_res_eval_average()
-df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, n_cases, select, stage_ratio, epsilon, mean_y)]
-#mbo average
-res_ave_mbo = get_res_mbo()[, list(mean_y = mean(y)), by = algo.par.names.meta]
-df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, select = algorithm)], fill = TRUE)
-setkey(df, effect, n_cases, mean_y)
-knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = FALSE, digits = 3, label = "table_best") %>% # linesep = c(rep("",4), "\\addlinespace") 
-  kable_styling(position = "center", font_size = FNT_SMALL) %>% 
-  collapse_rows(1:2, latex_hline = "custom", custom_latex_hline = 1:2) %>% 
-  kable_to_text("table_best")
+if (FALSE) { # this table does not make much sense
+  res_ave = get_res_eval_average()
+  df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, n_cases, select, stage_ratio, epsilon, mean_y)]
+  #mbo average
+  res_ave_mbo = get_res_mbo()[, list(mean_y = mean(y)), by = algo.par.names.meta]
+  df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, select = algorithm)], fill = TRUE)
+  setkey(df, effect, n_cases, mean_y)
+  knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = FALSE, digits = 3, label = "table_best") %>% # linesep = c(rep("",4), "\\addlinespace") 
+    kable_styling(position = "center", font_size = FNT_SMALL) %>% 
+    collapse_rows(1:2, latex_hline = "custom", custom_latex_hline = 1:2) %>% 
+    kable_to_text("table_best")  
+}
+
 
 
 ## ----table_time---------------------------------------------------------------
@@ -591,13 +594,15 @@ plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, 
   tmp = tmp[select == "epsilon rule",]
   tmp[, mean_y := BBmisc::normalize(x = mean_y, method = "range"), by = .(effect, n_cases)]
   best = tmp[, .SD[mean_y == max(mean_y)], by = .(effect, n_cases)]
-  ggplot(tmp, aes(x = stage_ratio, y = epsilon)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white") + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal ϵ values for epsilon rule", y = "ϵ")
+  ggplot(tmp, aes(x = stage_ratio, y = epsilon)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white", size = 0.7) + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal ϵ values for epsilon rule", y = "ϵ") + theme(axis.text = element_text(size = 7)) + scale_x_continuous(labels = scales::label_number(drop0trailing = TRUE))
 })
+
+# --- optimal tau values ------
 
 plot_wrapper(name = "plot_appendix_opt_thresh", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, expr = {
   tmp = get_res_eval_average(effect_names = names(EFFECTS))
   tmp = tmp[select == "threshold rule",]
   tmp[, mean_y := BBmisc::normalize(x = mean_y, method = "range"), by = .(effect, n_cases)]
   best = tmp[, .SD[mean_y == max(mean_y)], by = .(effect, n_cases)]
-  ggplot(tmp, aes(x = stage_ratio, y = thresh)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white") + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal τ values for threshold rule", x = "r", y = expression(tau))
+  ggplot(tmp, aes(x = stage_ratio, y = thresh)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white", size = 0.7) + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal τ values for threshold rule", x = "r", y = expression(tau)) + theme(axis.text = element_text(size = 7)) + scale_x_continuous(labels = scales::label_number(drop0trailing = TRUE))
 })
