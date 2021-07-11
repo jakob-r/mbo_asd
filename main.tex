@@ -492,8 +492,11 @@ For the effect set \emph{paper} we use exactly the same numbers as in~\citet{fri
 For the effect set \emph{paper2} the effect sizes for the second stage are doubled.
 As further case we consider a \emph{linear} effect set with effect sizes linear increasing from 20\% to 80\% for the first stage and effect sizes divided by 4 for the second stage as well as a \emph{sigmoid} relationship, again with 4 times larger effect sizes for the first stage.
 These sets reflect different realistic situations.
+A furthet effect set, where the numbers between the early and the final stage are flipped for \emph{paper} is presented in the Appendix.
 
 The strategies for treatment selection for the second stage in the two-phase trial design and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
+Choises for the boundaries of $\epsilon$ and $\tau$ are obtained from preliminary studies and based on the fact that these are thresholds to the absolute ammount of normally distributed random variables.
+Also Figure~\ref{fig:plot_appendix_opt_episolon_thresh} in the Appendix shows that the optimum is within the given boundaries.
 The strategies follow the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}. 
 The $\kappa$-best strategies select the 1, 2, 3 or 4 best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
 The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. 
@@ -881,8 +884,12 @@ In this paper we analyzed if BO can quickly find an adaptive seamless design wit
 For various sets of treatment effect sizes and total sample sizes, BO was able to find competitive designs in a fraction of the time.
 In contrast to grid search, BO was able to account for stochasticity in the metric that should be optimized.
 %In addition to results in other research fields, our results underline that BO is a powerful method for finding optimal configurations for problems that fit the black-box definition.
-Therefore, the application of BO to clinical trial design selection in general seems promising. 
+For our optimization we chose wide intervals for the parameters of the selection rules (i.e. epsilon and threshold rule) to show that BO is generally applicable.
+In practical applications, however, these values might sometimes be based on clinical rather than statistical considerations or the range of these values might be restricted by such considerations.
+In general, the application of BO to clinical trial design selection in general seems promising.
+Additional restrictions on the search space decrease the its size and therefore promise even more reliable results.
 The same concept could be applied for subgroup selection in adaptive enrichment designs, which make use of interim data in selecting the target population for the remainder of the trial~\citep{burnett_adaptive_2020}.
+
 
 % subsection Outlook
 Only in cases in which the optimal values of one parameter are close to the lower border, we sometimes observed poor performance of BO.
@@ -979,7 +986,7 @@ This work was partly supported by Deutsche Forschungsgemeinschaft (DFG) within t
 \caption{%
     Box plots that compares the performance (power) values on the effect set \emph{paper} and \emph{paper\_rev}.
     \emph{paper\_rev} is an additonal scenario, where the effects for the stage \emph{early} and \emph{final} are flipped.
-  In contrast to \emph{paper}, the effect sizes are smaller for the \emph{early} stage.
+  In contrast to \emph{paper}, for \emph{paper\_rev} the effect sizes are smaller for the \emph{early} stage.
 }
 \label{fig:plot_appendix_boxplot_paper_rev} 
 \end{figure}

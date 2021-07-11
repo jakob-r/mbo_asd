@@ -597,7 +597,7 @@ plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, 
   tmp = tmp[select == "epsilon rule",]
   tmp[, mean_y := BBmisc::normalize(x = mean_y, method = "range"), by = .(effect, n_cases)]
   best = tmp[, .SD[mean_y == max(mean_y)], by = .(effect, n_cases)]
-  ggplot(tmp, aes(x = stage_ratio, y = epsilon)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white", size = 0.7) + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal ϵ values for epsilon rule", y = "ϵ") + theme(axis.text = element_text(size = 7)) + scale_x_continuous(labels = scales::label_number(drop0trailing = TRUE))
+  ggplot(tmp, aes(x = stage_ratio, y = epsilon)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white", size = 0.7) + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal ϵ values for epsilon rule", x = "r", y = "ϵ") + theme(axis.text = element_text(size = 7)) + scale_x_continuous(labels = scales::label_number(drop0trailing = TRUE))
 })
 
 # --- optimal tau values ------
