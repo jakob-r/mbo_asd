@@ -480,7 +480,7 @@ Therefore, an independent calculation of $f(\hat{\theta}^\ast)$ should be conduc
 
 The goal of this simulation study is to investigate the potential benefit of BO for efficiently finding a clinical trial design that maximizes a given metric.
 The analysis is motivated by the clinical example with COPD patients introduced in Section~\ref{sec:motivating_example}, with treatment selection in the first of two stages.
-In the first stage five arms (defined by the control and four different administered doses) are considered, and in the second stage only a selected subset of arms is kept for further evaluation. 
+In the first stage, five arms (defined by the control and four different administered doses) are considered, and in the second stage only a selected subset of arms is kept for further evaluation. 
 The metric to be optimized is the statistical power, where a positive outcome means a trial arm with true effect is detected as significant effect.
 Depending on the application the power can be calculated as the proportion of correctly rejecting any, all, or a subset of the elementary hypotheses~\citep{senn_power_2007}.
 
@@ -490,13 +490,15 @@ For the true effect sizes in the simulation, we consider four \emph{effect sets}
 \input{generated/tables/table_effect_names.tex}
 For the effect set \emph{paper} we use exactly the same numbers as in~\citet{friede_adaptive_2020}.
 For the effect set \emph{paper2} the effect sizes for the second stage are doubled.
-As further case we consider a \emph{linear} effect set with effect sizes linear increasing from 20\% to 80\% for the first stage and effect sizes divided by 4 for the second stage as well as a \emph{sigmoid} relationship, again with 4 times larger effect sizes for the first stage.
+As a further case, we consider a \emph{linear} effect set with effect sizes linear increasing from 20\% to 80\% for the first stage and effect sizes divided by 4 for the second stage as well as a \emph{sigmoid} relationship, again with 4 times larger effect sizes for the first stage.
 These sets reflect different realistic situations.
-A further effect set, where the numbers between the early and the final stage are flipped for \emph{paper} is presented in the Appendix.
+Sometimes, there are delayed treatment effects (e.g.\ in the immunotherapy clinical trial setting) where the early effects are smaller than the delayed final effects.
+To include this scenario, we added a further effect set, where the numbers between the early and the final stage of the scenario \emph{paper} are flipped (see Appendix).
+
 
 The strategies for treatment selection for the second stage in the two-phase trial design and their corresponding parameters that are used in the simulation study are given in Table~\ref{tab:selection_strategies} and Table~\ref{tab:search_space}, respectively.
 Choices for the boundaries of $\epsilon$ and $\tau$ are obtained from preliminary studies and based on the fact that these are thresholds to the absolute amount of normally distributed random variables.
-Also Figure~\ref{fig:plot_appendix_opt_episolon_thresh} in the Appendix shows that the optimum is within the given boundaries.
+Also, Figure~\ref{fig:plot_appendix_opt_episolon_thresh} in the Appendix shows that the optimum is within the given boundaries.
 The strategies follow the concept of adaptive seamless designs discussed in Section~\ref{sec:adaptive_seamless_designs}. 
 The $\kappa$-best strategies select the 1, 2, 3 or 4 best strategies according to their respective test statistics in the first stage (with \emph{all} representing all $k=4$ treatments besides the control). 
 The strategies \emph{eps} and \emph{thresh} represent strategies with a flexible number of treatments taken to the second stage. 
@@ -886,8 +888,10 @@ In contrast to grid search, BO was able to account for stochasticity in the metr
 %In addition to results in other research fields, our results underline that BO is a powerful method for finding optimal configurations for problems that fit the black-box definition.
 For our optimization we chose wide intervals for the parameters of the selection rules (i.e. epsilon and threshold rule) to show that BO is generally applicable.
 In practical applications, however, these values might sometimes be based on clinical rather than statistical considerations or the range of these values might be restricted by such considerations.
+Here we consider an optimization problem maximizing the power given a total sample size.
+If, for example, the task was to select all treatments with clinically relevant effect sizes, then clearly the selection parameter needs to be informed by clinical reasoning.
 In general, the application of BO to clinical trial design selection in general seems promising.
-Additional restrictions on the search space decrease the its size and therefore promise even more reliable results.
+Additional restrictions on the search space decrease its size and therefore promise even more reliable results.
 The same concept could be applied for subgroup selection in adaptive enrichment designs, which make use of interim data in selecting the target population for the remainder of the trial~\citep{burnett_adaptive_2020}.
 
 
@@ -984,7 +988,7 @@ This work was partly supported by Deutsche Forschungsgemeinschaft (DFG) within t
 \centering
 \includegraphics[width=\linewidth]{generated/figures/plot_appendix_boxplot_paper_rev.pdf}
 \caption{%
-    Box plots that compares the performance (power) values on the effect set \emph{paper} and \emph{paper\_rev}.
+    Box plots that compare the performance (power) values on the effect set \emph{paper} and \emph{paper\_rev}.
     \emph{paper\_rev} is an additional scenario, where the effects for the stage \emph{early} and \emph{final} are flipped.
   In contrast to \emph{paper}, for \emph{paper\_rev} the effect sizes are smaller for the \emph{early} stage.
 }
