@@ -13,6 +13,7 @@ library(grid)
 library(gridExtra)
 library(memoise)
 
+
 root = rprojroot::find_root(rprojroot::is_git_root)
 setwd(paste0(root,"/generator"))
 
@@ -321,15 +322,13 @@ plot_wrapper(name = "plot_appendix_allbest_paper_rev", fig.height = FIG_HEIGHT, 
 
 
 ## ----plot_best_x, fig.height=1.5*FIG_HEIGHT-----------------------------------
+# Figure 4
 # find best from grid 
-#g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
 plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   tmp = get_res_grid()
   tmp = rbind(tmp, get_res_mbo()[, colnames(tmp), with = FALSE])
   g = ggplot(data = tmp, aes(x = stage_ratio, y = y_valid, color = select, shape = algorithm))
   g = g + geom_point(size = 3)
-  #g = g + geom_text(data = res_mbo[nsim == 1000 & repl <= 10 & select == "epsilon rule", ], aes(label = round(epsilon,2)), hjust = 0, vjust = 1, show.legend = FALSE)
-  #g = g + geom_text(data = res_mbo[nsim == 1000 & repl <= 10 & select == "threshold rule", ], aes(label = round(thresh,2)), hjust = 0, vjust = 1, show.legend = FALSE)
   g = g + facet_wrap(effect~n_cases, scales = "free", ncol = 3) # labels not used
   g = g + scale_x_continuous(expand = expansion(mult = 0.2))
   g = g + scale_y_continuous(expand = expansion(mult = 0.2))
@@ -353,7 +352,6 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
 
 ## ----plot_appendix_best_x_paper_rev -----------------------------------
 # find best from grid 
-#g = ggplot(data = res_mbo, aes(x = (stage_1_arms * stage_1_n), y = y, color = select))
 plot_wrapper(name = "plot_appendix_best_x_paper_rev", fig.height = FIG_HEIGHT, expr = {
   tmp = get_res_grid(effect_names = c("paper", "paper_rev"))
   tmp = rbind(tmp, get_res_mbo(effect_names = c("paper", "paper_rev"))[, colnames(tmp), with = FALSE])
@@ -432,15 +430,12 @@ create_boxplot_df = function(case = "default", ...) {
     get_res_mbogrid(case = case, ...)[, colnames(tmp), with = FALSE]
   )
 }
+
 ## ----plot_boxplot_valid_y-----------------------------------------------------
+# Figure 2
 plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.9, expr = {
   tmp = create_boxplot_df()
   g = ggplot(tmp, aes(x = algorithm, y = y_valid, color = algorithm, fill = algorithm))
-  # mylabels = function(labels) {
-  #   do.call(map, args = c(list(paste), labels))
-  #   map(paste, labels[[1]], labels[[2]])
-  #   paste(value, variable)
-  # }
   
   g = g + facet_wrap(effect~n_cases, scales = "free_y", ncol = 6, labeller = label_bquote({atop(.(effect), n[total]==.(n_cases))}))
   darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
@@ -454,6 +449,7 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.9, expr 
 })
 
 ## ----plot_boxplot_valid_y_5000-----------------------------------------------------
+# Figure 5(2)
 plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.35 * FIG_WIDTH, expr = {
   tmp = create_boxplot_df(case = "nsim")
   g = ggplot(tmp, aes(x = as.factor(nsim), y = y_valid, color = algorithm, fill = algorithm))
@@ -484,7 +480,7 @@ plot_wrapper(name = "plot_appendix_boxplot_paper_rev", fig.height = FIG_HEIGHT *
 })
 
 ## ----plot_opt_path_5000-----------------------------
-
+# Figure 5(1)
 # calculate y perf of mbo runs
 plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.64 * FIG_WIDTH, expr = {
   df = get_res_mbo(case = "nsim")
@@ -517,24 +513,6 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
 })
 
 
-## ----table_best---------------------------------------------------------------
-#best of grid
-#FIXME: calculate time of complete grid, devide through 10
-if (FALSE) { # this table does not make much sense
-  res_ave = get_res_eval_average()
-  df = res_ave[,.SD[order(-mean_y)[1:3]], by = c("effect", "n_cases")][,.(effect, n_cases, select, stage_ratio, epsilon, mean_y)]
-  #mbo average
-  res_ave_mbo = get_res_mbo()[, list(mean_y = mean(y)), by = algo.par.names.meta]
-  df = rbind(df, res_ave_mbo[, .(effect, n_cases, mean_y, select = algorithm)], fill = TRUE)
-  setkey(df, effect, n_cases, mean_y)
-  knitr::kable(df, booktabs = TRUE, caption = "Best configurations per ncases and effects", longtable = FALSE, digits = 3, label = "table_best") %>% # linesep = c(rep("",4), "\\addlinespace") 
-    kable_styling(position = "center", font_size = FNT_SMALL) %>% 
-    collapse_rows(1:2, latex_hline = "custom", custom_latex_hline = 1:2) %>% 
-    kable_to_text("table_best")  
-}
-
-
-
 ## ----table_time---------------------------------------------------------------
 #table(res_eval$n_cases, res_eval$effect)
 tmp = get_res_grid()
@@ -555,40 +533,6 @@ kable(tmp2,
   add_header_above(c(" " = 1, table(tmp$effect)/3, " " = 1)) %>% 
   kable_styling(position = "center", latex_options = "scale_down") %>% 
   kable_to_text("table_time")
-
-# res_grid[effect == "sigmoid" & n_cases == 1000, ]
-
-# 
-# g = ggplot(tmp, aes(x = algorithm, y = as.numeric(time.running, unit = "hours"), color = algorithm, fill = algorithm))
-# g = g + facet_wrap(effect~n_cases, scales = "free", labeller = label_both, ncol = 3)
-# darker_colors = colorspace::darken(algorithm_labels_color, amount = 0.6)
-# names(darker_colors) = names(algorithm_labels_color)
-# g = g + scale_fill_manual(values = algorithm_labels_color) + scale_color_manual(values = darker_colors)
-# #g = g + scale_y_log10()
-# g + geom_boxplot()
-
-
-## ----debug, eval = FALSE, include=FALSE---------------------------------------
-## res_eval[effect == "sigmoid" & n_cases == 1000,
-##   {
-##     optim_dt = copy(.SD)
-##     this_repl = optim_dt$repl[1]
-##     optim_dt = optim_dt[sample(which(y == max(y)), 1),]
-##     valid_dt = res_eval[repl != this_repl, ]
-##     res = merge(optim_dt[,-"y"], valid_dt[, c(algo.par.names, "y"), with = FALSE], by = algo.par.names)
-##     # write result into x values dt
-##     optim_dt$y = mean(res$y)
-##     #strangely we have 3 to 4 missing values here, probably batchtools had a hick up
-##     times = .SD$time.running
-##     if (any(is.na(times)) && mean(is.na(times)) < 0.004) {
-##       times[is.na(times)] = mean(times, na.rm = TRUE)
-##     }
-##     optim_dt$time.running = sum(times)
-##     optim_dt[, c(algo.par.names.meta, "repl") := NULL]
-##     optim_dt
-##   },
-##   by = c(algo.par.names.meta, "repl"),
-##   .SDcols = c("y", "repl", algo.par.names, "time.running")]
 
 # --- optimal epsilon values ------
 
