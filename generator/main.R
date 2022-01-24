@@ -12,10 +12,17 @@ library(mlr3misc)
 library(grid)
 library(gridExtra)
 library(memoise)
+library(smoof)
 
-
-root = rprojroot::find_root(rprojroot::is_git_root)
-setwd(paste0(root,"/generator"))
+# root = rprojroot::find_root(rprojroot::is_git_root)
+root = "."
+generator_dir = file.path(root, "/generator")
+if (!dir.exists(generator_dir)) {
+  stop(sprintf("Directory %s does not exist, please setwd() to project root.", generator_dir))
+}
+setwd(generator_dir)
+dir.create("../generated/figures", recursive = TRUE, showWarnings = FALSE)
+dir.create("../generated/tables", recursive = TRUE, showWarnings = FALSE)
 
 
 FIG_WIDTH = 9
@@ -30,7 +37,7 @@ plot_wrapper_uncached = function(name, fig.height = FIG_HEIGHT, fig.width = FIG_
   dev.off()
   #browser()
   if (crop) {
-    knitr::plot_crop(path)
+    plot_crop(path)
   }
 }
 plot_wrapper = memoise(plot_wrapper_uncached, cache = CACHE)
@@ -93,6 +100,7 @@ names(effect_labels) = effect_labels = c("linear", "paper", "paper2", "sigmoid")
 
 
 ## ----table_effect_names-------------------------------------------------------
+## Table 1
 tmp = lapply(EFFECTS[main_effect_names], do.call, what = rbind)
 tmp = lapply(tmp, function(x) cbind.data.frame(stage = rownames(x), x))
 tmp = lapply(tmp, function(x) {colnames(x) = c("stage", seq_len(ncol(x)-1)-1); x}) # colnames start at 0
@@ -180,7 +188,6 @@ read_results_uncached = function(select_labels, case = "default", effect_names =
   
   # calculate grid 7 result (subset of res_grid)
   grid7 = local({
-    library(smoof)
     source("../benchmark/_functions.R")
     full_design = generateGridDesign(getParamSet(fun), 25) # instead of just saying 7, we create a set with the index using elem 2, 5, 9, 13, 17, 21 and 25. Not the first because it is often 0!
     num_cols = map_lgl(full_design, is.numeric)
@@ -279,6 +286,7 @@ get_res_eval_average = function(case = "default", ...) {
 ## res_mbo[, y - y_tuning]
 
 ## ----plot_allbest, fig.height = 1.5 * FIG_HEIGHT------------------------------
+## Figure 3
 # find best performing solution for each select methods and across all epsilon and threshold choices
 plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
   res_ave = get_res_eval_average()
@@ -300,6 +308,7 @@ plot_wrapper(name = "plot_allbest", fig.height = 1.5 * FIG_HEIGHT, expr = {
 })
 
 ## ----plot_appendix_allbest_paper_rev------------------------------
+## Figure S2
 # find best performing solution for each select methods and across all epsilon and threshold choices
 plot_wrapper(name = "plot_appendix_allbest_paper_rev", fig.height = FIG_HEIGHT, expr = {
   res_ave = get_res_eval_average(effect_names = c("paper", "paper_rev"))
@@ -350,34 +359,8 @@ plot_wrapper(name = "plot_best_x", fig.height = 1.5 * FIG_HEIGHT, expr = {
   grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,5,5,3))
 })
 
-## ----plot_appendix_best_x_paper_rev -----------------------------------
-# find best from grid 
-plot_wrapper(name = "plot_appendix_best_x_paper_rev", fig.height = FIG_HEIGHT, expr = {
-  tmp = get_res_grid(effect_names = c("paper", "paper_rev"))
-  tmp = rbind(tmp, get_res_mbo(effect_names = c("paper", "paper_rev"))[, colnames(tmp), with = FALSE])
-  g = ggplot(data = tmp, aes(x = stage_ratio, y = y_valid, color = select, shape = algorithm))
-  g = g + geom_point(size = 3)
-  g = g + facet_wrap(effect~n_cases, scales = "free", ncol = 3) # labels not used
-  g = g + scale_x_continuous(expand = expansion(mult = 0.2))
-  g = g + scale_y_continuous(expand = expansion(mult = 0.2))
-  g = g + scale_shape_manual(labels = algorithm_labels, values = c("mbo" = 16, "grid" = 21))
-  g = g + scale_color_manual(labels = select_labels, values = select_labels_colors)
-  g = g + labs(x = expression(r), y = expression(y[valid]))
-  g = g + theme(legend.position = "bottom", strip.background = element_blank(), strip.text.x = element_blank())
-  #grid headlines
-  col_heads = lapply(unique(tmp$n_cases), function(x) bquote(n[total]==.(x))) %>% do.call("expression",.) %>% lapply(textGrob, gp = gpar(fontsize = 10, color = "grey10"))
-  row_heads = levels(factor(tmp$effect)) %>% lapply(textGrob, gp = gpar(fontsize = 10, col = "grey10"), rot=90*3)
-  layout_mat = matrix(c(
-    1, 2, 3, NA,
-    6, 6, 6,  4,
-    6, 6, 6,  5,
-    6, 6, 6, NA
-  ), byrow = TRUE, ncol = 4)
-  grid.arrange(grobs=c(col_heads, row_heads, list(g)),layout_matrix=layout_mat, widths=c(10,10,10,1), heights=c(1,5,5,3))
-})
-
-
 ## ---- plot_opt_path -----------------------------
+## Figure S3
 
 # calculate y perf of mbo runs
 plot_wrapper(name = "plot_opt_path", fig.height = 1.6 * FIG_HEIGHT, expr = {
@@ -449,7 +432,7 @@ plot_wrapper(name = "plot_boxplot_valid_y", fig.height = FIG_HEIGHT * 0.9, expr 
 })
 
 ## ----plot_boxplot_valid_y_5000-----------------------------------------------------
-# Figure 5(2)
+# Figure 6
 plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.35 * FIG_WIDTH, expr = {
   tmp = create_boxplot_df(case = "nsim")
   g = ggplot(tmp, aes(x = as.factor(nsim), y = y_valid, color = algorithm, fill = algorithm))
@@ -465,6 +448,7 @@ plot_wrapper(name = "plot_boxplot_valid_y_5000", fig.height = 1.6 * FIG_HEIGHT *
 })
 
 ## ----plot_appendix_boxplot_paper_rev-----------------------------------------------------
+## Figure S1
 plot_wrapper(name = "plot_appendix_boxplot_paper_rev", fig.height = FIG_HEIGHT * 0.7, fig.width = FIG_WIDTH, expr = {
   tmp = create_boxplot_df(case = "default", effect_names = c("paper", "paper_rev"))
   g = ggplot(tmp, aes(x = algorithm, y = y_valid, color = algorithm, fill = algorithm))
@@ -480,7 +464,7 @@ plot_wrapper(name = "plot_appendix_boxplot_paper_rev", fig.height = FIG_HEIGHT *
 })
 
 ## ----plot_opt_path_5000-----------------------------
-# Figure 5(1)
+# Figure 5
 # calculate y perf of mbo runs
 plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, fig.width = 0.64 * FIG_WIDTH, expr = {
   df = get_res_mbo(case = "nsim")
@@ -514,6 +498,7 @@ plot_wrapper(name = "plot_opt_path_5000", fig.height = 1.6 * FIG_HEIGHT * 0.35, 
 
 
 ## ----table_time---------------------------------------------------------------
+## Table 5
 #table(res_eval$n_cases, res_eval$effect)
 tmp = get_res_grid()
 tmp = rbind(tmp, get_res_mbo()[, colnames(tmp), with = FALSE], get_res_grid7()[, colnames(tmp), with = FALSE])
@@ -535,6 +520,7 @@ kable(tmp2,
   kable_to_text("table_time")
 
 # --- optimal epsilon values ------
+## Figure S4(1)
 
 plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, crop = FALSE, expr = {
   tmp = get_res_eval_average(effect_names = names(EFFECTS))
@@ -545,7 +531,7 @@ plot_wrapper(name = "plot_appendix_opt_epsilon", fig.height = 1.5 * FIG_HEIGHT, 
 })
 
 # --- optimal tau values ------
-
+## Figure S4(2)
 plot_wrapper(name = "plot_appendix_opt_thresh", fig.height = 1.5 * FIG_HEIGHT, fig.width = 0.5 * FIG_WIDTH, crop = FALSE, expr = {
   tmp = get_res_eval_average(effect_names = names(EFFECTS))
   tmp = tmp[select == "threshold rule",]
@@ -553,3 +539,5 @@ plot_wrapper(name = "plot_appendix_opt_thresh", fig.height = 1.5 * FIG_HEIGHT, f
   best = tmp[, .SD[mean_y == max(mean_y)], by = .(effect, n_cases)]
   ggplot(tmp, aes(x = stage_ratio, y = thresh)) + geom_raster(aes(fill = mean_y)) + facet_grid(effect~n_cases) + geom_point(data = best, color = "white", size = 0.7) + scale_fill_continuous(guide = FALSE) + scale_fill_gradientn(colours = c("#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598", "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"), guide = FALSE) + labs(title = "Optimal τ values for threshold rule", x = "r", y = expression(tau)) + theme(axis.text = element_text(size = 7)) + scale_x_continuous(labels = scales::label_number(drop0trailing = TRUE))
 })
+
+sessionInfo()

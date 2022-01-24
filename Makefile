@@ -5,10 +5,13 @@ all: plots pdf
 .PHONY: all arxiv
 
 plots:
-	cd generator; Rscript main.R
+	Rscript --no-save --no-restore --verbose generator/main.R > generator/lastrun.Rout 2>&1
 
 pdf:
 	latexmk -pdf main.tex
+
+tinytex:
+	R -e 'tinytex::pdflatex("main.tex")'
 
 arxiv:
 	## cp main.tex arxiv
@@ -29,5 +32,9 @@ review:
 clean:  ## Clean output files
 	latexmk -c main.tex
 	rm -rf generator/memoise
+
+benchmark: ## Takes very long, not reccomended
+	cd benchmark; Rscript batchtools_grid.R
+
 
 

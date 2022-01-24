@@ -93,7 +93,7 @@ res_eval = reduceResultsDataTable(jdf_done[algorithm == "eval", ], fun = functio
 })
 res_eval = unwrap(res_eval, "result")
 res_eval = ljoin(jdf_done[algorithm == "eval", ], res_eval)
-saveRDS(res_eval, "batchtools_grid_res_eval.rds")
+saveRDS(res_eval, "../benchmark_results/batchtools_grid_res_eval.rds")
 
 res_mbo = reduceResultsDataTable(jdf_done[algorithm == "mbo" & map(algo.pars, "effect") %in% names(EFFECTS),], fun = function(res) {
   opdf = as.data.table(res$opt.path)
@@ -102,7 +102,7 @@ res_mbo = reduceResultsDataTable(jdf_done[algorithm == "mbo" & map(algo.pars, "e
   c(res$x, y = res$y, best_index = res$best.ind, best_el$extra[c("stage_1_arms", "stage_1_n","stage_2_arms", "stage_2_n")], opt.path = list(opdf))
 })
 res_mbo = ljoin(jdf_done[algorithm == "mbo", ], res_mbo)
-saveRDS(res_mbo, "batchtools_grid_res_mbo.rds")
+saveRDS(res_mbo, "../benchmark_results/batchtools_grid_res_mbo.rds")
 
 if (FALSE) {
   #debug calibration
